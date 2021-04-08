@@ -1,32 +1,33 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
 <root version="3.3" >
-
-    <announcement text="Aura Effects - Extension v0.4\r5E version for Fantasy Grounds\r--by Kent McCullough 2020" font="emotefont" />
 	<properties>
-    <loadorder>999</loadorder>
-		<name>5E - Aura Effects</name>
-		<version>0.4</version>
+		<name>Aura Effects</name>
+		<version>0.5</version>
 		<author>Kent McCullough</author>
-		<description>Aura Effects for fantasy grounds</description>
+		<description>Adds and removes effects based on proximity.</description>
+		<loadorder>999</loadorder>
 		<ruleset>
-            <name>5E</name>
+			<name>3.5E</name>
 		</ruleset>
-        <ruleset>
-            <name>PFRPG</name>
-        </ruleset>
+		<ruleset>
+			<name>PFRPG</name>
+		</ruleset>
+		<ruleset>
+			<name>4E</name>
+		</ruleset>
+		<ruleset>
+			<name>5E</name>
+		</ruleset>
 	</properties>
+	
+	<announcement text="Aura Effects - Extension v0.5\r--by Kent McCullough 2020 updated by bmos" font="emotefont" />
 
-  <loadorder>999</loadorder>
 	<base>
+		<string name="option_header_aura">Auras (GM)</string>
+		<string name="option_label_AURASILENT">Silence Notifications for Aura Types</string>
+		<string name="option_val_friend">Friend</string>
+		<string name="option_val_foe">Foe</string>
 
-    <string name="option_header_aura">Auras (GM)</string>
-    <string name="option_label_AURASILENT">Silence Notifications for Aura Types</string>
-    <string name="option_val_friend">Friend</string>
-    <string name="option_val_foe">Foe</string>
-
-    <script name="EffectManagerAURA" file="scripts/manager_effect_aura.lua" />
-
-  </base>
-  
-    
+		<script name="EffectManagerAURA" file="scripts/manager_effect_aura.lua" />
+	</base>
 </root>
