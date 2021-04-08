@@ -282,29 +282,27 @@ function checkAuraApplicationAndAddOrRemove(targetNode, sourceNode, auraEffect)
 		end
 	end
 
-	local nDU = GameSystem.getDistanceUnitsPerGrid();
 	local sLabelNodeEffect = DB.getValue(auraEffect, "label", "");
-	local range, auraType = string.match(sLabelNodeEffect, "(%d+) (%w+)");
-	if not range then
+	local nRange, auraType = string.match(sLabelNodeEffect, "(%d+) (%w+)");
+	if not nRange then
 		return;
 	end
 	if not auraType then
 		auraType = "all";
 	end
-	local nSpace = math.ceil(DB.getValue(targetNode, "space", nDU)/nDU);
-	range = (nSpace/2)+(range/nDU);
+	nRange = math.floor(nRange);
 	local sourceFaction = DB.getValue(sourceNode, "friendfoe", "");
 	local targetFaction = DB.getValue(targetNode, "friendfoe", "");
 	if (auraType == "friend" and sourceFaction == targetFaction) 
 	or ((auraType == "enemy" or auraType == "foe") and sourceFaction ~= targetFaction) 
 	or (auraType == "all") then
-		addOrRemoveAura(range, auraType, targetNode, sourceNode, auraEffect);
+		addOrRemoveAura(nRange, auraType, targetNode, sourceNode, auraEffect);
 	end
 end
 
-function addOrRemoveAura(range, auraType, targetNode, sourceNode, nodeEffect)
+function addOrRemoveAura(nRange, auraType, targetNode, sourceNode, nodeEffect)
 	local existingAuraEffect = checkAuraAlreadyEffecting(sourceNode, targetNode, nodeEffect);
-	if checkRange(range, targetNode, sourceNode) then
+	if checkRange(nRange, targetNode, sourceNode) then
 		if not existingAuraEffect then
 			addAuraEffect(auraType, nodeEffect, targetNode, sourceNode);
 		end
@@ -315,40 +313,16 @@ function addOrRemoveAura(range, auraType, targetNode, sourceNode, nodeEffect)
 	end
 end
 
-function checkRange(range, nodeSource, nodeTarget)
-	local sourceName, targetName = DB.getValue(nodeSource, "name", ""), DB.getValue(nodeTarget, "name", "");
-	range = range + 0.000001;
-
+function checkRange(nRange, nodeSource, nodeTarget)
 	local sourceToken = CombatManager.getTokenFromCT(nodeSource);
 	local targetToken = CombatManager.getTokenFromCT(nodeTarget);
 	if not sourceToken or not targetToken then
 		return false;
 	end;
-	local ctrlImage = ImageManager.getImageControl(targetToken);
-	local srcCtrlImage = ImageManager.getImageControl(sourceToken);
-	if ctrlImage and ctrlImage == srcCtrlImage then
-		local gridSize = 0;
-		local gridOffsetX = 0;
-		local gridOffsetY = 0;
-		if ctrlImage.hasGrid() then	
-			gridSize = ctrlImage.getGridSize();
-			gridOffsetX, gridOffsetY = ctrlImage.getGridOffset();
-		end
-		local sourceX, sourceY = sourceToken.getPosition();
-		local targetX, targetY = targetToken.getPosition();
+	
+	local nDistanceBetweenTokens = Token.getDistanceBetween(sourceToken, targetToken)
 
-		local targetGridX = (tonumber(targetX) + tonumber(gridOffsetX)) / gridSize;
-		local targetGridY = (tonumber(targetY) + tonumber(gridOffsetY)) / gridSize;
-		local sourceGridX = (tonumber(sourceX) + tonumber(gridOffsetX)) / gridSize;
-		local sourceGridY = (tonumber(sourceY) + tonumber(gridOffsetY)) / gridSize;
-		local xDiff = math.abs(targetGridX - sourceGridX);
-		local yDiff = math.abs(targetGridY - sourceGridY);
-		local totalDiff = math.sqrt((xDiff*xDiff)+(yDiff*yDiff));	
-		--Debug.chat(DB.getValue(sourceNode, "name", ""),DB.getValue(targetNode, "name", ""),targetName,"xDiff=",xDiff, "yDiff=",yDiff, "range=",range, "totalDiff=",totalDiff);
-		
-		return totalDiff <= range;
-	end
-	return false;
+	return nDistanceBetweenTokens <= nRange;
 end
 
 function checkSilentNotification(auraType)
