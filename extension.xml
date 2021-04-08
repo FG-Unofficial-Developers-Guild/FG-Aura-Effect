@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<root version="3.3" >
+
+    <announcement text="Aura Effects - Extension v0.4\r5E version for Fantasy Grounds\r--by Kent McCullough 2020" font="emotefont" />
+	<properties>
+    <loadorder>999</loadorder>
+		<name>5E - Aura Effects</name>
+		<version>0.4</version>
+		<author>Kent McCullough</author>
+		<description>Aura Effects for fantasy grounds</description>
+		<ruleset>
+            <name>5E</name>
+		</ruleset>
+	</properties>
+
+  <loadorder>999</loadorder>
+	<base>
+
+    <string name="option_header_aura">Auras (GM)</string>
+    <string name="option_label_AURASILENT">Silence Notifications for Aura Types</string>
+    <string name="option_val_friend">Friend</string>
+    <string name="option_val_foe">Foe</string>
+
+    <script name="EffectManagerAURA" file="scripts/manager_effect_aura.lua" />
+
+  </base>
+  
+    
+</root>
