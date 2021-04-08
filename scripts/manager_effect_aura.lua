@@ -137,8 +137,8 @@ local function checkFaction(rActor, nodeEffect, sFactionCheck)
 		return true;
 	end
 
-	local effectSource = DB.getValue(nodeEffect, "source_name", "");
-	if effectSource == "" then 
+	local effectSource = DB.getValue(nodeEffect, "source_name");
+	if not effectSource then 
 		return false; 
 	end
 
@@ -193,13 +193,8 @@ function updateAuras(tokenMap)
 	--Debug.printstack();
 	--Debug.chat("updating Auras");
 	local nodeCT = CombatManager.getCTFromToken(tokenMap);
-
-	if not nodeCT then
+	if not nodeCT or not nodeCT.isOwner() then
 		--Debug.chat("no nodeCT");
-		return;
-	end
-
-	if not nodeCT.isOwner() then
 		return;
 	end
 
@@ -314,12 +309,11 @@ function addOrRemoveAura(nRange, auraType, targetNode, sourceNode, nodeEffect)
 end
 
 function checkRange(nRange, nodeSource, nodeTarget)
-	local sourceToken = CombatManager.getTokenFromCT(nodeSource);
-	local targetToken = CombatManager.getTokenFromCT(nodeTarget);
-	if not sourceToken or not targetToken then
+	if not sourceToken or not targetToken or not nRange then
 		return false;
 	end;
-	
+	local sourceToken = CombatManager.getTokenFromCT(nodeSource);
+	local targetToken = CombatManager.getTokenFromCT(nodeTarget);
 	local nDistanceBetweenTokens = Token.getDistanceBetween(sourceToken, targetToken)
 
 	return nDistanceBetweenTokens <= nRange;
