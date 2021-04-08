@@ -35,7 +35,7 @@ function onInit()
 		EffectManager4E.checkConditional = customCheckConditional;
 	end
 
-	CombatManager.setCustomDeleteCombatantEffectHandler(effectDeleted);
+	CombatManager.setCustomDeleteCombatantEffectHandler(checkDeletedAuraEffects);
 
 	onWindowOpened = Interface.onWindowOpened;
 	Interface.onWindowOpened = auraOnWindowOpened;
@@ -80,11 +80,26 @@ function auraOnWindowOpened(window)
 	end
 end
 
-local function checkAurasEffectingNodeForDelete(node)
-	local aurasEffectingNode = getAurasEffectingNode(node);
+local function getAurasEffectingNode(nodeCT)
+	local auraEffects = {};
+
+	for _, nodeEffect in pairs(DB.getChildren(nodeCT, "effects")) do
+		local nActive = DB.getValue(nodeEffect, "isactive", 0);
+		if nActive == 1 then
+			local sLabelNodeEffect = DB.getValue(nodeEffect, "label", "");
+			if string.find(sLabelNodeEffect, fromAuraString, 0, true) then
+				table.insert(auraEffects, nodeEffect);
+			end
+		end
+	end
+	return auraEffects;
+end
+
+local function checkAurasEffectingNodeForDelete(nodeCT)
+	local aurasEffectingNode = getAurasEffectingNode(nodeCT);
 	for _, targetEffect in ipairs(aurasEffectingNode) do
 		local targetEffectLabel = DB.getValue(targetEffect, "label", ""):gsub(fromAuraString,"");
-		if string.find(targetEffectLabel, fromAuraString) then
+		if not string.find(targetEffectLabel, fromAuraString) then
 			local sSource = DB.getValue(targetEffect, "source_name", "");
 			local sourceNode = DB.findNode(sSource);
 			if sourceNode then
@@ -104,17 +119,13 @@ local function checkAurasEffectingNodeForDelete(node)
 	end
 end
 
-local function checkDeletedAuraEffects(nodeFromDelete)
+function checkDeletedAuraEffects(nodeFromDelete)
 	local ctEntries = CombatManager.getSortedCombatantList();
-	for _, node in pairs(ctEntries) do
-		if node ~= nodeFromDelete then
-			checkAurasEffectingNodeForDelete(node);
+	for _, nodeCT in pairs(ctEntries) do
+		if nodeCT ~= nodeFromDelete then
+			checkAurasEffectingNodeForDelete(nodeCT);
 		end
 	end
-end
-
-function effectDeleted(node)
-	checkDeletedAuraEffects(node);
 end
 
 function checkAuraAlreadyEffecting(nodeSource, nodeTarget, effect)
@@ -228,28 +239,12 @@ function auraOnMove(tokenMap)
 	--Debug.chat("finishing aura on move");
 end
 
-function getAurasEffectingNode(node)
-	local auraEffects = {};
-
-	local nodeEffects = DB.getChildren(node, "effects");
-	for _, nodeEffect in pairs(nodeEffects) do
-		local nActive = DB.getValue(nodeEffect, "isactive", 0);
-		if nActive == 1 then
-			local sLabelNodeEffect = DB.getValue(nodeEffect, "label", "");
-			if string.match(sLabelNodeEffect, "^"..fromAuraString) then
-				table.insert(auraEffects, nodeEffect);
-			end
-		end
-	end
-	return auraEffects;
-end
-
-function getAurasForNode(node)
-	if not node then 
+function getAurasForNode(nodeCT)
+	if not nodeCT then 
 		return nil; 
 	end
 	local auraEffects = {};
-	local nodeEffects = DB.getChildren(node, "effects");
+	local nodeEffects = DB.getChildren(nodeCT, "effects");
 	for _, nodeEffect in pairs(nodeEffects) do
 		if DB.getValue(nodeEffect, "isactive", 0) == 1 then
 			local sLabelNodeEffect = DB.getValue(nodeEffect, "label", "");
