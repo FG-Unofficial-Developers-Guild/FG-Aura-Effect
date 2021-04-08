@@ -19,9 +19,15 @@ local fromAuraString = "FROMAURA:"
 function onInit()
 	updateAttributesFromToken = TokenManager.updateAttributesFromToken;
 	TokenManager.updateAttributesFromToken = auraUpdateAttributesFromToken;
-	
-	checkConditional = EffectManager5E.checkConditional;
-	EffectManager5E.checkConditional = customCheckConditional;
+
+	if DataCommon.isPFRPG then
+		checkConditional = EffectManager35E.checkConditional;
+		EffectManager35E.checkConditional = customCheckConditional;
+	else
+		checkConditional = EffectManager5E.checkConditional;
+		EffectManager5E.checkConditional = customCheckConditional;
+	end
+
 	
 	CombatManager.setCustomDeleteCombatantEffectHandler(effectDeleted);
 	
@@ -81,7 +87,7 @@ function checkAuraAlreadyEffecting(nodeSource, nodeTarget, effect)
 		if sSource == sourcePath then
 			local sEffect = DB.getValue(effect, "label", "");
 			sEffect = stripFromAuraInformation(sEffect);
-			if string.match(sLabel, sEffect) then
+			if string.find(sLabel, sEffect, 1, true) then
 				return effect;
 			end
 		end
@@ -90,7 +96,7 @@ function checkAuraAlreadyEffecting(nodeSource, nodeTarget, effect)
 end
 
 function stripFromAuraInformation(sEffect)
-	return sEffect:gsub("%(","%%%("):gsub("%)","%%%)"):gsub(fromAuraString,"");
+	return sEffect:gsub(fromAuraString,"");	--gsub("%(","%%%("):gsub("%)","%%%)"):	--removed when changed to string.find using (s,s,1,true) for plain string in checkAura functions
 end
 
 function checkAurasEffectingNodeForDelete(node)
@@ -106,7 +112,7 @@ function checkAurasEffectingNodeForDelete(node)
 				targetEffectLabel = stripFromAuraInformation(targetEffectLabel);
 				for _, sourceEffect in ipairs(sourceAuras) do
 					local sourceEffectLabel = DB.getValue(sourceEffect, "label", "");
-					if string.match(sourceEffectLabel, targetEffectLabel) then
+					if string.find(sourceEffectLabel, targetEffectLabel, 1, true) then
 						auraStillExists = true;
 					end
 				end
@@ -470,7 +476,7 @@ function expireEffectSilent(nodeActor, nodeEffect, nExpireComp)
 	if not nodeEffect then
 		return false;
 	end
-	
+
 	local bGMOnly = EffectManager.isGMEffect(nodeActor, nodeEffect);
 	local sEffect = DB.getValue(nodeEffect, "label", "");
 
@@ -484,7 +490,7 @@ function expireEffectSilent(nodeActor, nodeEffect, nExpireComp)
 			return true;
 		end
 	end
-	
+
 	-- Process full expiration
 	nodeEffect.delete();
 end
@@ -495,7 +501,7 @@ function notifyExpireSilent(varEffect, nMatch)
 	elseif type(varEffect) ~= "string" then
 		return;
 	end
-	
+
 	local msgOOB = {};
 	msgOOB.type = OOB_MSGTYPE_EXPIREEFFSILENT;
 	msgOOB.sEffectNode = varEffect;

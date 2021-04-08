@@ -11,6 +11,9 @@
 		<ruleset>
             <name>5E</name>
 		</ruleset>
+        <ruleset>
+            <name>PFRPG</name>
+        </ruleset>
 	</properties>
 
   <loadorder>999</loadorder>
