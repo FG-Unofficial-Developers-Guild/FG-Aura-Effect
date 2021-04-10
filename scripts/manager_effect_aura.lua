@@ -118,14 +118,15 @@ end
 
 function checkAuraAlreadyEffecting(nodeSource, nodeTarget, effect)
 	local sLabel = DB.getValue(effect, "label", "");
-	local nodeEffects = DB.getChildren(nodeTarget, "effects");
 	local sourcePath = nodeSource.getPath();
-	for _, nodeEffect in pairs(nodeEffects) do
-		local sSource = DB.getValue(nodeEffect, "source_name");
-		if sSource == sourcePath then
-			local sEffect = DB.getValue(nodeEffect, "label", ""):gsub(fromAuraString,"");
-			if string.find(sLabel, sEffect, 0, true) then
-				return nodeEffect;
+	for _, nodeEffect in pairs(DB.getChildren(nodeTarget, "effects")) do
+		if DB.getValue(nodeEffect, "isactive", 0) == 1 then
+			local sSource = DB.getValue(nodeEffect, "source_name");
+			if sSource == sourcePath then
+				local sEffect = DB.getValue(nodeEffect, "label", ""):gsub(fromAuraString,"");
+				if string.find(sLabel, sEffect, 0, true) then
+					return nodeEffect;
+				end
 			end
 		end
 	end
