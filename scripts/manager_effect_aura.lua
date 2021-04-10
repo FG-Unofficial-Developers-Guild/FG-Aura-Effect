@@ -2,6 +2,29 @@
 -- Add functionality for SAVEO type effects similar to DMGO or REGEN
 --
 --
+
+local fromAuraString = "FROMAURA:"
+
+---	This function checks whether an effect should trigger recalculation.
+--	It does this by checking the effect text for a series of three letters followed by a colon (as used in bonuses like CON: 4).
+local function checkEffectRecursion(nodeEffect, sEffectComp)
+	if string.find(DB.getValue(nodeEffect, 'label', ''), sEffectComp) then
+		return true
+	end
+end
+
+---	This function is called when effect components are changed.
+local function onEffectChanged(node)
+	local nodeEffect = node.getChild('..')
+	if checkEffectRecursion(nodeEffect, 'AURA:') and not checkEffectRecursion(nodeEffect, fromAuraString) then
+		local nodeCT = node.getChild('....')
+		local tokenCT = CombatManager.getTokenFromCT(nodeCT);
+		if tokenCT then
+			updateAuras(tokenCT);
+		end
+	end
+end
+
 local updateAttributesFromToken = nil;
 local checkConditional = nil
 local onMove = nil;
@@ -14,41 +37,6 @@ local updateEffectsHelper = nil
 OOB_MSGTYPE_APPLYEFFSILENT = "applyeffsilent";
 OOB_MSGTYPE_EXPIREEFFSILENT = "expireeffsilent";
 
-local fromAuraString = "FROMAURA:"
-
-function onInit()
-	updateAttributesFromToken = TokenManager.updateAttributesFromToken;
-	TokenManager.updateAttributesFromToken = auraUpdateAttributesFromToken;
-
-	if EffectManager35E then
-		checkConditional = EffectManager35E.checkConditional;
-		EffectManager35E.checkConditional = customCheckConditional;
-	end
-
-	if EffectManager5E then
-		checkConditional = EffectManager5E.checkConditional;
-		EffectManager5E.checkConditional = customCheckConditional;
-	end
-
-	if EffectManager4E then
-		checkConditional = EffectManager4E.checkConditional;
-		EffectManager4E.checkConditional = customCheckConditional;
-	end
-
-	CombatManager.setCustomDeleteCombatantEffectHandler(checkDeletedAuraEffects);
-
-	onWindowOpened = Interface.onWindowOpened;
-	Interface.onWindowOpened = auraOnWindowOpened;
-
-	onTokenAdd = ImageManager.onTokenAdd;
-	ImageManager.onTokenAdd = auraOnTokenAdd;
-
-	OOBManager.registerOOBMsgHandler(OOB_MSGTYPE_APPLYEFFSILENT, handleApplyEffectSilent);
-	OOBManager.registerOOBMsgHandler(OOB_MSGTYPE_EXPIREEFFSILENT, handleExpireEffectSilent);
-	
-	OptionsManager.registerOption2("AURASILENT", false, "option_header_aura", "option_label_AURASILENT", "option_entry_cycler", { labels = "option_val_friend|option_val_foe|option_val_all", values="friend|foe|all", baselabel = "option_val_off", baseval="off", default="friend"});
-end
-
 function auraOnTokenAdd(tokenMap)
 	if onTokenAdd then
 		onTokenAdd(tokenMap);
@@ -57,6 +45,7 @@ function auraOnTokenAdd(tokenMap)
 	if not Session.IsHost then
 		return;
 	end
+	--Debug.chat(tokenMap)
 	updateAuras(tokenMap);
 end
 
@@ -84,8 +73,7 @@ local function getAurasEffectingNode(nodeCT)
 	local auraEffects = {};
 
 	for _, nodeEffect in pairs(DB.getChildren(nodeCT, "effects")) do
-		local nActive = DB.getValue(nodeEffect, "isactive", 0);
-		if nActive == 1 then
+		if DB.getValue(nodeEffect, "isactive", 0) == 1 then
 			local sLabelNodeEffect = DB.getValue(nodeEffect, "label", "");
 			if string.find(sLabelNodeEffect, fromAuraString, 0, true) then
 				table.insert(auraEffects, nodeEffect);
@@ -212,7 +200,6 @@ function updateAuras(tokenMap)
 	local ctEntries = CombatManager.getSortedCombatantList();
 	for _, node in pairs(ctEntries) do
 		if node ~= nodeCT then
-
 			-- Check if the moved token has auras to apply/remove
 			local nodeCTAuras = getAurasForNode(nodeCT);
 			for _, sourceAuraEffect in pairs(nodeCTAuras) do
@@ -328,31 +315,6 @@ function removeAuraEffect(auraType, effect)
 	end
 end
 
-function addAuraEffect(auraType, effect, targetNode, sourceNode)
-	local sLabel = DB.getValue(effect, "label", "");
-	local applyLabel = string.match(sLabel, "AURA:.-;%s*(.*)$");
-	if not applyLabel then
-		return;
-	end
-	applyLabel = fromAuraString..applyLabel;
-	
-	local rEffect = {};
-	rEffect.nDuration = DB.getValue(effect, "duration", 0);
-	rEffect.sUnits = DB.getValue(effect, "unit", "");
-	rEffect.nInit = DB.getValue(effect, "init", 0);
-	rEffect.sSource = sourceNode.getPath();
-	rEffect.nGMOnly = DB.getValue(effect, "isgmonly", 0);
-	rEffect.sLabel = applyLabel;
-	rEffect.sName = applyLabel;
-	
-	-- CHECK IF SILENT IS ON
-	if checkSilentNotification(auraType) == true then
-		notifyApplySilent(rEffect, targetNode.getPath());
-	else
-		EffectManager.notifyApply(rEffect, targetNode.getPath());
-	end
-end
-
 local aEffectVarMap = {
 	["sName"] = { sDBType = "string", sDBField = "label" },
 	["nGMOnly"] = { sDBType = "number", sDBField = "isgmonly" },
@@ -362,7 +324,7 @@ local aEffectVarMap = {
 	["nInit"] = { sDBType = "number", sDBField = "init", sSourceChangeSet = "initresult", bClearOnUntargetedDrop = true },
 };
 
-function notifyApplySilent(rEffect, vTargets)
+local function notifyApplySilent(rEffect, vTargets)
 	-- Build OOB message to pass effect to host
 	local msgOOB = {};
 	msgOOB.type = OOB_MSGTYPE_APPLYEFFSILENT;
@@ -391,6 +353,31 @@ function notifyApplySilent(rEffect, vTargets)
 	else
 		msgOOB.sTargetNode = vTargets;
 		Comm.deliverOOBMessage(msgOOB, "");
+	end
+end
+
+function addAuraEffect(auraType, effect, targetNode, sourceNode)
+	local sLabel = DB.getValue(effect, "label", "");
+	local applyLabel = string.match(sLabel, "AURA:.-;%s*(.*)$");
+	if not applyLabel then
+		return;
+	end
+	applyLabel = fromAuraString..applyLabel;
+	
+	local rEffect = {};
+	rEffect.nDuration = DB.getValue(effect, "duration", 0);
+	rEffect.sUnits = DB.getValue(effect, "unit", "");
+	rEffect.nInit = DB.getValue(effect, "init", 0);
+	rEffect.sSource = sourceNode.getPath();
+	rEffect.nGMOnly = DB.getValue(effect, "isgmonly", 0);
+	rEffect.sLabel = applyLabel;
+	rEffect.sName = applyLabel;
+	
+	-- CHECK IF SILENT IS ON
+	if checkSilentNotification(auraType) == true then
+		notifyApplySilent(rEffect, targetNode.getPath());
+	else
+		EffectManager.notifyApply(rEffect, targetNode.getPath());
 	end
 end
 
@@ -471,7 +458,7 @@ function notifyExpireSilent(varEffect, nMatch)
 	Comm.deliverOOBMessage(msgOOB, "");
 end
 
-function handleExpireEffectSilent(msgOOB)
+local function handleExpireEffectSilent(msgOOB)
 	local nodeEffect = DB.findNode(msgOOB.sEffectNode);
 	if not nodeEffect then
 		ChatManager.SystemMessage(Interface.getString("ct_error_effectdeletefail") .. " (" .. msgOOB.sEffectNode .. ")");
@@ -484,4 +471,39 @@ function handleExpireEffectSilent(msgOOB)
 	end
 
 	expireEffectSilent(nodeActor, nodeEffect, tonumber(msgOOB.nExpireClause) or 0);
+end
+
+function onInit()
+	updateAttributesFromToken = TokenManager.updateAttributesFromToken;
+	TokenManager.updateAttributesFromToken = auraUpdateAttributesFromToken;
+
+	local DetectedEffectManager
+	if EffectManager35E then
+		DetectedEffectManager = EffectManager35E
+	end
+	if EffectManager5E then
+		DetectedEffectManager = EffectManager5E
+	end
+	if EffectManager4E then
+		DetectedEffectManager = EffectManager4E
+	end
+	checkConditional = DetectedEffectManager.checkConditional;
+	DetectedEffectManager.checkConditional = customCheckConditional;
+
+	CombatManager.setCustomDeleteCombatantEffectHandler(checkDeletedAuraEffects);
+	if Session.IsHost then
+		DB.addHandler(DB.getPath('combattracker.list.*.effects.*.label'), 'onUpdate', onEffectChanged)
+		DB.addHandler(DB.getPath('combattracker.list.*.effects.*.isactive'), 'onUpdate', onEffectChanged)
+	end
+
+	onWindowOpened = Interface.onWindowOpened;
+	Interface.onWindowOpened = auraOnWindowOpened;
+
+	onTokenAdd = ImageManager.onTokenAdd;
+	ImageManager.onTokenAdd = auraOnTokenAdd;
+
+	OOBManager.registerOOBMsgHandler(OOB_MSGTYPE_APPLYEFFSILENT, handleApplyEffectSilent);
+	OOBManager.registerOOBMsgHandler(OOB_MSGTYPE_EXPIREEFFSILENT, handleExpireEffectSilent);
+	
+	OptionsManager.registerOption2("AURASILENT", false, "option_header_aura", "option_label_AURASILENT", "option_entry_cycler", { labels = "option_val_friend|option_val_foe|option_val_all", values="friend|foe|all", baselabel = "option_val_off", baseval="off", default="friend"});
 end
