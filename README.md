@@ -2,7 +2,7 @@
 This extension is built to accommodate auras of any kind. Paladin auras, or even spell uras (such as spirit guardians). This is a relatively complex extension and will require some explanation and examples.
 
 # Compatibility and Instructions
-This extension has been tested with FantasyGrounds Unity 4.1.0 (2021-03-31). It works with the 3.5E, 4E, 5E, and PFRPG rulesets.
+This extension has been tested with [FantasyGrounds Unity](https://www.fantasygrounds.com/home/FantasyGroundsUnity.php) 4.1.0 (2021-03-31). It works with the 3.5E, 4E, 5E, and PFRPG rulesets.
 
 ## AURA Effect
 ```AURA: 10 friend; Aura of Protection; SAVE: 5```
