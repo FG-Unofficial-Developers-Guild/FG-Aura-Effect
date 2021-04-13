@@ -4,6 +4,8 @@ This extension is built to accommodate auras of any kind. Paladin auras, or even
 # Compatibility and Instructions
 This extension has been tested with [FantasyGrounds Unity](https://www.fantasygrounds.com/home/FantasyGroundsUnity.php) 4.1.0 (2021-03-31). It works with the 3.5E, 4E, 5E, and PFRPG rulesets.
 
+5E users should check out [GKEnialb](https://www.fantasygrounds.com/forums/member.php?70614-GKEnialb)'s [Token Height Indicator](https://www.fantasygrounds.com/forums/showthread.php?66566-5E-Token-Height-Indicator) which makes the auras height-aware.
+
 ## AURA Effect
 ```AURA: 10 friend; Aura of Protection; SAVE: 5```
 
