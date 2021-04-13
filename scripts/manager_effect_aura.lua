@@ -294,12 +294,14 @@ end
 function checkRange(nRange, nodeSource, nodeTarget)
 	local sourceToken = CombatManager.getTokenFromCT(nodeSource);
 	local targetToken = CombatManager.getTokenFromCT(nodeTarget);
-	if not sourceToken or not targetToken or not nRange then
+	if not sourceToken or not targetToken then
 		return false;
 	end;
 	local nDistanceBetweenTokens = Token.getDistanceBetween(sourceToken, targetToken)
 
-	return nDistanceBetweenTokens <= nRange;
+	if nDistanceBetweenTokens and nRange then
+		return nDistanceBetweenTokens <= nRange;
+	end
 end
 
 function checkSilentNotification(auraType)
