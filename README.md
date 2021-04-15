@@ -17,11 +17,24 @@ Allies within 10' will receive an effect "FROMAURA: Aura of Protection; SAVE: 5"
 
 The bearer of the AURA effect will also receive its benefits.
 
+The following aura types (used for AURA: 15 friend) are allowed:
+
+* friend
+* foe
+* all
+
 ### FACTION() conditional check
 To further limit bonuses/penalties/conditions applying to the bearer of the AURA effect, there is also an additional conditional type "FACTION()".
 ```AURA: 10 foe; Test; IF: FACTION(foe); ATK: -5```
 
 The IF: FACTION(foe) ensures that the penalty to attacks does not impact the bearer of the AURA effect but only their foes.
+
+The following faction types (used for IF: FACTION(friend)) are allowed:
+
+* friend
+* foe
+* neutral
+* faction
 
 You can also use the "!" operator in a FACTION conditional to reverse the results:
 ```AURA: 10 all; Test; IF: FACTION(!foe); ATK: -5```
@@ -31,17 +44,3 @@ This will add a 10 foot aura around the person who has this effect.
 Anyone within 10' will receive an effect "FROMAURA: Test; IF: FACTION(!foe); ATK: -5".
 
 Although the effect will be visible on all actors within 10', the penalty will only be applied to people who are not specifically foes.
-
-### Aura and faction types
-The following aura types (used for AURA: 15 friend) are allowed:
-
-* friend
-* foe
-* all
-
-The following faction types (used for IF: FACTION(friend)) are allowed:
-
-* friend
-* foe
-* neutral
-* faction
