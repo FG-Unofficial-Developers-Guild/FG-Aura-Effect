@@ -18,7 +18,7 @@ As the bonuses/penalties/conditions in the AURA effect will also be applied to t
 
 ```AURA: 10 foe; IF: FACTION(foe); ATK: -5```
 
-The IF: FACTION(foe) insures that the penalty to attacks does not affect the bearer of the AURA effect but only their foes. 
+The IF: FACTION(foe) ensures that the penalty to attacks does not affect the bearer of the AURA effect but only their foes. 
 
 You can also use the "!" operator in a FACTION conditional to include all except for that type. "!friend" would be anything that's not in the same faction as yourself. The foe faction would also do the same thing, as it assumes neutral/faction type enemies are not your friends as well.
 
