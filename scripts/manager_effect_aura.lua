@@ -141,8 +141,10 @@ local function checkFaction(targetActor, nodeEffect, sFactionCheck)
 	local targetFaction = ActorManager.getFaction(targetActor);
 
 	local sourceActor, sourceFaction
-	local sEffectSource = DB.getValue(nodeEffect, "source_name", '');
-	if sEffectSource ~= '' then 
+	local sEffectSource = DB.getValue(nodeEffect, "source_name", "");
+	if sFactionCheck:match("notself") then
+		return not (sEffectSource == "");
+	elseif sEffectSource ~= "" then
 		sourceActor = ActorManager.resolveActor(DB.findNode(sEffectSource));
 		sourceFaction = ActorManager.getFaction(sourceActor);
 		--Debug.chat(sourceActor)
