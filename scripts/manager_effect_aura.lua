@@ -8,9 +8,7 @@ local fromAuraString = "FROMAURA:"
 ---	This function checks whether an effect should trigger recalculation.
 --	It does this by checking the effect text for a series of three letters followed by a colon (as used in bonuses like CON: 4).
 local function checkEffectRecursion(nodeEffect, sEffectComp)
-	if string.find(DB.getValue(nodeEffect, 'label', ''), sEffectComp) then
-		return true
-	end
+	return string.find(DB.getValue(nodeEffect, 'label', ''), sEffectComp) ~= nil
 end
 
 ---	This function is called when effect components are changed.
@@ -43,7 +41,7 @@ function auraOnTokenAdd(tokenMap)
 	end
 	--Debug.chat("updating from onTokenAdd");
 	if not Session.IsHost then
-		return;
+		return false;
 	end
 	--Debug.chat(tokenMap)
 	updateAuras(tokenMap);
@@ -54,7 +52,7 @@ function auraOnWindowOpened(window)
 		onWindowOpened(window);
 	end
 	if not Session.IsHost then
-		return;
+		return false;
 	end
 	if window.getClass() == "imagewindow" then
 		local ctEntries = CombatManager.getSortedCombatantList();
@@ -134,12 +132,12 @@ end
 
 local function checkFaction(targetActor, nodeEffect, sFactionCheck)
 	if not targetActor or not sFactionCheck then
-		return;
+		return false;
 	end
 
 	local effectSource = DB.getValue(nodeEffect, "source_name");
 	if not effectSource then 
-		return;
+		return false;
 	end
 
 	local sourceNode = CombatManager.getCTFromNode(effectSource);
@@ -151,33 +149,46 @@ local function checkFaction(targetActor, nodeEffect, sFactionCheck)
 	local bReturn;
 	if sFactionCheck:match("friend") then
 		bReturn = sourceFaction == targetFaction;
+		--Debug.chat(targetActor.sName, "friend", bReturn)
 	elseif sFactionCheck:match("foe") then
 		if sourceFaction == "friend" then
 			bReturn = targetFaction == "foe";
 		elseif sourceFaction == "foe" then
 			bReturn = targetFaction == "friend";
 		end
+		--Debug.chat(targetActor.sName, "foe", bReturn)
 	elseif sFactionCheck:match("neutral") then
 		bReturn = targetFaction == "neutral";
+		--Debug.chat(targetActor.sName, "neutral", bReturn)
 	elseif sFactionCheck:match("faction") then
 		bReturn = targetFaction == "faction";
+		--Debug.chat(targetActor.sName, "faction", bReturn)
 	end
 
 	if sFactionCheck:match("^!") then
 		bReturn = not bReturn;
 	end
+	--Debug.chat(targetActor.sName, sFactionCheck, targetFaction, bReturn)
 
 	return bReturn;
 end
 
 function customCheckConditional(rActor, nodeEffect, aConditions, rTarget, aIgnore)
-	local bReturn = checkConditional(rActor, nodeEffect, aConditions, rTarget, aIgnore);
+	local bReturn
+	if EffectManager4E then
+		local rEffectComp = aConditions
+		aConditions = aConditions.remainder
+		bReturn = checkConditional(rActor, nodeEffect, rEffectComp, rTarget, aIgnore);
+	else
+		bReturn = checkConditional(rActor, nodeEffect, aConditions, rTarget, aIgnore);
+	end
 	for _,v in ipairs(aConditions) do
 		local sLower = v:lower();
 		local sFactionCheck = sLower:match("^faction%s*%(([^)]+)%)$");
 		if sFactionCheck then
 			if not checkFaction(rActor, nodeEffect, sFactionCheck) then
-				return;
+				bReturn = false
+				break;
 			end
 		end
 	end
@@ -199,7 +210,7 @@ function updateAuras(tokenMap)
 	local nodeCT = CombatManager.getCTFromToken(tokenMap);
 	if not nodeCT or not nodeCT.isOwner() then
 		--Debug.chat("no nodeCT");
-		return;
+		return false;
 	end
 
 	local ctEntries = CombatManager.getSortedCombatantList();
@@ -233,7 +244,7 @@ end
 
 function getAurasForNode(nodeCT)
 	if not nodeCT then 
-		return; 
+		return false; 
 	end
 	local auraEffects = {};
 	local nodeEffects = DB.getChildren(nodeCT, "effects");
@@ -250,24 +261,22 @@ function getAurasForNode(nodeCT)
 end
 
 function checkAuraApplicationAndAddOrRemove(targetNode, sourceNode, auraEffect)
-	if not targetNode 
-	or not auraEffect 
-	then
-		return;
+	if not targetNode or not auraEffect then
+		return false;
 	end
 
 	if not sourceNode then
 		local sSource = DB.getValue(auraEffect, "source_name", "");
 		sourceNode = DB.findNode(sSource);
 		if not sourceNode then
-			return;
+			return false;
 		end
 	end
 
 	local sLabelNodeEffect = DB.getValue(auraEffect, "label", "");
 	local nRange, auraType = string.match(sLabelNodeEffect, "(%d+) (%w+)");
 	if not nRange then
-		return;
+		return false;
 	end
 	if not auraType then
 		auraType = "all";
@@ -367,7 +376,7 @@ function addAuraEffect(auraType, effect, targetNode, sourceNode)
 	local sLabel = DB.getValue(effect, "label", "");
 	local applyLabel = string.match(sLabel, "AURA:.-;%s*(.*)$");
 	if not applyLabel then
-		return;
+		return false;
 	end
 	applyLabel = fromAuraString..applyLabel;
 	
@@ -393,7 +402,7 @@ function handleApplyEffectSilent(msgOOB)
 	local nodeCTEntry = DB.findNode(msgOOB.sTargetNode);
 	if not nodeCTEntry then
 		ChatManager.SystemMessage(Interface.getString("ct_error_effectapplyfail") .. " (" .. msgOOB.sTargetNode .. ")");
-		return;
+		return false;
 	end
 
 	-- Reconstitute the effect details
@@ -416,12 +425,12 @@ function handleExpireEffect(msgOOB)
 	local nodeEffect = DB.findNode(msgOOB.sEffectNode);
 	if not nodeEffect then
 		ChatManager.SystemMessage(Interface.getString("ct_error_effectdeletefail") .. " (" .. msgOOB.sEffectNode .. ")");
-		return;
+		return false;
 	end
 	local nodeActor = nodeEffect.getChild("...");
 	if not nodeActor then
 		ChatManager.SystemMessage(Interface.getString("ct_error_effectmissingactor") .. " (" .. msgOOB.sEffectNode .. ")");
-		return;
+		return false;
 	end
 
 	EffectManager.expireEffect(nodeActor, nodeEffect, tonumber(msgOOB.nExpireClause) or 0);
@@ -429,7 +438,7 @@ end
 
 function expireEffectSilent(nodeActor, nodeEffect, nExpireComp)
 	if not nodeEffect then
-		return;
+		return false;
 	end
 
 	local bGMOnly = EffectManager.isGMEffect(nodeActor, nodeEffect);
@@ -442,7 +451,7 @@ function expireEffectSilent(nodeActor, nodeEffect, nExpireComp)
 			table.remove(aEffectComps, nExpireComp);
 			DB.setValue(nodeEffect, "label", "string", rebuildParsedEffect(aEffectComps));
 			--EffectManager.message("Effect ['" .. sEffect .. "'] -> [SINGLE MOD USED]", nodeActor, bGMOnly);
-			return true;
+			return;
 		end
 	end
 
@@ -454,7 +463,7 @@ function notifyExpireSilent(varEffect, nMatch)
 	if type(varEffect) == "databasenode" then
 		varEffect = varEffect.getNodeName();
 	elseif type(varEffect) ~= "string" then
-		return;
+		return false;
 	end
 
 	local msgOOB = {};
@@ -469,12 +478,12 @@ local function handleExpireEffectSilent(msgOOB)
 	local nodeEffect = DB.findNode(msgOOB.sEffectNode);
 	if not nodeEffect then
 		ChatManager.SystemMessage(Interface.getString("ct_error_effectdeletefail") .. " (" .. msgOOB.sEffectNode .. ")");
-		return;
+		return false;
 	end
 	local nodeActor = nodeEffect.getChild("...");
 	if not nodeActor then
 		ChatManager.SystemMessage(Interface.getString("ct_error_effectmissingactor") .. " (" .. msgOOB.sEffectNode .. ")");
-		return;
+		return false;
 	end
 
 	expireEffectSilent(nodeActor, nodeEffect, tonumber(msgOOB.nExpireClause) or 0);
