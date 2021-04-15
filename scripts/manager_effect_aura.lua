@@ -145,7 +145,7 @@ local function checkFaction(targetActor, nodeEffect, sFactionCheck)
 	if sEffectSource ~= '' then 
 		sourceActor = ActorManager.resolveActor(DB.findNode(sEffectSource));
 		sourceFaction = ActorManager.getFaction(sourceActor);
-		Debug.chat(sourceActor)
+		--Debug.chat(sourceActor)
 	else
 		sourceFaction = targetFaction;
 	end
