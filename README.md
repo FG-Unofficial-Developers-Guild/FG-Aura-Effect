@@ -6,6 +6,8 @@ This extension has been tested with [FantasyGrounds Unity](https://www.fantasygr
 
 5E users should check out [GKEnialb](https://www.fantasygrounds.com/forums/member.php?70614-GKEnialb)'s [Token Height Indicator](https://www.fantasygrounds.com/forums/showthread.php?66566-5E-Token-Height-Indicator) which makes the auras height-aware.
 
+Not compatible with SilentRuin's [Polymorphism Extension](https://www.fantasygrounds.com/forums/showthread.php?61009).
+
 ## AURA Effect
 ```AURA: 10 friend; Aura of Protection; SAVE: 5```
 
