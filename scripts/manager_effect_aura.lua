@@ -18,7 +18,11 @@ local function onEffectChanged(node)
 		local nodeCT = node.getChild('....')
 		local tokenCT = CombatManager.getTokenFromCT(nodeCT);
 		if tokenCT then
-			updateAuras(tokenCT);
+			if DB.getValue(nodeEffect, "isactive", 0) ~= 1 then
+				checkDeletedAuraEffects(nodeEffect)
+			else
+				updateAuras(tokenCT);
+			end
 		end
 	end
 end
