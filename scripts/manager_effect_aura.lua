@@ -138,16 +138,19 @@ local function checkFaction(targetActor, nodeEffect, sFactionCheck)
 		return false;
 	end
 
-	local effectSource = DB.getValue(nodeEffect, "source_name");
-	if not effectSource then 
-		return false;
+	local targetFaction = ActorManager.getFaction(targetActor);
+
+	local sourceActor, sourceFaction
+	local sEffectSource = DB.getValue(nodeEffect, "source_name", '');
+	if sEffectSource ~= '' then 
+		sourceActor = ActorManager.resolveActor(DB.findNode(sEffectSource));
+		sourceFaction = ActorManager.getFaction(sourceActor);
+		Debug.chat(sourceActor)
+	else
+		sourceFaction = targetFaction;
 	end
 
-	local sourceNode = CombatManager.getCTFromNode(effectSource);
-	local sourceActor = ActorManager.resolveActor(sourceNode);
-	local sourceFaction = ActorManager.getFaction(sourceActor);
-
-	local targetFaction = ActorManager.getFaction(targetActor);
+	--Debug.chat(sEffectSource, sourceFaction, targetFaction)
 
 	local bReturn;
 	if sFactionCheck:match("friend") then
