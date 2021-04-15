@@ -8,7 +8,7 @@ This extension has been tested with [FantasyGrounds Unity](https://www.fantasygr
 
 Not currently compatible with SilentRuin's [Polymorphism Extension](https://www.fantasygrounds.com/forums/showthread.php?61009).
 
-## AURA Effect
+### AURA Effect
 ```AURA: 10 friend; Aura of Protection; SAVE: 5```
 
 This will add a 10 foot aura around the person who has this effect.
@@ -17,7 +17,7 @@ Allies within 10' will receive an effect "FROMAURA: Aura of Protection; SAVE: 5"
 
 The bearer of the AURA effect will also receive its benefits.
 
-## FACTION() conditional check
+### FACTION() conditional check
 To further limit bonuses/penalties/conditions applying to the bearer of the AURA effect, there is also an additional conditional type "FACTION()".
 ```AURA: 10 foe; Test; IF: FACTION(foe); ATK: -5```
 
