@@ -143,15 +143,20 @@ local function checkFaction(targetActor, nodeEffect, sFactionCheck)
 	end
 
 	local sourceNode = CombatManager.getCTFromNode(effectSource);
-	local sourceFaction = DB.getValue(sourceNode, "friendfoe", "");
-	local targetFaction = ActorManager.getFaction(rActor);
-	
-	local bReturn = true;
+	local sourceActor = ActorManager.resolveActor(sourceNode);
+	local sourceFaction = ActorManager.getFaction(sourceActor);
 
+	local targetFaction = ActorManager.getFaction(targetActor);
+
+	local bReturn;
 	if sFactionCheck:match("friend") then
 		bReturn = sourceFaction == targetFaction;
 	elseif sFactionCheck:match("foe") then
-		bReturn = sourceFaction ~= targetFaction;
+		if sourceFaction == "friend" then
+			bReturn = targetFaction == "foe";
+		elseif sourceFaction == "foe" then
+			bReturn = targetFaction == "friend";
+		end
 	elseif sFactionCheck:match("neutral") then
 		bReturn = targetFaction == "neutral";
 	elseif sFactionCheck:match("faction") then
