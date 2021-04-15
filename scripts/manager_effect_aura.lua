@@ -132,14 +132,14 @@ function checkAuraAlreadyEffecting(nodeSource, nodeTarget, effect)
 	end
 end
 
-local function checkFaction(rActor, nodeEffect, sFactionCheck)
-	if not nodeEffect then
-		return true;
+local function checkFaction(targetActor, nodeEffect, sFactionCheck)
+	if not targetActor or not sFactionCheck then
+		return;
 	end
 
 	local effectSource = DB.getValue(nodeEffect, "source_name");
 	if not effectSource then 
-		return false; 
+		return;
 	end
 
 	local sourceNode = CombatManager.getCTFromNode(effectSource);
@@ -157,7 +157,7 @@ local function checkFaction(rActor, nodeEffect, sFactionCheck)
 	elseif sFactionCheck:match("faction") then
 		bReturn = targetFaction == "faction";
 	end
-	
+
 	if sFactionCheck:match("^!") then
 		bReturn = not bReturn;
 	end
@@ -172,8 +172,7 @@ function customCheckConditional(rActor, nodeEffect, aConditions, rTarget, aIgnor
 		local sFactionCheck = sLower:match("^faction%s*%(([^)]+)%)$");
 		if sFactionCheck then
 			if not checkFaction(rActor, nodeEffect, sFactionCheck) then
-				bReturn = false;
-				break;
+				return;
 			end
 		end
 	end
@@ -229,7 +228,7 @@ end
 
 function getAurasForNode(nodeCT)
 	if not nodeCT then 
-		return nil; 
+		return; 
 	end
 	local auraEffects = {};
 	local nodeEffects = DB.getChildren(nodeCT, "effects");
@@ -425,7 +424,7 @@ end
 
 function expireEffectSilent(nodeActor, nodeEffect, nExpireComp)
 	if not nodeEffect then
-		return false;
+		return;
 	end
 
 	local bGMOnly = EffectManager.isGMEffect(nodeActor, nodeEffect);
