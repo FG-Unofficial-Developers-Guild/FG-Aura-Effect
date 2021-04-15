@@ -147,30 +147,23 @@ local function checkFaction(targetActor, nodeEffect, sFactionCheck)
 	elseif sEffectSource ~= "" then
 		sourceActor = ActorManager.resolveActor(DB.findNode(sEffectSource));
 		sourceFaction = ActorManager.getFaction(sourceActor);
-		--Debug.chat(sourceActor)
 	else
 		sourceFaction = targetFaction;
 	end
 
-	--Debug.chat(sEffectSource, sourceFaction, targetFaction)
-
 	local bReturn;
 	if sFactionCheck:match("friend") then
 		bReturn = sourceFaction == targetFaction;
-		--Debug.chat(targetActor.sName, "friend", bReturn)
 	elseif sFactionCheck:match("foe") then
 		if sourceFaction == "friend" then
 			bReturn = targetFaction == "foe";
 		elseif sourceFaction == "foe" then
 			bReturn = targetFaction == "friend";
 		end
-		--Debug.chat(targetActor.sName, "foe", bReturn)
 	elseif sFactionCheck:match("neutral") then
 		bReturn = targetFaction == "neutral";
-		--Debug.chat(targetActor.sName, "neutral", bReturn)
 	elseif sFactionCheck:match("faction") then
 		bReturn = targetFaction == "faction";
-		--Debug.chat(targetActor.sName, "faction", bReturn)
 	end
 
 	if sFactionCheck:match("^!") then
@@ -518,6 +511,7 @@ function onInit()
 	if Session.IsHost then
 		DB.addHandler(DB.getPath('combattracker.list.*.effects.*.label'), 'onUpdate', onEffectChanged)
 		DB.addHandler(DB.getPath('combattracker.list.*.effects.*.isactive'), 'onUpdate', onEffectChanged)
+		--DB.addHandler(DB.getPath('combattracker.list.*.effects.*.visible'), 'onUpdate', onEffectChanged)
 	end
 
 	onWindowOpened = Interface.onWindowOpened;
