@@ -217,7 +217,8 @@ function updateAuras(tokenMap)
 	--Debug.printstack();
 	--Debug.chat("updating Auras");
 	local nodeCT = CombatManager.getCTFromToken(tokenMap);
-	if not nodeCT or not nodeCT.isOwner() then
+	--if not nodeCT or not nodeCT.isOwner() then
+	if not nodeCT then
 		--Debug.chat("no nodeCT");
 		return false;
 	end
