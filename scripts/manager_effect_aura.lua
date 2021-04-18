@@ -27,18 +27,11 @@ local function onEffectChanged(node)
 	end
 end
 
-local updateAttributesFromToken = nil;
-local checkConditional = nil
-local onMove = nil;
-local onWindowOpened = nil;
-local onTokenAdd = nil;
-
-local auraTokens = {};
-
 local updateEffectsHelper = nil
 OOB_MSGTYPE_APPLYEFFSILENT = "applyeffsilent";
 OOB_MSGTYPE_EXPIREEFFSILENT = "expireeffsilent";
 
+local onTokenAdd = nil;
 function auraOnTokenAdd(tokenMap)
 	if onTokenAdd then
 		onTokenAdd(tokenMap);
@@ -51,6 +44,7 @@ function auraOnTokenAdd(tokenMap)
 	updateAuras(tokenMap);
 end
 
+local onWindowOpened = nil;
 function auraOnWindowOpened(window)
 	if onWindowOpened then
 		onWindowOpened(window);
@@ -174,6 +168,7 @@ local function checkFaction(targetActor, nodeEffect, sFactionCheck)
 	return bReturn;
 end
 
+local CheckConditional = nil;
 function customCheckConditional(rActor, nodeEffect, aConditions, rTarget, aIgnore)
 	local bReturn
 	if EffectManager4E then
@@ -196,7 +191,20 @@ function customCheckConditional(rActor, nodeEffect, aConditions, rTarget, aIgnor
 	return bReturn;
 end
 
+local onMove = nil;
+local function auraOnMove(tokenMap)
+	--Debug.chat("in auraOnMove");
+	if onMove then
+		onMove(tokenMap);
+	end
+	updateAuras(tokenMap);
+
+	--Debug.chat("finishing aura on move");
+end
+
+local updateAttributesFromToken = nil;
 function auraUpdateAttributesFromToken(tokenMap)
+	--Debug.chat("in auraUpdateAttributesFromToken");
 	if updateAttributesFromToken then
 		updateAttributesFromToken(tokenMap);
 	end
@@ -231,16 +239,6 @@ function updateAuras(tokenMap)
 		end
 	end
 	--checkAurasEffectingNodeForDelete(nodeCT);
-end
-
-function auraOnMove(tokenMap)
-	--Debug.chat("in aura on move");
-	if onMove then
-		onMove(tokenMap);
-	end
-	updateAuras(tokenMap);
-
-	--Debug.chat("finishing aura on move");
 end
 
 function getAurasForNode(nodeCT)
