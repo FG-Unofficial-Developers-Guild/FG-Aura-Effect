@@ -324,11 +324,11 @@ function checkSilentNotification(auraType)
 end
 
 function removeAuraEffect(auraType, effect)
-	-- if checkSilentNotification(auraType) == true then
-		-- notifyExpireSilent(effect, nil, false);
-	-- else
+	if checkSilentNotification(auraType) == true then
+		notifyExpireSilent(effect, nil, false);
+	else
 		EffectManager.notifyExpire(effect, nil, false);
-	-- end
+	end
 end
 
 local aEffectVarMap = {
@@ -390,11 +390,11 @@ function addAuraEffect(auraType, effect, targetNode, sourceNode)
 	rEffect.sName = applyLabel;
 	
 	-- CHECK IF SILENT IS ON
-	-- if checkSilentNotification(auraType) == true then
-		-- notifyApplySilent(rEffect, targetNode.getPath());
-	-- else
+	if checkSilentNotification(auraType) == true then
+		notifyApplySilent(rEffect, targetNode.getPath());
+	else
 		EffectManager.notifyApply(rEffect, targetNode.getPath());
-	-- end
+	end
 end
 
 function handleApplyEffectSilent(msgOOB)
@@ -522,5 +522,5 @@ function onInit()
 	OOBManager.registerOOBMsgHandler(OOB_MSGTYPE_APPLYEFFSILENT, handleApplyEffectSilent);
 	OOBManager.registerOOBMsgHandler(OOB_MSGTYPE_EXPIREEFFSILENT, handleExpireEffectSilent);
 	
-	-- OptionsManager.registerOption2("AURASILENT", false, "option_header_aura", "option_label_AURASILENT", "option_entry_cycler", { labels = "option_val_friend|option_val_foe|option_val_all", values="friend|foe|all", baselabel = "option_val_off", baseval="off", default="friend"});
+	OptionsManager.registerOption2("AURASILENT", false, "option_header_aura", "option_label_AURASILENT", "option_entry_cycler", { labels = "option_val_friend|option_val_foe|option_val_all", values="friend|foe|all", baselabel = "option_val_off", baseval="off", default="friend"});
 end
