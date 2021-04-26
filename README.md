@@ -47,4 +47,5 @@ Although the effect will be visible on all actors within 10', the penalty will o
 
 ### Option for disabling aura effect chat messages
 ![image](https://user-images.githubusercontent.com/1916835/116077909-0245c780-a664-11eb-8cb7-0b0e8ec855c9.png)
+
 "Silence Notifications for Aura Types" can be set to a faction to hide their aura apply/removal chat messages.
