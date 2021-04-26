@@ -4,18 +4,19 @@
 --
 
 local fromAuraString = "FROMAURA:"
+local auraString = "AURA:"
 
 ---	This function checks whether an effect should trigger recalculation.
 --	It does this by checking the effect text for a series of three letters followed by a colon (as used in bonuses like CON: 4).
 local function checkEffectRecursion(nodeEffect, sEffectComp)
-	return string.find(DB.getValue(nodeEffect, 'label', ''), sEffectComp) ~= nil
+	return string.find(DB.getValue(nodeEffect, "label", ""), sEffectComp) ~= nil
 end
 
 ---	This function is called when effect components are changed.
 local function onEffectChanged(node)
-	local nodeEffect = node.getChild('..')
-	if checkEffectRecursion(nodeEffect, 'AURA:') and not checkEffectRecursion(nodeEffect, fromAuraString) then
-		local nodeCT = node.getChild('....')
+	local nodeEffect = node.getChild("..")
+	if checkEffectRecursion(nodeEffect, auraString) and not checkEffectRecursion(nodeEffect, fromAuraString) then
+		local nodeCT = node.getChild("....")
 		local tokenCT = CombatManager.getTokenFromCT(nodeCT);
 		if tokenCT then
 			if DB.getValue(nodeEffect, "isactive", 0) ~= 1 then
@@ -76,6 +77,20 @@ local function getAurasEffectingNode(nodeCT)
 		end
 	end
 	return auraEffects;
+end
+
+local function checkSilentNotification(auraType)
+	local option = OptionsManager.getOption("AURASILENT"):lower();
+	auraType = auraType:lower():gsub("enemy", "foe");
+	return option == "all" or option == auraType;
+end
+
+local function removeAuraEffect(auraType, effect)
+	if checkSilentNotification(auraType) == true then
+		notifyExpireSilent(effect, nil, false);
+	else
+		EffectManager.notifyExpire(effect, nil, false);
+	end
 end
 
 local function checkAurasEffectingNodeForDelete(nodeCT)
@@ -250,84 +265,13 @@ function getAurasForNode(nodeCT)
 	for _, nodeEffect in pairs(nodeEffects) do
 		if DB.getValue(nodeEffect, "isactive", 0) == 1 then
 			local sLabelNodeEffect = DB.getValue(nodeEffect, "label", "");
-			if string.match(sLabelNodeEffect, "%s*AURA:") then
+			if string.match(sLabelNodeEffect, "%s*" .. auraString) then
 				--Debug.console(nodeEffect);
 				table.insert(auraEffects, nodeEffect);
 			end
 		end
 	end
 	return auraEffects;
-end
-
-function checkAuraApplicationAndAddOrRemove(targetNode, sourceNode, auraEffect)
-	if not targetNode or not auraEffect then
-		return false;
-	end
-
-	if not sourceNode then
-		local sSource = DB.getValue(auraEffect, "source_name", "");
-		sourceNode = DB.findNode(sSource);
-		if not sourceNode then
-			return false;
-		end
-	end
-
-	local sLabelNodeEffect = DB.getValue(auraEffect, "label", "");
-	local nRange, auraType = string.match(sLabelNodeEffect, "(%d+) (%w+)");
-	if not nRange then
-		return false;
-	end
-	if not auraType then
-		auraType = "all";
-	end
-	nRange = math.floor(nRange);
-	local sourceFaction = DB.getValue(sourceNode, "friendfoe", "");
-	local targetFaction = DB.getValue(targetNode, "friendfoe", "");
-	if (auraType == "friend" and sourceFaction == targetFaction) 
-	or ((auraType == "enemy" or auraType == "foe") and sourceFaction ~= targetFaction) 
-	or (auraType == "all") then
-		addOrRemoveAura(nRange, auraType, targetNode, sourceNode, auraEffect);
-	end
-end
-
-function addOrRemoveAura(nRange, auraType, targetNode, sourceNode, nodeEffect)
-	local existingAuraEffect = checkAuraAlreadyEffecting(sourceNode, targetNode, nodeEffect);
-	if checkRange(nRange, targetNode, sourceNode) then
-		if not existingAuraEffect then
-			addAuraEffect(auraType, nodeEffect, targetNode, sourceNode);
-		end
-	else
-		if existingAuraEffect then
-			removeAuraEffect(auraType, existingAuraEffect);
-		end
-	end
-end
-
-function checkRange(nRange, nodeSource, nodeTarget)
-	local sourceToken = CombatManager.getTokenFromCT(nodeSource);
-	local targetToken = CombatManager.getTokenFromCT(nodeTarget);
-	if not sourceToken or not targetToken then
-		return false;
-	end;
-	local nDistanceBetweenTokens = Token.getDistanceBetween(sourceToken, targetToken)
-
-	if nDistanceBetweenTokens and nRange then
-		return nDistanceBetweenTokens <= nRange;
-	end
-end
-
-function checkSilentNotification(auraType)
-	local option = OptionsManager.getOption("AURASILENT"):lower();
-	auraType = auraType:lower():gsub("enemy", "foe");
-	return option == "all" or option == auraType;
-end
-
-function removeAuraEffect(auraType, effect)
-	if checkSilentNotification(auraType) == true then
-		notifyExpireSilent(effect, nil, false);
-	else
-		EffectManager.notifyExpire(effect, nil, false);
-	end
 end
 
 local aEffectVarMap = {
@@ -371,9 +315,9 @@ local function notifyApplySilent(rEffect, vTargets)
 	end
 end
 
-function addAuraEffect(auraType, effect, targetNode, sourceNode)
+local function addAuraEffect(auraType, effect, targetNode, sourceNode)
 	local sLabel = DB.getValue(effect, "label", "");
-	local applyLabel = string.match(sLabel, "AURA:.-;%s*(.*)$");
+	local applyLabel = string.match(sLabel, auraString .. ".-;%s*(.*)$");
 	if not applyLabel then
 		return false;
 	end
@@ -396,7 +340,64 @@ function addAuraEffect(auraType, effect, targetNode, sourceNode)
 	end
 end
 
-function handleApplyEffectSilent(msgOOB)
+local function checkRange(nRange, nodeSource, nodeTarget)
+	local sourceToken = CombatManager.getTokenFromCT(nodeSource);
+	local targetToken = CombatManager.getTokenFromCT(nodeTarget);
+	if not sourceToken or not targetToken then
+		return false;
+	end;
+	local nDistanceBetweenTokens = Token.getDistanceBetween(sourceToken, targetToken)
+
+	if nDistanceBetweenTokens and nRange then
+		return nDistanceBetweenTokens <= nRange;
+	end
+end
+
+local function addOrRemoveAura(nRange, auraType, targetNode, sourceNode, nodeEffect)
+	local existingAuraEffect = checkAuraAlreadyEffecting(sourceNode, targetNode, nodeEffect);
+	if checkRange(nRange, targetNode, sourceNode) then
+		if not existingAuraEffect then
+			addAuraEffect(auraType, nodeEffect, targetNode, sourceNode);
+		end
+	else
+		if existingAuraEffect then
+			removeAuraEffect(auraType, existingAuraEffect);
+		end
+	end
+end
+
+function checkAuraApplicationAndAddOrRemove(targetNode, sourceNode, auraEffect)
+	if not targetNode or not auraEffect then
+		return false;
+	end
+
+	if not sourceNode then
+		local sSource = DB.getValue(auraEffect, "source_name", "");
+		sourceNode = DB.findNode(sSource);
+		if not sourceNode then
+			return false;
+		end
+	end
+
+	local sLabelNodeEffect = DB.getValue(auraEffect, "label", "");
+	local nRange, auraType = string.match(sLabelNodeEffect, "(%d+) (%w+)");
+	if not nRange then
+		return false;
+	end
+	if not auraType then
+		auraType = "all";
+	end
+	nRange = math.floor(tonumber(nRange));
+	local sourceFaction = DB.getValue(sourceNode, "friendfoe", "");
+	local targetFaction = DB.getValue(targetNode, "friendfoe", "");
+	if (auraType == "friend" and sourceFaction == targetFaction) 
+	or ((auraType == "enemy" or auraType == "foe") and sourceFaction ~= targetFaction) 
+	or (auraType == "all") then
+		addOrRemoveAura(nRange, auraType, targetNode, sourceNode, auraEffect);
+	end
+end
+
+local function handleApplyEffectSilent(msgOOB)
 	-- Get the target combat tracker node
 	local nodeCTEntry = DB.findNode(msgOOB.sTargetNode);
 	if not nodeCTEntry then
@@ -507,9 +508,9 @@ function onInit()
 
 	CombatManager.setCustomDeleteCombatantEffectHandler(checkDeletedAuraEffects);
 	if Session.IsHost then
-		DB.addHandler(DB.getPath('combattracker.list.*.effects.*.label'), 'onUpdate', onEffectChanged)
-		DB.addHandler(DB.getPath('combattracker.list.*.effects.*.isactive'), 'onUpdate', onEffectChanged)
-		--DB.addHandler(DB.getPath('combattracker.list.*.effects.*.visible'), 'onUpdate', onEffectChanged)
+		DB.addHandler(DB.getPath("combattracker.list.*.effects.*.label"), "onUpdate", onEffectChanged)
+		DB.addHandler(DB.getPath("combattracker.list.*.effects.*.isactive"), "onUpdate", onEffectChanged)
+		--DB.addHandler(DB.getPath("combattracker.list.*.effects.*.visible"), "onUpdate", onEffectChanged)
 	end
 
 	onWindowOpened = Interface.onWindowOpened;
