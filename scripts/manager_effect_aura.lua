@@ -27,7 +27,6 @@ local function onEffectChanged(node)
 	end
 end
 
-local updateEffectsHelper = nil
 OOB_MSGTYPE_APPLYEFFSILENT = "applyeffsilent";
 OOB_MSGTYPE_EXPIREEFFSILENT = "expireeffsilent";
 
