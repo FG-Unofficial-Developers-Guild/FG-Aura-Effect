@@ -3,7 +3,7 @@
 --
 --
 
-OOB_MSGTYPE_ONPLAYERMOVE = "expireeffsilent";
+OOB_MSGTYPE_ONPLAYERMOVE = "aurasonplayermove";
 OOB_MSGTYPE_APPLYEFFSILENT = "applyeffsilent";
 OOB_MSGTYPE_EXPIREEFFSILENT = "expireeffsilent";
 
@@ -44,8 +44,6 @@ function auraOnTokenAdd(tokenMap)
 	--Debug.chat(tokenMap)
 	if Session.IsHost then
 		updateAuras(tokenMap);
-	else
-		notifyPlayerMove(tokenMap);
 	end
 end
 
@@ -225,13 +223,29 @@ function customCheckConditional(rActor, nodeEffect, aConditions, rTarget, aIgnor
 	return bReturn;
 end
 
+local function notifyPlayerMove(tokenMap)
+	if not tokenMap then
+		return false;
+	end
+
+	local msgOOB = {};
+	msgOOB.type = OOB_MSGTYPE_ONPLAYERMOVE;
+	msgOOB.sCTNode = CombatManager.getCTFromToken(tokenMap).getNodeName()
+
+	Comm.deliverOOBMessage(msgOOB, "");
+end
+
 local onMove = nil;
 local function auraOnMove(tokenMap)
 	--Debug.chat("in auraOnMove");
 	if onMove then
 		onMove(tokenMap);
 	end
-	updateAuras(tokenMap);
+	if Session.IsHost then
+		updateAuras(tokenMap);
+	else
+		notifyPlayerMove(tokenMap);
+	end
 
 	--Debug.chat("finishing aura on move");
 end
@@ -291,17 +305,6 @@ function getAurasForNode(nodeCT)
 		end
 	end
 	return auraEffects;
-end
-
-local function notifyPlayerMove(tokenMap)
-	if not tokenMap then
-		return false;
-	end
-
-	msgOOB.type = OOB_MSGTYPE_ONPLAYERMOVE;
-	msgOOB.sCTNode = CombatManager.getCTFromToken(tokenMap).getNodeName()
-
-	Comm.deliverOOBMessage(msgOOB, "");
 end
 
 local aEffectVarMap = {
