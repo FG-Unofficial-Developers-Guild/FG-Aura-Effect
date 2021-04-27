@@ -3,6 +3,10 @@
 --
 --
 
+OOB_MSGTYPE_ONPLAYERMOVE = "expireeffsilent";
+OOB_MSGTYPE_APPLYEFFSILENT = "applyeffsilent";
+OOB_MSGTYPE_EXPIREEFFSILENT = "expireeffsilent";
+
 local fromAuraString = "FROMAURA:"
 local auraString = "AURA:"
 
@@ -27,9 +31,6 @@ local function onEffectChanged(node)
 		end
 	end
 end
-
-OOB_MSGTYPE_APPLYEFFSILENT = "applyeffsilent";
-OOB_MSGTYPE_EXPIREEFFSILENT = "expireeffsilent";
 
 local onTokenAdd = nil;
 function auraOnTokenAdd(tokenMap)
@@ -241,19 +242,18 @@ function updateAuras(tokenMap)
 	for _, node in pairs(ctEntries) do
 		if node ~= nodeCT then
 			-- Check if the moved token has auras to apply/remove
-			local nodeCTAuras = getAurasForNode(nodeCT);
-			for _, sourceAuraEffect in pairs(nodeCTAuras) do
+			local aAurasfromNodeCT = getAurasForNode(nodeCT);
+			for _, sourceAuraEffect in pairs(aAurasfromNodeCT) do
 				checkAuraApplicationAndAddOrRemove(node, nodeCT, sourceAuraEffect);
 			end
 
 			-- Check if the moved token is subject to other's auras
-			local nodeAuras = getAurasForNode(node);
-			for _, auraEffect in pairs(nodeAuras) do
+			local aAurasfromNode = getAurasForNode(node);
+			for _, auraEffect in pairs(aAurasfromNode) do
 				checkAuraApplicationAndAddOrRemove(nodeCT, node, auraEffect);
 			end
 		end
 	end
-	--checkAurasEffectingNodeForDelete(nodeCT);
 end
 
 function getAurasForNode(nodeCT)
@@ -272,6 +272,21 @@ function getAurasForNode(nodeCT)
 		end
 	end
 	return auraEffects;
+end
+
+local function notifyExpireSilent(varEffect, nMatch)
+	if type(varEffect) == "databasenode" then
+		varEffect = varEffect.getNodeName();
+	elseif type(varEffect) ~= "string" then
+		return false;
+	end
+
+	local msgOOB = {};
+	msgOOB.type = OOB_MSGTYPE_EXPIREEFFSILENT;
+	msgOOB.sEffectNode = varEffect;
+	msgOOB.nExpireClause = nMatch;
+
+	Comm.deliverOOBMessage(msgOOB, "");
 end
 
 local aEffectVarMap = {
@@ -457,21 +472,6 @@ function expireEffectSilent(nodeActor, nodeEffect, nExpireComp)
 
 	-- Process full expiration
 	nodeEffect.delete();
-end
-
-function notifyExpireSilent(varEffect, nMatch)
-	if type(varEffect) == "databasenode" then
-		varEffect = varEffect.getNodeName();
-	elseif type(varEffect) ~= "string" then
-		return false;
-	end
-
-	local msgOOB = {};
-	msgOOB.type = OOB_MSGTYPE_EXPIREEFFSILENT;
-	msgOOB.sEffectNode = varEffect;
-	msgOOB.nExpireClause = nMatch;
-
-	Comm.deliverOOBMessage(msgOOB, "");
 end
 
 local function handleExpireEffectSilent(msgOOB)
