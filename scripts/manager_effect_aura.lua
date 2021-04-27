@@ -44,6 +44,8 @@ function auraOnTokenAdd(tokenMap)
 	--Debug.chat(tokenMap)
 	if Session.IsHost then
 		updateAuras(tokenMap);
+	else
+		notifyPlayerMove(tokenMap);
 	end
 end
 
@@ -86,6 +88,21 @@ local function checkSilentNotification(auraType)
 	local option = OptionsManager.getOption("AURASILENT"):lower();
 	auraType = auraType:lower():gsub("enemy", "foe");
 	return option == "all" or option == auraType;
+end
+
+local function notifyExpireSilent(varEffect, nMatch)
+	if type(varEffect) == "databasenode" then
+		varEffect = varEffect.getNodeName();
+	elseif type(varEffect) ~= "string" then
+		return false;
+	end
+
+	local msgOOB = {};
+	msgOOB.type = OOB_MSGTYPE_EXPIREEFFSILENT;
+	msgOOB.sEffectNode = varEffect;
+	msgOOB.nExpireClause = nMatch;
+
+	Comm.deliverOOBMessage(msgOOB, "");
 end
 
 local function removeAuraEffect(auraType, effect)
@@ -276,17 +293,13 @@ function getAurasForNode(nodeCT)
 	return auraEffects;
 end
 
-local function notifyExpireSilent(varEffect, nMatch)
-	if type(varEffect) == "databasenode" then
-		varEffect = varEffect.getNodeName();
-	elseif type(varEffect) ~= "string" then
+local function notifyPlayerMove(tokenMap)
+	if not tokenMap then
 		return false;
 	end
 
-	local msgOOB = {};
-	msgOOB.type = OOB_MSGTYPE_EXPIREEFFSILENT;
-	msgOOB.sEffectNode = varEffect;
-	msgOOB.nExpireClause = nMatch;
+	msgOOB.type = OOB_MSGTYPE_ONPLAYERMOVE;
+	msgOOB.sCTNode = CombatManager.getCTFromToken(tokenMap).getNodeName()
 
 	Comm.deliverOOBMessage(msgOOB, "");
 end
@@ -414,6 +427,11 @@ function checkAuraApplicationAndAddOrRemove(targetNode, sourceNode, auraEffect)
 	end
 end
 
+local function handlePlayerMove(msgOOB)
+	local tokenCT = CombatManager.getTokenFromCT(DB.findNode(msgOOB.sCTNode));
+	updateAuras(tokenCT);
+end
+
 local function handleApplyEffectSilent(msgOOB)
 	-- Get the target combat tracker node
 	local nodeCTEntry = DB.findNode(msgOOB.sTargetNode);
@@ -521,6 +539,7 @@ function onInit()
 	onTokenAdd = ImageManager.onTokenAdd;
 	ImageManager.onTokenAdd = auraOnTokenAdd;
 
+	OOBManager.registerOOBMsgHandler(OOB_MSGTYPE_ONPLAYERMOVE, handlePlayerMove);
 	OOBManager.registerOOBMsgHandler(OOB_MSGTYPE_APPLYEFFSILENT, handleApplyEffectSilent);
 	OOBManager.registerOOBMsgHandler(OOB_MSGTYPE_EXPIREEFFSILENT, handleExpireEffectSilent);
 	
