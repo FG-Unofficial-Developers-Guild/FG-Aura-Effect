@@ -42,7 +42,9 @@ function auraOnTokenAdd(tokenMap)
 		return false;
 	end
 	--Debug.chat(tokenMap)
-	updateAuras(tokenMap);
+	if Session.IsHost then
+		updateAuras(tokenMap);
+	end
 end
 
 local onWindowOpened = nil;
