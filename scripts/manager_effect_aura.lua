@@ -32,28 +32,34 @@ local function onEffectChanged(node)
 	end
 end
 
+local function notifyPlayerMove(tokenMap)
+	local nodeCT = CombatManager.getCTFromToken(tokenMap)
+	if not nodeCT then
+		return;
+	end
+	
+
+	local msgOOB = {};
+	msgOOB.type = OOB_MSGTYPE_ONPLAYERMOVE;
+	msgOOB.sCTNode = nodeCT.getNodeName()
+
+	Comm.deliverOOBMessage(msgOOB, "");
+end
+
 local onTokenAdd = nil;
 function auraOnTokenAdd(tokenMap)
 	if onTokenAdd then
 		onTokenAdd(tokenMap);
 	end
 	--Debug.chat("updating from onTokenAdd");
-	if not Session.IsHost then
-		return false;
-	end
 	--Debug.chat(tokenMap)
-	if Session.IsHost then
-		updateAuras(tokenMap);
-	end
+	notifyPlayerMove(tokenMap);
 end
 
 local onWindowOpened = nil;
 function auraOnWindowOpened(window)
 	if onWindowOpened then
 		onWindowOpened(window);
-	end
-	if not Session.IsHost then
-		return false;
 	end
 	if window.getClass() == "imagewindow" then
 		local ctEntries = CombatManager.getSortedCombatantList();
@@ -62,7 +68,7 @@ function auraOnWindowOpened(window)
 			local ctrlImage, winImage = ImageManager.getImageControl(tokenCT);
 			--Debug.chat("ctrlImage = ",ctrlImage,"winImage =", winImage,"window =",window);
 			if tokenCT and winImage and winImage == window then
-				updateAuras(tokenCT);
+				notifyPlayerMove(tokenMap);
 			end
 		end
 	end
@@ -223,29 +229,13 @@ function customCheckConditional(rActor, nodeEffect, aConditions, rTarget, aIgnor
 	return bReturn;
 end
 
-local function notifyPlayerMove(tokenMap)
-	if not tokenMap then
-		return false;
-	end
-
-	local msgOOB = {};
-	msgOOB.type = OOB_MSGTYPE_ONPLAYERMOVE;
-	msgOOB.sCTNode = CombatManager.getCTFromToken(tokenMap).getNodeName()
-
-	Comm.deliverOOBMessage(msgOOB, "");
-end
-
 local onMove = nil;
 local function auraOnMove(tokenMap)
 	--Debug.chat("in auraOnMove");
 	if onMove then
 		onMove(tokenMap);
 	end
-	if Session.IsHost then
-		updateAuras(tokenMap);
-	else
-		notifyPlayerMove(tokenMap);
-	end
+	notifyPlayerMove(tokenMap);
 
 	--Debug.chat("finishing aura on move");
 end
@@ -382,6 +372,7 @@ local function checkRange(nRange, nodeSource, nodeTarget)
 	local nDistanceBetweenTokens = Token.getDistanceBetween(sourceToken, targetToken)
 
 	if nDistanceBetweenTokens and nRange then
+		Debug.chat(nDistanceBetweenTokens, nRange)
 		return nDistanceBetweenTokens <= nRange;
 	end
 end
