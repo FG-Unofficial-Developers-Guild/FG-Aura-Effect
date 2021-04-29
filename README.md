@@ -35,6 +35,7 @@ The following faction types (used for IF: FACTION(friend)) are allowed:
 * foe
 * neutral
 * faction
+* notself
 
 You can also use the "!" operator in a FACTION conditional to reverse the results:
 ```AURA: 10 all; Test; IF: FACTION(!foe); ATK: -5```
