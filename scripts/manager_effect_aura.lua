@@ -377,33 +377,6 @@ local function addAuraEffect(auraType, effect, targetNode, sourceNode)
 	end
 end
 
-local function checkRange(nRange, nodeSource, nodeTarget)
-	local sourceToken = CombatManager.getTokenFromCT(nodeSource);
-	local targetToken = CombatManager.getTokenFromCT(nodeTarget);
-	if not sourceToken or not targetToken then
-		return false;
-	end;
-	local nDistanceBetweenTokens = Token.getDistanceBetween(sourceToken, targetToken)
-
-	if nDistanceBetweenTokens and nRange then
-		-- Debug.chat(nDistanceBetweenTokens, nRange)
-		return nDistanceBetweenTokens <= nRange;
-	end
-end
-
-local function addOrRemoveAura(nRange, auraType, targetNode, sourceNode, nodeEffect)
-	local existingAuraEffect = checkAuraAlreadyEffecting(sourceNode, targetNode, nodeEffect);
-	if checkRange(nRange, targetNode, sourceNode) then
-		if not existingAuraEffect then
-			addAuraEffect(auraType, nodeEffect, targetNode, sourceNode);
-		end
-	else
-		if existingAuraEffect then
-			removeAuraEffect(auraType, existingAuraEffect);
-		end
-	end
-end
-
 function checkAuraApplicationAndAddOrRemove(sourceNode, targetNode, auraEffect, nodeInfo)
 	if not targetNode or not auraEffect then
 		return nil
