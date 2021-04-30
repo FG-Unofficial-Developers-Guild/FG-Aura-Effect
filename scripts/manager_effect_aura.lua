@@ -251,29 +251,43 @@ function auraUpdateAttributesFromToken(tokenMap)
 	tokenMap.onMove = auraOnMove;
 end
 
+local function getDistanceBetweenCT(ctNodeSource, ctNodeTarget)
+	local sourceToken = CombatManager.getTokenFromCT(ctNodeSource)
+	local targetToken = CombatManager.getTokenFromCT(ctNodeTarget)
+	if sourceToken and targetToken then
+		return Token.getDistanceBetween(sourceToken, targetToken)
+	end
+end
+
+local function getRelationship(sourceNode, targetNode)
+	if DB.getValue(sourceNode, "friendfoe", "") == DB.getValue(targetNode, "friendfoe", "") then
+		return "friend"
+	else
+		return "foe"
+	end
+end
+
 function updateAuras(tokenMap)
 	--Debug.printstack();
 	--Debug.chat("updating Auras");
-	local nodeCT = CombatManager.getCTFromToken(tokenMap);
+	local sourceNode = CombatManager.getCTFromToken(tokenMap)
 	--if not nodeCT or not nodeCT.isOwner() then
-	if not nodeCT then
+	if not sourceNode then
 		--Debug.chat("no nodeCT");
-		return false;
+		return false
 	end
 
 	local ctEntries = CombatManager.getSortedCombatantList();
-	for _, node in pairs(ctEntries) do
-		if node ~= nodeCT then
+	for _, otherNode in pairs(ctEntries) do
+		if otherNode ~= sourceNode then
+			local nodeInfo = {}
 			-- Check if the moved token has auras to apply/remove
-			local aAurasfromNodeCT = getAurasForNode(nodeCT);
-			for _, sourceAuraEffect in pairs(aAurasfromNodeCT) do
-				checkAuraApplicationAndAddOrRemove(node, nodeCT, sourceAuraEffect);
+			for _, auraEffect in pairs(getAurasForNode(sourceNode)) do
+				checkAuraApplicationAndAddOrRemove(sourceNode, otherNode, auraEffect, nodeInfo)
 			end
-
 			-- Check if the moved token is subject to other's auras
-			local aAurasfromNode = getAurasForNode(node);
-			for _, auraEffect in pairs(aAurasfromNode) do
-				checkAuraApplicationAndAddOrRemove(nodeCT, node, auraEffect);
+			for _, auraEffect in pairs(getAurasForNode(otherNode)) do
+				checkAuraApplicationAndAddOrRemove(otherNode, sourceNode, auraEffect, nodeInfo)
 			end
 		end
 	end
@@ -372,7 +386,7 @@ local function checkRange(nRange, nodeSource, nodeTarget)
 	local nDistanceBetweenTokens = Token.getDistanceBetween(sourceToken, targetToken)
 
 	if nDistanceBetweenTokens and nRange then
-		Debug.chat(nDistanceBetweenTokens, nRange)
+		-- Debug.chat(nDistanceBetweenTokens, nRange)
 		return nDistanceBetweenTokens <= nRange;
 	end
 end
@@ -390,34 +404,52 @@ local function addOrRemoveAura(nRange, auraType, targetNode, sourceNode, nodeEff
 	end
 end
 
-function checkAuraApplicationAndAddOrRemove(targetNode, sourceNode, auraEffect)
+function checkAuraApplicationAndAddOrRemove(sourceNode, targetNode, auraEffect, nodeInfo)
 	if not targetNode or not auraEffect then
-		return false;
+		return nil
 	end
 
 	if not sourceNode then
-		local sSource = DB.getValue(auraEffect, "source_name", "");
-		sourceNode = DB.findNode(sSource);
+		local sSource = DB.getValue(auraEffect, "source_name", "")
+		sourceNode = DB.findNode(sSource)
 		if not sourceNode then
-			return false;
+			return nil
 		end
 	end
 
-	local sLabelNodeEffect = DB.getValue(auraEffect, "label", "");
-	local nRange, auraType = string.match(sLabelNodeEffect, "(%d+) (%w+)");
-	if not nRange then
-		return false;
+	local sLabelNodeEffect = DB.getValue(auraEffect, "label", "")
+	local nRange, auraType = string.match(sLabelNodeEffect, "(%d+) (%w+)")
+	if nRange then
+		nRange = math.floor(tonumber(nRange))
+	else
+		return nil
 	end
 	if not auraType then
-		auraType = "all";
+		auraType = "all"
+	elseif auraType == "enemy" then
+		auraType = "foe"
 	end
-	nRange = math.floor(tonumber(nRange));
-	local sourceFaction = DB.getValue(sourceNode, "friendfoe", "");
-	local targetFaction = DB.getValue(targetNode, "friendfoe", "");
-	if (auraType == "friend" and sourceFaction == targetFaction) 
-	or ((auraType == "enemy" or auraType == "foe") and sourceFaction ~= targetFaction) 
-	or (auraType == "all") then
-		addOrRemoveAura(nRange, auraType, targetNode, sourceNode, auraEffect);
+
+	if not nodeInfo.relationship then
+		nodeInfo.relationship = getRelationship(sourceNode, targetNode)
+	end
+	-- Debug.chat("relationship", nodeInfo.relationship)
+	if auraType == nodeInfo.relationship or auraType == "all" then
+		if not nodeInfo.distanceBetween then
+			nodeInfo.distanceBetween = getDistanceBetweenCT(sourceNode, targetNode)
+		end
+		-- Debug.chat("distanceBetween", nodeInfo.distanceBetween, "nRange", nRange)
+		if nodeInfo.distanceBetween and nodeInfo.distanceBetween <= nRange then
+			local existingAuraEffect = checkAuraAlreadyEffecting(sourceNode, targetNode, auraEffect);
+			if not existingAuraEffect then
+				addAuraEffect(auraType, auraEffect, targetNode, sourceNode)
+			end
+		else
+			local existingAuraEffect = checkAuraAlreadyEffecting(sourceNode, targetNode, auraEffect);
+			if existingAuraEffect then
+				removeAuraEffect(auraType, existingAuraEffect)
+			end
+		end
 	end
 end
 
