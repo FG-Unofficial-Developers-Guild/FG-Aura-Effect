@@ -379,14 +379,14 @@ end
 
 function checkAuraApplicationAndAddOrRemove(sourceNode, targetNode, auraEffect, nodeInfo)
 	if not targetNode or not auraEffect then
-		return nil
+		return false
 	end
 
 	if not sourceNode then
 		local sSource = DB.getValue(auraEffect, "source_name", "")
 		sourceNode = DB.findNode(sSource)
 		if not sourceNode then
-			return nil
+			return false
 		end
 	end
 
@@ -395,7 +395,7 @@ function checkAuraApplicationAndAddOrRemove(sourceNode, targetNode, auraEffect, 
 	if nRange then
 		nRange = math.floor(tonumber(nRange))
 	else
-		return nil
+		return false
 	end
 	if not auraType then
 		auraType = "all"
