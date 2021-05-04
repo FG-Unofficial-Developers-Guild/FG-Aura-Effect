@@ -20,7 +20,7 @@
 		</ruleset>
 	</properties>
 	
-	<announcement text="Aura Effects - Extension v0.10\r--by Kent McCullough 2020 updated by bmos" font="emotefont" />
+	<announcement text="Aura Effects - Extension v0.10\r--by Kent McCullough 2020 updated by SoxMax and bmos" font="emotefont" />
 
 	<base>
 		<string name="option_header_aura">Auras (GM)</string>
