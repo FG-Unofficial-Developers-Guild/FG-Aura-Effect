@@ -236,8 +236,16 @@ local function auraOnMove(tokenMap)
 		onMove(tokenMap);
 	end
 	notifyPlayerMove(tokenMap);
-
 	--Debug.chat("finishing aura on move");
+end
+
+local function auraOnMove4e(tokenMap)
+	--Debug.chat("in auraOnMove4e")
+	if onMove then
+		onMove(tokenMap)
+	end
+	updateAuras(tokenMap)
+	--Debug.chat("finishing aura on move")
 end
 
 local updateAttributesFromToken = nil;
@@ -247,8 +255,12 @@ function auraUpdateAttributesFromToken(tokenMap)
 		updateAttributesFromToken(tokenMap);
 	end
 
-	onMove = tokenMap.onMove;
-	tokenMap.onMove = auraOnMove;
+	onMove = tokenMap.onMove
+	if EffectManager4E then
+		tokenMap.onMove = auraOnMove4e
+	else
+		tokenMap.onMove = auraOnMove
+	end
 end
 
 local function getDistanceBetweenCT(ctNodeSource, ctNodeTarget)
@@ -269,7 +281,7 @@ end
 
 function updateAuras(tokenMap)
 	--Debug.printstack();
-	--Debug.chat("updating Auras");
+	-- Debug.chat("updating Auras");
 	local sourceNode = CombatManager.getCTFromToken(tokenMap)
 	--if not nodeCT or not nodeCT.isOwner() then
 	if not sourceNode then
@@ -378,6 +390,7 @@ local function addAuraEffect(auraType, effect, targetNode, sourceNode)
 end
 
 function checkAuraApplicationAndAddOrRemove(sourceNode, targetNode, auraEffect, nodeInfo)
+	-- Debug.chat("Checking aura", auraEffect)
 	if not targetNode or not auraEffect then
 		return false
 	end
@@ -411,14 +424,13 @@ function checkAuraApplicationAndAddOrRemove(sourceNode, targetNode, auraEffect, 
 		if not nodeInfo.distanceBetween then
 			nodeInfo.distanceBetween = getDistanceBetweenCT(sourceNode, targetNode)
 		end
-		-- Debug.chat("distanceBetween", nodeInfo.distanceBetween, "nRange", nRange)
+		local existingAuraEffect = checkAuraAlreadyEffecting(sourceNode, targetNode, auraEffect)
+		-- Debug.chat("distanceBetween", nodeInfo.distanceBetween, "nRange", nRange, "existingAuraEffect", existingAuraEffect)
 		if nodeInfo.distanceBetween and nodeInfo.distanceBetween <= nRange then
-			local existingAuraEffect = checkAuraAlreadyEffecting(sourceNode, targetNode, auraEffect);
 			if not existingAuraEffect then
 				addAuraEffect(auraType, auraEffect, targetNode, sourceNode)
 			end
 		else
-			local existingAuraEffect = checkAuraAlreadyEffecting(sourceNode, targetNode, auraEffect);
 			if existingAuraEffect then
 				removeAuraEffect(auraType, existingAuraEffect)
 			end
