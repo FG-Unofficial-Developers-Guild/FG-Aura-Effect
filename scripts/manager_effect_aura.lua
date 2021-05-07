@@ -455,21 +455,6 @@ local function handleApplyEffectSilent(msgOOB)
 	EffectManager.addEffect(msgOOB.user, msgOOB.identity, nodeCTEntry, rEffect, false);
 end
 
-function handleExpireEffect(msgOOB)
-	local nodeEffect = DB.findNode(msgOOB.sEffectNode);
-	if not nodeEffect then
-		ChatManager.SystemMessage(Interface.getString("ct_error_effectdeletefail") .. " (" .. msgOOB.sEffectNode .. ")");
-		return false;
-	end
-	local nodeActor = nodeEffect.getChild("...");
-	if not nodeActor then
-		ChatManager.SystemMessage(Interface.getString("ct_error_effectmissingactor") .. " (" .. msgOOB.sEffectNode .. ")");
-		return false;
-	end
-
-	EffectManager.expireEffect(nodeActor, nodeEffect, tonumber(msgOOB.nExpireClause) or 0);
-end
-
 function expireEffectSilent(nodeActor, nodeEffect, nExpireComp)
 	if not nodeEffect then
 		return false;
