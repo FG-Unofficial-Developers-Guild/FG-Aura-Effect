@@ -235,17 +235,9 @@ local function auraOnMove(tokenMap)
 	if onMove then
 		onMove(tokenMap);
 	end
-	notifyPlayerMove(tokenMap);
-	--Debug.chat("finishing aura on move");
-end
-
-local function auraOnMove4e(tokenMap)
-	--Debug.chat("in auraOnMove4e")
-	if onMove then
-		onMove(tokenMap)
-	end
+	-- notifyPlayerMove(tokenMap);
 	updateAuras(tokenMap)
-	--Debug.chat("finishing aura on move")
+	--Debug.chat("finishing aura on move");
 end
 
 local updateAttributesFromToken = nil;
@@ -256,11 +248,7 @@ function auraUpdateAttributesFromToken(tokenMap)
 	end
 
 	onMove = tokenMap.onMove
-	if EffectManager4E then
-		tokenMap.onMove = auraOnMove4e
-	else
-		tokenMap.onMove = auraOnMove
-	end
+	tokenMap.onMove = auraOnMove
 end
 
 local function getDistanceBetweenCT(ctNodeSource, ctNodeTarget)
@@ -508,7 +496,7 @@ end
 local function handleExpireEffectSilent(msgOOB)
 	local nodeEffect = DB.findNode(msgOOB.sEffectNode);
 	if not nodeEffect then
-		ChatManager.SystemMessage(Interface.getString("ct_error_effectdeletefail") .. " (" .. msgOOB.sEffectNode .. ")");
+		-- ChatManager.SystemMessage(Interface.getString("ct_error_effectdeletefail") .. " (" .. msgOOB.sEffectNode .. ")");
 		return false;
 	end
 	local nodeActor = nodeEffect.getChild("...");
