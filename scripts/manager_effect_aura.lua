@@ -235,8 +235,13 @@ local function auraOnMove(tokenMap)
 	if onMove then
 		onMove(tokenMap);
 	end
-	-- notifyPlayerMove(tokenMap);
-	updateAuras(tokenMap)
+	local imageControl = ImageManager.getImageControl(tokenMap)
+	-- Debug.chat(imageControl, imageControl.getTokenLockState())
+	if imageControl and imageControl.getTokenLockState() then
+		notifyPlayerMove(tokenMap)
+	else
+		updateAuras(tokenMap)
+	end
 	--Debug.chat("finishing aura on move");
 end
 
