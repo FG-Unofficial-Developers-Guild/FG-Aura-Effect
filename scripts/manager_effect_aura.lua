@@ -242,7 +242,7 @@ local function auraOnMove(tokenMap)
 	else
 		updateAuras(tokenMap)
 	end
-	--Debug.chat("finishing aura on move");
+	-- Debug.chat("finishing aura on move");
 end
 
 local updateAttributesFromToken = nil;
@@ -514,8 +514,11 @@ local function handleExpireEffectSilent(msgOOB)
 end
 
 function onInit()
-	updateAttributesFromToken = TokenManager.updateAttributesFromToken;
-	TokenManager.updateAttributesFromToken = auraUpdateAttributesFromToken;
+
+	onMove = Token.onMove
+	Token.onMove = auraOnMove
+	-- updateAttributesFromToken = TokenManager.updateAttributesFromToken;
+	-- TokenManager.updateAttributesFromToken = auraUpdateAttributesFromToken;
 
 	local DetectedEffectManager
 	if EffectManager35E then
