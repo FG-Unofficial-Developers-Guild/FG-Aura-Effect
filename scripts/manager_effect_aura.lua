@@ -235,9 +235,14 @@ local function auraOnMove(tokenMap)
 	if onMove then
 		onMove(tokenMap);
 	end
-	notifyPlayerMove(tokenMap);
-
-	--Debug.chat("finishing aura on move");
+	local imageControl = ImageManager.getImageControl(tokenMap)
+	-- Debug.chat(imageControl, imageControl.getTokenLockState())
+	if imageControl and imageControl.getTokenLockState() then
+		notifyPlayerMove(tokenMap)
+	else
+		updateAuras(tokenMap)
+	end
+	-- Debug.chat("finishing aura on move");
 end
 
 local updateAttributesFromToken = nil;
@@ -247,8 +252,8 @@ function auraUpdateAttributesFromToken(tokenMap)
 		updateAttributesFromToken(tokenMap);
 	end
 
-	onMove = tokenMap.onMove;
-	tokenMap.onMove = auraOnMove;
+	onMove = tokenMap.onMove
+	tokenMap.onMove = auraOnMove
 end
 
 local function getDistanceBetweenCT(ctNodeSource, ctNodeTarget)
@@ -269,7 +274,7 @@ end
 
 function updateAuras(tokenMap)
 	--Debug.printstack();
-	--Debug.chat("updating Auras");
+	-- Debug.chat("updating Auras");
 	local sourceNode = CombatManager.getCTFromToken(tokenMap)
 	--if not nodeCT or not nodeCT.isOwner() then
 	if not sourceNode then
@@ -378,6 +383,7 @@ local function addAuraEffect(auraType, effect, targetNode, sourceNode)
 end
 
 function checkAuraApplicationAndAddOrRemove(sourceNode, targetNode, auraEffect, nodeInfo)
+	-- Debug.chat("Checking aura", auraEffect)
 	if not targetNode or not auraEffect then
 		return false
 	end
@@ -411,14 +417,13 @@ function checkAuraApplicationAndAddOrRemove(sourceNode, targetNode, auraEffect, 
 		if not nodeInfo.distanceBetween then
 			nodeInfo.distanceBetween = getDistanceBetweenCT(sourceNode, targetNode)
 		end
-		-- Debug.chat("distanceBetween", nodeInfo.distanceBetween, "nRange", nRange)
+		local existingAuraEffect = checkAuraAlreadyEffecting(sourceNode, targetNode, auraEffect)
+		-- Debug.chat("distanceBetween", nodeInfo.distanceBetween, "nRange", nRange, "existingAuraEffect", existingAuraEffect)
 		if nodeInfo.distanceBetween and nodeInfo.distanceBetween <= nRange then
-			local existingAuraEffect = checkAuraAlreadyEffecting(sourceNode, targetNode, auraEffect);
 			if not existingAuraEffect then
 				addAuraEffect(auraType, auraEffect, targetNode, sourceNode)
 			end
 		else
-			local existingAuraEffect = checkAuraAlreadyEffecting(sourceNode, targetNode, auraEffect);
 			if existingAuraEffect then
 				removeAuraEffect(auraType, existingAuraEffect)
 			end
@@ -481,7 +486,7 @@ end
 local function handleExpireEffectSilent(msgOOB)
 	local nodeEffect = DB.findNode(msgOOB.sEffectNode);
 	if not nodeEffect then
-		ChatManager.SystemMessage(Interface.getString("ct_error_effectdeletefail") .. " (" .. msgOOB.sEffectNode .. ")");
+		-- ChatManager.SystemMessage(Interface.getString("ct_error_effectdeletefail") .. " (" .. msgOOB.sEffectNode .. ")");
 		return false;
 	end
 	local nodeActor = nodeEffect.getChild("...");
@@ -494,8 +499,11 @@ local function handleExpireEffectSilent(msgOOB)
 end
 
 function onInit()
-	updateAttributesFromToken = TokenManager.updateAttributesFromToken;
-	TokenManager.updateAttributesFromToken = auraUpdateAttributesFromToken;
+
+	onMove = Token.onMove
+	Token.onMove = auraOnMove
+	-- updateAttributesFromToken = TokenManager.updateAttributesFromToken;
+	-- TokenManager.updateAttributesFromToken = auraUpdateAttributesFromToken;
 
 	local DetectedEffectManager
 	if EffectManager35E then
