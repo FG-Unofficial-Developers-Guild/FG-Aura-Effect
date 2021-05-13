@@ -235,25 +235,8 @@ local function auraOnMove(tokenMap)
 	if onMove then
 		onMove(tokenMap);
 	end
-	local imageControl = ImageManager.getImageControl(tokenMap)
-	-- Debug.chat(imageControl, imageControl.getTokenLockState())
-	if imageControl and imageControl.getTokenLockState() then
-		notifyPlayerMove(tokenMap)
-	else
-		updateAuras(tokenMap)
-	end
+	notifyPlayerMove(tokenMap)
 	-- Debug.chat("finishing aura on move");
-end
-
-local updateAttributesFromToken = nil;
-function auraUpdateAttributesFromToken(tokenMap)
-	--Debug.chat("in auraUpdateAttributesFromToken");
-	if updateAttributesFromToken then
-		updateAttributesFromToken(tokenMap);
-	end
-
-	onMove = tokenMap.onMove
-	tokenMap.onMove = auraOnMove
 end
 
 local function getDistanceBetweenCT(ctNodeSource, ctNodeTarget)
@@ -502,8 +485,6 @@ function onInit()
 
 	onMove = Token.onMove
 	Token.onMove = auraOnMove
-	-- updateAttributesFromToken = TokenManager.updateAttributesFromToken;
-	-- TokenManager.updateAttributesFromToken = auraUpdateAttributesFromToken;
 
 	local DetectedEffectManager
 	if EffectManager35E then
