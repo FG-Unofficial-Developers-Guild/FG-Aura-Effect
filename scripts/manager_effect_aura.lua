@@ -69,7 +69,7 @@ function auraOnWindowOpened(window)
 			local tokenCT = CombatManager.getTokenFromCT(nodeCT);
 			local ctrlImage, winImage = ImageManager.getImageControl(tokenCT);
 			if tokenCT and winImage and winImage == window then
-				notifyTokenMove(tokenMap);
+				notifyTokenMove(tokenCT);
 			end
 		end
 	end
