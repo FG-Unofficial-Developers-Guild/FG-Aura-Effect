@@ -49,7 +49,6 @@ local function notifyTokenMove(tokenMap)
 	if not nodeCT then
 		return;
 	end
-	
 
 	local msgOOB = {};
 	msgOOB.type = OOB_MSGTYPE_AURATOKENMOVE;
@@ -66,10 +65,10 @@ function auraOnWindowOpened(window)
 	if window.getClass() == "imagewindow" then
 		local ctEntries = CombatManager.getSortedCombatantList();
 		for _, nodeCT in pairs(ctEntries) do
-			local tokenCT = CombatManager.getTokenFromCT(nodeCT);
-			local ctrlImage, winImage = ImageManager.getImageControl(tokenCT);
-			if tokenCT and winImage and winImage == window then
-				notifyTokenMove(tokenCT);
+			local tokenMap = CombatManager.getTokenFromCT(nodeCT);
+			local ctrlImage, winImage = ImageManager.getImageControl(tokenMap);
+			if tokenMap and winImage and winImage == window then
+				notifyTokenMove(tokenMap);
 			end
 		end
 	end
