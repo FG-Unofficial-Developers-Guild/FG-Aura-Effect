@@ -3,9 +3,9 @@
 --
 --
 
-OOB_MSGTYPE_ONPLAYERMOVE = "aurasonplayermove";
-OOB_MSGTYPE_APPLYEFFSILENT = "applyeffsilent";
-OOB_MSGTYPE_EXPIREEFFSILENT = "expireeffsilent";
+OOB_MSGTYPE_AURATOKENMOVE = "aurasontokenmove";
+OOB_MSGTYPE_AURAAPPLYSILENT = "applyeffsilent";
+OOB_MSGTYPE_AURAEXPIRESILENT = "expireeffsilent";
 
 local fromAuraString = "FROMAURA:"
 local auraString = "AURA:"
@@ -44,7 +44,7 @@ local function onEffectChanged(node)
 end
 
 ---	This function requests aura processing to be performed on the host FG instance.
-local function notifyPlayerMove(tokenMap)
+local function notifyTokenMove(tokenMap)
 	local nodeCT = CombatManager.getCTFromToken(tokenMap)
 	if not nodeCT then
 		return;
@@ -52,7 +52,7 @@ local function notifyPlayerMove(tokenMap)
 	
 
 	local msgOOB = {};
-	msgOOB.type = OOB_MSGTYPE_ONPLAYERMOVE;
+	msgOOB.type = OOB_MSGTYPE_AURATOKENMOVE;
 	msgOOB.sCTNode = nodeCT.getNodeName()
 
 	Comm.deliverOOBMessage(msgOOB, "");
@@ -69,7 +69,7 @@ function auraOnWindowOpened(window)
 			local tokenCT = CombatManager.getTokenFromCT(nodeCT);
 			local ctrlImage, winImage = ImageManager.getImageControl(tokenCT);
 			if tokenCT and winImage and winImage == window then
-				notifyPlayerMove(tokenMap);
+				notifyTokenMove(tokenMap);
 			end
 		end
 	end
@@ -103,7 +103,7 @@ local function notifyExpireSilent(varEffect, nMatch)
 	end
 
 	local msgOOB = {};
-	msgOOB.type = OOB_MSGTYPE_EXPIREEFFSILENT;
+	msgOOB.type = OOB_MSGTYPE_AURAEXPIRESILENT;
 	msgOOB.sEffectNode = varEffect;
 	msgOOB.nExpireClause = nMatch;
 
@@ -234,7 +234,7 @@ local function auraOnMove(tokenMap)
 	if onMove then
 		onMove(tokenMap);
 	end
-	notifyPlayerMove(tokenMap)
+	notifyTokenMove(tokenMap)
 end
 
 local function getDistanceBetweenCT(ctNodeSource, ctNodeTarget)
@@ -295,7 +295,7 @@ end
 local function notifyApplySilent(rEffect, vTargets)
 	-- Build OOB message to pass effect to host
 	local msgOOB = {};
-	msgOOB.type = OOB_MSGTYPE_APPLYEFFSILENT;
+	msgOOB.type = OOB_MSGTYPE_AURAAPPLYSILENT;
 	for k,v in pairs(rEffect) do
 		if aEffectVarMap[k] then
 			if aEffectVarMap[k].sDBType == "number" then
@@ -489,9 +489,9 @@ function onInit()
 	onMove = Token.onMove
 	Token.onMove = auraOnMove
 
-	OOBManager.registerOOBMsgHandler(OOB_MSGTYPE_ONPLAYERMOVE, handleTokenMovement);
-	OOBManager.registerOOBMsgHandler(OOB_MSGTYPE_APPLYEFFSILENT, handleApplyEffectSilent);
-	OOBManager.registerOOBMsgHandler(OOB_MSGTYPE_EXPIREEFFSILENT, handleExpireEffectSilent);
+	OOBManager.registerOOBMsgHandler(OOB_MSGTYPE_AURATOKENMOVE, handleTokenMovement);
+	OOBManager.registerOOBMsgHandler(OOB_MSGTYPE_AURAAPPLYSILENT, handleApplyEffectSilent);
+	OOBManager.registerOOBMsgHandler(OOB_MSGTYPE_AURAEXPIRESILENT, handleExpireEffectSilent);
 	
 	OptionsManager.registerOption2("AURASILENT", false, "option_header_aura", "option_label_AURASILENT", "option_entry_cycler", { labels = "option_val_friend|option_val_foe|option_val_all", values="friend|foe|all", baselabel = "option_val_off", baseval="off", default="friend"});
 end
