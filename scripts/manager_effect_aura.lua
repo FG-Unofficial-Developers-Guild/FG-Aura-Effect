@@ -466,10 +466,13 @@ local function handleExpireEffectSilent(msgOOB)
 end
 
 function onInit()
-
-	onMove = Token.onMove
-	Token.onMove = auraOnMove
-
+	CombatManager.setCustomDeleteCombatantEffectHandler(checkDeletedAuraEffects);
+	if Session.IsHost then
+		DB.addHandler(DB.getPath("combattracker.list.*.effects.*.label"), "onUpdate", onEffectChanged)
+		DB.addHandler(DB.getPath("combattracker.list.*.effects.*.isactive"), "onUpdate", onEffectChanged)
+		--DB.addHandler(DB.getPath("combattracker.list.*.effects.*.visible"), "onUpdate", onEffectChanged)
+	end
+	
 	local DetectedEffectManager
 	if EffectManager35E then
 		DetectedEffectManager = EffectManager35E
@@ -480,18 +483,15 @@ function onInit()
 	if EffectManager4E then
 		DetectedEffectManager = EffectManager4E
 	end
+
 	checkConditional = DetectedEffectManager.checkConditional;
 	DetectedEffectManager.checkConditional = customCheckConditional;
 
-	CombatManager.setCustomDeleteCombatantEffectHandler(checkDeletedAuraEffects);
-	if Session.IsHost then
-		DB.addHandler(DB.getPath("combattracker.list.*.effects.*.label"), "onUpdate", onEffectChanged)
-		DB.addHandler(DB.getPath("combattracker.list.*.effects.*.isactive"), "onUpdate", onEffectChanged)
-		--DB.addHandler(DB.getPath("combattracker.list.*.effects.*.visible"), "onUpdate", onEffectChanged)
-	end
-
 	onWindowOpened = Interface.onWindowOpened;
 	Interface.onWindowOpened = auraOnWindowOpened;
+
+	onMove = Token.onMove
+	Token.onMove = auraOnMove
 
 	onTokenAdd = ImageManager.onTokenAdd;
 	ImageManager.onTokenAdd = auraOnTokenAdd;
