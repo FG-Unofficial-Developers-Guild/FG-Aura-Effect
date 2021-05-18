@@ -43,6 +43,7 @@ local function onEffectChanged(node)
 	end
 end
 
+---	This function requests aura processing to be performed on the host FG instance.
 local function notifyPlayerMove(tokenMap)
 	local nodeCT = CombatManager.getCTFromToken(tokenMap)
 	if not nodeCT then
