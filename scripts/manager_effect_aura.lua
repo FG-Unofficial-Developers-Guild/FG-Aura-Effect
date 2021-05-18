@@ -394,7 +394,7 @@ function checkAuraApplicationAndAddOrRemove(sourceNode, targetNode, auraEffect, 
 	end
 end
 
-local function handlePlayerMove(msgOOB)
+local function handleTokenMovement(msgOOB)
 	local tokenCT = CombatManager.getTokenFromCT(DB.findNode(msgOOB.sCTNode));
 	updateAuras(tokenCT);
 end
@@ -488,7 +488,7 @@ function onInit()
 	onMove = Token.onMove
 	Token.onMove = auraOnMove
 
-	OOBManager.registerOOBMsgHandler(OOB_MSGTYPE_ONPLAYERMOVE, handlePlayerMove);
+	OOBManager.registerOOBMsgHandler(OOB_MSGTYPE_ONPLAYERMOVE, handleTokenMovement);
 	OOBManager.registerOOBMsgHandler(OOB_MSGTYPE_APPLYEFFSILENT, handleApplyEffectSilent);
 	OOBManager.registerOOBMsgHandler(OOB_MSGTYPE_EXPIREEFFSILENT, handleExpireEffectSilent);
 	
