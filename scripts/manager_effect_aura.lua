@@ -57,14 +57,6 @@ local function notifyPlayerMove(tokenMap)
 	Comm.deliverOOBMessage(msgOOB, "");
 end
 
-local onTokenAdd = nil;
-function auraOnTokenAdd(tokenMap)
-	if onTokenAdd then
-		onTokenAdd(tokenMap);
-	end
-	notifyPlayerMove(tokenMap);
-end
-
 local onWindowOpened = nil;
 function auraOnWindowOpened(window)
 	if onWindowOpened then
@@ -495,9 +487,6 @@ function onInit()
 
 	onMove = Token.onMove
 	Token.onMove = auraOnMove
-
-	onTokenAdd = ImageManager.onTokenAdd;
-	ImageManager.onTokenAdd = auraOnTokenAdd;
 
 	OOBManager.registerOOBMsgHandler(OOB_MSGTYPE_ONPLAYERMOVE, handlePlayerMove);
 	OOBManager.registerOOBMsgHandler(OOB_MSGTYPE_APPLYEFFSILENT, handleApplyEffectSilent);
