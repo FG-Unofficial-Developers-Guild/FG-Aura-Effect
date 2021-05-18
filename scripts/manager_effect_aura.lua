@@ -335,7 +335,7 @@ local function addAuraEffect(auraType, effect, targetNode, sourceNode)
 	if not applyLabel then
 		return false;
 	end
-	applyLabel = fromAuraString..applyLabel;
+	applyLabel = fromAuraString .. applyLabel;
 	
 	local rEffect = {};
 	rEffect.nDuration = DB.getValue(effect, "duration", 0);
