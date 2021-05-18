@@ -57,6 +57,14 @@ local function notifyTokenMove(tokenMap)
 	Comm.deliverOOBMessage(msgOOB, "");
 end
 
+local onTokenAdd = nil;
+function auraOnTokenAdd(tokenMap)
+	if onTokenAdd then
+		onTokenAdd(tokenMap);
+	end
+	notifyTokenMove(tokenMap);
+end
+
 local onWindowOpened = nil;
 function auraOnWindowOpened(window)
 	if onWindowOpened then
@@ -484,6 +492,9 @@ function onInit()
 
 	onWindowOpened = Interface.onWindowOpened;
 	Interface.onWindowOpened = auraOnWindowOpened;
+
+	onTokenAdd = ImageManager.onTokenAdd;
+	ImageManager.onTokenAdd = auraOnTokenAdd;
 
 	onMove = Token.onMove
 	Token.onMove = auraOnMove
