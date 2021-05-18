@@ -51,8 +51,6 @@ function auraOnTokenAdd(tokenMap)
 	if onTokenAdd then
 		onTokenAdd(tokenMap);
 	end
-	--Debug.chat("updating from onTokenAdd");
-	--Debug.chat(tokenMap)
 	notifyPlayerMove(tokenMap);
 end
 
@@ -66,7 +64,6 @@ function auraOnWindowOpened(window)
 		for _, nodeCT in pairs(ctEntries) do
 			local tokenCT = CombatManager.getTokenFromCT(nodeCT);
 			local ctrlImage, winImage = ImageManager.getImageControl(tokenCT);
-			--Debug.chat("ctrlImage = ",ctrlImage,"winImage =", winImage,"window =",window);
 			if tokenCT and winImage and winImage == window then
 				notifyPlayerMove(tokenMap);
 			end
@@ -201,7 +198,6 @@ local function checkFaction(targetActor, nodeEffect, sFactionCheck)
 	if sFactionCheck:match("^!") then
 		bReturn = not bReturn;
 	end
-	--Debug.chat(targetActor.sName, sFactionCheck, targetFaction, bReturn)
 
 	return bReturn;
 end
@@ -231,12 +227,10 @@ end
 
 local onMove = nil;
 local function auraOnMove(tokenMap)
-	--Debug.chat("in auraOnMove");
 	if onMove then
 		onMove(tokenMap);
 	end
 	notifyPlayerMove(tokenMap)
-	-- Debug.chat("finishing aura on move");
 end
 
 local function getDistanceBetweenCT(ctNodeSource, ctNodeTarget)
@@ -256,12 +250,8 @@ local function getRelationship(sourceNode, targetNode)
 end
 
 function updateAuras(tokenMap)
-	--Debug.printstack();
-	-- Debug.chat("updating Auras");
 	local sourceNode = CombatManager.getCTFromToken(tokenMap)
-	--if not nodeCT or not nodeCT.isOwner() then
 	if not sourceNode then
-		--Debug.chat("no nodeCT");
 		return false
 	end
 
@@ -291,7 +281,6 @@ function getAurasForNode(nodeCT)
 		if DB.getValue(nodeEffect, "isactive", 0) == 1 then
 			local sLabelNodeEffect = DB.getValue(nodeEffect, "label", "");
 			if string.match(sLabelNodeEffect, "%s*" .. auraString) then
-				--Debug.console(nodeEffect);
 				table.insert(auraEffects, nodeEffect);
 			end
 		end
@@ -366,7 +355,6 @@ local function addAuraEffect(auraType, effect, targetNode, sourceNode)
 end
 
 function checkAuraApplicationAndAddOrRemove(sourceNode, targetNode, auraEffect, nodeInfo)
-	-- Debug.chat("Checking aura", auraEffect)
 	if not targetNode or not auraEffect then
 		return false
 	end
@@ -395,13 +383,11 @@ function checkAuraApplicationAndAddOrRemove(sourceNode, targetNode, auraEffect, 
 	if not nodeInfo.relationship then
 		nodeInfo.relationship = getRelationship(sourceNode, targetNode)
 	end
-	-- Debug.chat("relationship", nodeInfo.relationship)
 	if auraType == nodeInfo.relationship or auraType == "all" then
 		if not nodeInfo.distanceBetween then
 			nodeInfo.distanceBetween = getDistanceBetweenCT(sourceNode, targetNode)
 		end
 		local existingAuraEffect = checkAuraAlreadyEffecting(sourceNode, targetNode, auraEffect)
-		-- Debug.chat("distanceBetween", nodeInfo.distanceBetween, "nRange", nRange, "existingAuraEffect", existingAuraEffect)
 		if nodeInfo.distanceBetween and nodeInfo.distanceBetween <= nRange then
 			if not existingAuraEffect then
 				addAuraEffect(auraType, auraEffect, targetNode, sourceNode)
@@ -457,7 +443,6 @@ function expireEffectSilent(nodeActor, nodeEffect, nExpireComp)
 		if #aEffectComps > 1 then
 			table.remove(aEffectComps, nExpireComp);
 			DB.setValue(nodeEffect, "label", "string", rebuildParsedEffect(aEffectComps));
-			--EffectManager.message("Effect ['" .. sEffect .. "'] -> [SINGLE MOD USED]", nodeActor, bGMOnly);
 			return;
 		end
 	end
@@ -469,7 +454,6 @@ end
 local function handleExpireEffectSilent(msgOOB)
 	local nodeEffect = DB.findNode(msgOOB.sEffectNode);
 	if not nodeEffect then
-		-- ChatManager.SystemMessage(Interface.getString("ct_error_effectdeletefail") .. " (" .. msgOOB.sEffectNode .. ")");
 		return false;
 	end
 	local nodeActor = nodeEffect.getChild("...");
