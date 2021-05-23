@@ -45,6 +45,10 @@ end
 
 ---	This function requests aura processing to be performed on the host FG instance.
 local function notifyTokenMove(tokenMap)
+	if not CombatManager then
+		return;
+	end
+
 	local nodeCT = CombatManager.getCTFromToken(tokenMap)
 	if not nodeCT then
 		return;
