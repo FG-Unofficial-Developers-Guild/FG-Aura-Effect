@@ -240,14 +240,6 @@ local function auraOnMove(tokenMap)
 	notifyTokenMove(tokenMap)
 end
 
-local function getDistanceBetweenCT(ctNodeSource, ctNodeTarget)
-	local sourceToken = CombatManager.getTokenFromCT(ctNodeSource)
-	local targetToken = CombatManager.getTokenFromCT(ctNodeTarget)
-	if sourceToken and targetToken then
-		return Token.getDistanceBetween(sourceToken, targetToken)
-	end
-end
-
 local function getRelationship(sourceNode, targetNode)
 	if DB.getValue(sourceNode, "friendfoe", "") == DB.getValue(targetNode, "friendfoe", "") then
 		return "friend"
@@ -349,6 +341,14 @@ local function addAuraEffect(auraType, effect, targetNode, sourceNode)
 		notifyApplySilent(rEffect, targetNode.getPath());
 	else
 		EffectManager.notifyApply(rEffect, targetNode.getPath());
+	end
+end
+
+local function getDistanceBetweenCT(ctNodeSource, ctNodeTarget)
+	local sourceToken = CombatManager.getTokenFromCT(ctNodeSource)
+	local targetToken = CombatManager.getTokenFromCT(ctNodeTarget)
+	if sourceToken and targetToken then
+		return Token.getDistanceBetween(sourceToken, targetToken)
 	end
 end
 
