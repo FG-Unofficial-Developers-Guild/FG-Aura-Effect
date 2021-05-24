@@ -44,7 +44,7 @@ local function onEffectChanged(node)
 end
 
 ---	This function requests aura processing to be performed on the host FG instance.
-local function notifyTokenMove(tokenMap)
+function notifyTokenMove(tokenMap)
 	if not CombatManager then
 		return;
 	end
@@ -98,7 +98,7 @@ local function checkSilentNotification(auraType)
 	return option == "all" or option == auraType;
 end
 
-local function notifyExpireSilent(varEffect, nMatch)
+function notifyExpireSilent(varEffect, nMatch)
 	if type(varEffect) == "databasenode" then
 		varEffect = varEffect.getNodeName();
 	elseif type(varEffect) ~= "string" then
@@ -287,7 +287,7 @@ function getAurasForNode(nodeCT)
 	return auraEffects;
 end
 
-local function notifyApplySilent(rEffect, vTargets)
+function notifyApplySilent(rEffect, vTargets)
 	-- Build OOB message to pass effect to host
 	local msgOOB = {};
 	msgOOB.type = OOB_MSGTYPE_AURAAPPLYSILENT;
@@ -344,14 +344,6 @@ local function addAuraEffect(auraType, effect, targetNode, sourceNode)
 	end
 end
 
-local function getDistanceBetweenCT(ctNodeSource, ctNodeTarget)
-	local sourceToken = CombatManager.getTokenFromCT(ctNodeSource)
-	local targetToken = CombatManager.getTokenFromCT(ctNodeTarget)
-	if sourceToken and targetToken then
-		return Token.getDistanceBetween(sourceToken, targetToken)
-	end
-end
-
 function checkAuraApplicationAndAddOrRemove(sourceNode, targetNode, auraEffect, nodeInfo)
 	if not targetNode or not auraEffect then
 		return false
@@ -383,7 +375,11 @@ function checkAuraApplicationAndAddOrRemove(sourceNode, targetNode, auraEffect, 
 	end
 	if auraType == nodeInfo.relationship or auraType == "all" then
 		if not nodeInfo.distanceBetween then
-			nodeInfo.distanceBetween = getDistanceBetweenCT(sourceNode, targetNode)
+			local sourceToken = CombatManager.getTokenFromCT(ctNodeSource)
+			local targetToken = CombatManager.getTokenFromCT(ctNodeTarget)
+			if sourceToken and targetToken then
+				nodeInfo.distanceBetween = getDistanceBetweenCT(sourceNode, targetNode)
+			end
 		end
 		local existingAuraEffect = checkAuraAlreadyEffecting(sourceNode, targetNode, auraEffect)
 		if nodeInfo.distanceBetween and nodeInfo.distanceBetween <= nRange then
@@ -398,12 +394,12 @@ function checkAuraApplicationAndAddOrRemove(sourceNode, targetNode, auraEffect, 
 	end
 end
 
-local function handleTokenMovement(msgOOB)
+function handleTokenMovement(msgOOB)
 	local tokenCT = CombatManager.getTokenFromCT(DB.findNode(msgOOB.sCTNode));
 	updateAuras(tokenCT);
 end
 
-local function handleApplyEffectSilent(msgOOB)
+function handleApplyEffectSilent(msgOOB)
 	-- Get the target combat tracker node
 	local nodeCTEntry = DB.findNode(msgOOB.sTargetNode);
 	if not nodeCTEntry then
@@ -449,7 +445,7 @@ function expireEffectSilent(nodeActor, nodeEffect, nExpireComp)
 	nodeEffect.delete();
 end
 
-local function handleExpireEffectSilent(msgOOB)
+function handleExpireEffectSilent(msgOOB)
 	local nodeEffect = DB.findNode(msgOOB.sEffectNode);
 	if not nodeEffect then
 		return false;
