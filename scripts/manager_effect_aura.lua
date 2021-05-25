@@ -378,7 +378,7 @@ function checkAuraApplicationAndAddOrRemove(sourceNode, targetNode, auraEffect, 
 			local sourceToken = CombatManager.getTokenFromCT(ctNodeSource)
 			local targetToken = CombatManager.getTokenFromCT(ctNodeTarget)
 			if sourceToken and targetToken then
-				nodeInfo.distanceBetween = getDistanceBetweenCT(sourceNode, targetNode)
+				nodeInfo.distanceBetween = Token.getDistanceBetween(sourceToken, targetToken)
 			end
 		end
 		local existingAuraEffect = checkAuraAlreadyEffecting(sourceNode, targetNode, auraEffect)
