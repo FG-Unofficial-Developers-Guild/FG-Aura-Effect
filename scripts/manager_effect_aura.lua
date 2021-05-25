@@ -375,8 +375,8 @@ function checkAuraApplicationAndAddOrRemove(sourceNode, targetNode, auraEffect, 
 	end
 	if auraType == nodeInfo.relationship or auraType == "all" then
 		if not nodeInfo.distanceBetween then
-			local sourceToken = CombatManager.getTokenFromCT(ctNodeSource)
-			local targetToken = CombatManager.getTokenFromCT(ctNodeTarget)
+			local sourceToken = CombatManager.getTokenFromCT(sourceNode)
+			local targetToken = CombatManager.getTokenFromCT(targetNode)
 			if sourceToken and targetToken then
 				nodeInfo.distanceBetween = Token.getDistanceBetween(sourceToken, targetToken)
 			end
