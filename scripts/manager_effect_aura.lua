@@ -45,7 +45,7 @@ end
 
 ---	This function requests aura processing to be performed on the host FG instance.
 function notifyTokenMove(tokenMap)
-	if not tokenMap.getContainerNode then
+	if not tokenMap.getContainerNode or not CombatManager then
 		return;
 	end
 	local nodeCT = CombatManager.getCTFromToken(tokenMap)
@@ -248,7 +248,7 @@ local function getRelationship(sourceNode, targetNode)
 end
 
 function updateAuras(tokenMap)
-	if not tokenMap.getContainerNode then
+	if not tokenMap.getContainerNode or not CombatManager then
 		return;
 	end
 	local sourceNode = CombatManager.getCTFromToken(tokenMap)
