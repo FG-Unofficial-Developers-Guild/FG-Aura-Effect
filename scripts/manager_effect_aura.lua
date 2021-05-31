@@ -421,14 +421,15 @@ end
 
 function expireEffectSilent(nodeActor, nodeEffect, nExpireComp)
 	if not nodeEffect then
+		Debug.chat(nodeActor, nodeEffect, nExpireComp)
 		return false;
 	end
 
-	local bGMOnly = EffectManager.isGMEffect(nodeActor, nodeEffect);
-	local sEffect = DB.getValue(nodeEffect, aEffectVarMap["sName"]["sDBField"], "");
+	-- local bGMOnly = EffectManager.isGMEffect(nodeActor, nodeEffect);
 
 	-- Check for partial expiration
 	if (nExpireComp or 0) > 0 then
+		local sEffect = DB.getValue(nodeEffect, aEffectVarMap["sName"]["sDBField"], "");
 		local aEffectComps = parseEffect(sEffect);
 		if #aEffectComps > 1 then
 			table.remove(aEffectComps, nExpireComp);
@@ -444,6 +445,7 @@ end
 function handleExpireEffectSilent(msgOOB)
 	local nodeEffect = DB.findNode(msgOOB.sEffectNode);
 	if not nodeEffect then
+		Debug.chat(msgOOB, nodeEffect)
 		return false;
 	end
 	
@@ -488,5 +490,5 @@ function onInit()
 	OOBManager.registerOOBMsgHandler(OOB_MSGTYPE_AURAAPPLYSILENT, handleApplyEffectSilent);
 	OOBManager.registerOOBMsgHandler(OOB_MSGTYPE_AURAEXPIRESILENT, handleExpireEffectSilent);
 	
-	OptionsManager.registerOption2("AURASILENT", false, "option_header_aura", "option_label_AURASILENT", "option_entry_cycler", { labels = "option_val_friend|option_val_foe|option_val_all", values="friend|foe|all", baselabel = "option_val_off", baseval="off", default="friend"});
+	OptionsManager.registerOption2("AURASILENT", false, "option_header_aura", "option_label_AURASILENT", "option_entry_cycler", { labels = "option_val_friend|option_val_foe|option_val_all", values="friend|foe|all", baselabel = "option_val_off", baseval="off", default="all"});
 end
