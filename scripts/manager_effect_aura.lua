@@ -7,7 +7,7 @@ OOB_MSGTYPE_AURATOKENMOVE = "aurasontokenmove";
 OOB_MSGTYPE_AURAAPPLYSILENT = "applyeffsilent";
 OOB_MSGTYPE_AURAEXPIRESILENT = "expireeffsilent";
 
-local fromAuraString = "FROMAURA:"
+local fromAuraString = "FROMAURA;"
 local auraString = "AURA:"
 
 local aEffectVarMap = {
