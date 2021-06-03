@@ -11,6 +11,8 @@ This extension is not currently compatible with SilentRuin's [Polymorphism Exten
 ### AURA Effect
 ```AURA: 10 friend; Aura of Protection; SAVE: 5```
 
+A name is required (such as Aura of Protection in the above example) or it will not work.
+
 This will add a 10 foot aura around the person who has this effect.
 
 Allies within 10' will receive an effect "FROMAURA: Aura of Protection; SAVE: 5".
