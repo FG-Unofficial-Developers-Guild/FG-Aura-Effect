@@ -445,7 +445,7 @@ end
 
 function expireEffectSilent(nodeActor, nodeEffect, nExpireComp)
 	if not nodeEffect then
-		Debug.chat(nodeActor, nodeEffect, nExpireComp)
+		-- Debug.chat(nodeActor, nodeEffect, nExpireComp)
 		return false;
 	end
 
@@ -469,7 +469,7 @@ end
 function handleExpireEffectSilent(msgOOB)
 	local nodeEffect = DB.findNode(msgOOB.sEffectNode);
 	if not nodeEffect then
-		Debug.chat(msgOOB, nodeEffect)
+		-- Debug.chat(msgOOB, nodeEffect)
 		return false;
 	end
 	
