@@ -250,9 +250,9 @@ local function auraOnMove(tokenInstance)
 end
 
 local onDragEnd = nil
-local function auraOnDragEnd(tokenInstance, dragdata)
+local function auraOnDragEnd(tokenInstance, dragData)
 	if onDragEnd then
-		onDragEnd(target, dragdata)
+		onDragEnd(tokenInstance, dragData)
 	end
 	notifyTokenMove(tokenInstance)
 end
