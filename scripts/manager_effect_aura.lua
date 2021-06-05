@@ -231,30 +231,15 @@ function customCheckConditional(rActor, nodeEffect, aConditions, rTarget, aIgnor
 	return bReturn;
 end
 
-local function getTokenLockState(tokenInstance)
-	if Session.IsHost then
-		return false
-	end
-	local ctrlImage = ImageManager.getImageControl(tokenInstance)
-	return ctrlImage and ctrlImage.getTokenLockState()
-end
-
 local onMove = nil;
 local function auraOnMove(tokenInstance)
 	if onMove then
 		onMove(tokenInstance);
 	end
-	if(getTokenLockState(tokenInstance)) then
+	if Session.IsHost then
+		-- Debug.chat("onMove aura update")
 		notifyTokenMove(tokenInstance)
 	end
-end
-
-local onDragEnd = nil
-local function auraOnDragEnd(tokenInstance, dragData)
-	if onDragEnd then
-		onDragEnd(tokenInstance, dragData)
-	end
-	notifyTokenMove(tokenInstance)
 end
 
 local function getRelationship(sourceNode, targetNode)
@@ -509,9 +494,6 @@ function onInit()
 
 	onMove = Token.onMove
 	Token.onMove = auraOnMove
-
-	onDragEnd = Token.onDragEnd
-	Token.onDragEnd = auraOnDragEnd
 
 	OOBManager.registerOOBMsgHandler(OOB_MSGTYPE_AURATOKENMOVE, handleTokenMovement);
 	OOBManager.registerOOBMsgHandler(OOB_MSGTYPE_AURAAPPLYSILENT, handleApplyEffectSilent);
