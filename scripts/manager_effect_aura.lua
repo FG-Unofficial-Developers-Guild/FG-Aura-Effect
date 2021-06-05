@@ -232,11 +232,14 @@ function customCheckConditional(rActor, nodeEffect, aConditions, rTarget, aIgnor
 end
 
 local onMove = nil;
-local function auraOnMove(tokenMap)
+local function auraOnMove(tokenInstance)
 	if onMove then
-		onMove(tokenMap);
+		onMove(tokenInstance);
 	end
-	notifyTokenMove(tokenMap)
+	if Session.IsHost then
+		-- Debug.chat("onMove aura update")
+		notifyTokenMove(tokenInstance)
+	end
 end
 
 local function getRelationship(sourceNode, targetNode)
@@ -427,14 +430,15 @@ end
 
 function expireEffectSilent(nodeActor, nodeEffect, nExpireComp)
 	if not nodeEffect then
+		-- Debug.chat(nodeActor, nodeEffect, nExpireComp)
 		return false;
 	end
 
-	local bGMOnly = EffectManager.isGMEffect(nodeActor, nodeEffect);
-	local sEffect = DB.getValue(nodeEffect, aEffectVarMap["sName"]["sDBField"], "");
+	-- local bGMOnly = EffectManager.isGMEffect(nodeActor, nodeEffect);
 
 	-- Check for partial expiration
 	if (nExpireComp or 0) > 0 then
+		local sEffect = DB.getValue(nodeEffect, aEffectVarMap["sName"]["sDBField"], "");
 		local aEffectComps = parseEffect(sEffect);
 		if #aEffectComps > 1 then
 			table.remove(aEffectComps, nExpireComp);
@@ -450,6 +454,7 @@ end
 function handleExpireEffectSilent(msgOOB)
 	local nodeEffect = DB.findNode(msgOOB.sEffectNode);
 	if not nodeEffect then
+		-- Debug.chat(msgOOB, nodeEffect)
 		return false;
 	end
 	
