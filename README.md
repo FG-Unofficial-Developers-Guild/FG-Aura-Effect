@@ -11,11 +11,11 @@ This extension is not currently compatible with SilentRuin's [Polymorphism Exten
 ### AURA Effect
 ```AURA: 10 friend; Aura of Protection; SAVE: 5```
 
-A name is required (such as Aura of Protection in the above example) or it will not work.
-
 This will add a 10 foot aura around the person who has this effect.
 
-Allies within 10' will receive an effect "FROMAURA: Aura of Protection; SAVE: 5".
+Allies within 10' will receive an effect "FROMAURA; Aura of Protection; SAVE: 5".
+
+While a name (such as 'Aura of Protection' in the above example) is not required it is highly reccomended to help avoid collisions between effects.
 
 The bearer of the AURA effect will also receive its benefits.
 
@@ -44,7 +44,7 @@ You can also use the "!" operator in a FACTION conditional to reverse the result
 
 This will add a 10 foot aura around the person who has this effect.
 
-Anyone within 10' will receive an effect "FROMAURA: Test; IF: FACTION(!foe); ATK: -5".
+Anyone within 10' will receive an effect "FROMAURA; Test; IF: FACTION(!foe); ATK: -5".
 
 Although the effect will be visible on all actors within 10', the penalty will only be applied to people who are not specifically foes.
 
