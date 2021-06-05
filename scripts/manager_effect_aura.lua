@@ -7,7 +7,7 @@ OOB_MSGTYPE_AURATOKENMOVE = "aurasontokenmove";
 OOB_MSGTYPE_AURAAPPLYSILENT = "applyeffsilent";
 OOB_MSGTYPE_AURAEXPIRESILENT = "expireeffsilent";
 
-local fromAuraString = "FROMAURA:"
+local fromAuraString = "FROMAURA;"
 local auraString = "AURA:"
 
 local aEffectVarMap = {
@@ -467,6 +467,22 @@ function handleExpireEffectSilent(msgOOB)
 	expireEffectSilent(nodeActor, nodeEffect, tonumber(msgOOB.nExpireClause) or 0);
 end
 
+-- This shouldn't remain long term
+local function replaceOldFromAuraString()
+	if Session.IsHost then
+		for _, nodeCT in pairs(CombatManager.getCombatantNodes()) do
+			for _, nodeEffect in pairs(DB.getChildren(nodeCT, "effects")) do
+				local sLabelNodeEffect = DB.getValue(nodeEffect, aEffectVarMap["sName"]["sDBField"], "")
+				local index = string.find(sLabelNodeEffect, "FROMAURA:", 0, true)
+				if index and index == 1 then
+					-- Debug.console(sLabelNodeEffect, index)
+					DB.setValue(nodeEffect, aEffectVarMap["sName"]["sDBField"], "string", fromAuraString .. sLabelNodeEffect:sub(10))
+				end
+			end
+		end
+	end
+end
+
 function onInit()
 	CombatManager.setCustomDeleteCombatantEffectHandler(checkDeletedAuraEffects);
 	if Session.IsHost then
@@ -474,7 +490,7 @@ function onInit()
 		DB.addHandler(DB.getPath("combattracker.list.*.effects.*.isactive"), "onUpdate", onEffectChanged)
 		DB.addHandler(DB.getPath("combattracker.list.*.effects.*.isgmonly"), "onUpdate", onEffectChanged)
 	end
-	
+
 	local DetectedEffectManager
 	if EffectManager35E then
 		DetectedEffectManager = EffectManager35E
@@ -498,6 +514,8 @@ function onInit()
 	OOBManager.registerOOBMsgHandler(OOB_MSGTYPE_AURATOKENMOVE, handleTokenMovement);
 	OOBManager.registerOOBMsgHandler(OOB_MSGTYPE_AURAAPPLYSILENT, handleApplyEffectSilent);
 	OOBManager.registerOOBMsgHandler(OOB_MSGTYPE_AURAEXPIRESILENT, handleExpireEffectSilent);
-	
+
 	OptionsManager.registerOption2("AURASILENT", false, "option_header_aura", "option_label_AURASILENT", "option_entry_cycler", { labels = "option_val_friend|option_val_foe|option_val_all", values="friend|foe|all", baselabel = "option_val_off", baseval="off", default="all"});
+
+	replaceOldFromAuraString()
 end
