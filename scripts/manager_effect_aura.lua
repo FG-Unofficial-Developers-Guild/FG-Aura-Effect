@@ -484,12 +484,13 @@ local function replaceOldFromAuraString()
 end
 
 function onInit()
+	OptionsManager.registerOption2("AURASILENT", false, "option_header_aura", "option_label_AURASILENT", "option_entry_cycler", { labels = "option_val_friend|option_val_foe|option_val_all", values="friend|foe|all", baselabel = "option_val_off", baseval="off", default="all"});
+
+	OOBManager.registerOOBMsgHandler(OOB_MSGTYPE_AURATOKENMOVE, handleTokenMovement);
+	OOBManager.registerOOBMsgHandler(OOB_MSGTYPE_AURAAPPLYSILENT, handleApplyEffectSilent);
+	OOBManager.registerOOBMsgHandler(OOB_MSGTYPE_AURAEXPIRESILENT, handleExpireEffectSilent);
+
 	CombatManager.setCustomDeleteCombatantEffectHandler(checkDeletedAuraEffects);
-	if Session.IsHost then
-		DB.addHandler(DB.getPath("combattracker.list.*.effects.*.label"), "onUpdate", onEffectChanged)
-		DB.addHandler(DB.getPath("combattracker.list.*.effects.*.isactive"), "onUpdate", onEffectChanged)
-		DB.addHandler(DB.getPath("combattracker.list.*.effects.*.isgmonly"), "onUpdate", onEffectChanged)
-	end
 
 	local DetectedEffectManager
 	if EffectManager35E then
@@ -511,11 +512,11 @@ function onInit()
 	onMove = Token.onMove
 	Token.onMove = auraOnMove
 
-	OOBManager.registerOOBMsgHandler(OOB_MSGTYPE_AURATOKENMOVE, handleTokenMovement);
-	OOBManager.registerOOBMsgHandler(OOB_MSGTYPE_AURAAPPLYSILENT, handleApplyEffectSilent);
-	OOBManager.registerOOBMsgHandler(OOB_MSGTYPE_AURAEXPIRESILENT, handleExpireEffectSilent);
+	if Session.IsHost then
+		DB.addHandler(DB.getPath("combattracker.list.*.effects.*.label"), "onUpdate", onEffectChanged)
+		DB.addHandler(DB.getPath("combattracker.list.*.effects.*.isactive"), "onUpdate", onEffectChanged)
+		DB.addHandler(DB.getPath("combattracker.list.*.effects.*.isgmonly"), "onUpdate", onEffectChanged)
 
-	OptionsManager.registerOption2("AURASILENT", false, "option_header_aura", "option_label_AURASILENT", "option_entry_cycler", { labels = "option_val_friend|option_val_foe|option_val_all", values="friend|foe|all", baselabel = "option_val_off", baseval="off", default="all"});
-
-	replaceOldFromAuraString()
+		replaceOldFromAuraString()
+	end
 end
