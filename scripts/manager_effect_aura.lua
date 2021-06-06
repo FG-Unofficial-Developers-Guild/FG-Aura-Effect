@@ -469,15 +469,13 @@ end
 
 -- This shouldn't remain long term
 local function replaceOldFromAuraString()
-	if Session.IsHost then
-		for _, nodeCT in pairs(CombatManager.getCombatantNodes()) do
-			for _, nodeEffect in pairs(DB.getChildren(nodeCT, "effects")) do
-				local sLabelNodeEffect = DB.getValue(nodeEffect, aEffectVarMap["sName"]["sDBField"], "")
-				local index = string.find(sLabelNodeEffect, "FROMAURA:", 0, true)
-				if index and index == 1 then
-					-- Debug.console(sLabelNodeEffect, index)
-					DB.setValue(nodeEffect, aEffectVarMap["sName"]["sDBField"], "string", fromAuraString .. sLabelNodeEffect:sub(10))
-				end
+	for _, nodeCT in pairs(CombatManager.getCombatantNodes()) do
+		for _, nodeEffect in pairs(DB.getChildren(nodeCT, "effects")) do
+			local sLabelNodeEffect = DB.getValue(nodeEffect, aEffectVarMap["sName"]["sDBField"], "")
+			local index = string.find(sLabelNodeEffect, "FROMAURA:", 0, true)
+			if index and index == 1 then
+				-- Debug.console(sLabelNodeEffect, index)
+				DB.setValue(nodeEffect, aEffectVarMap["sName"]["sDBField"], "string", fromAuraString .. sLabelNodeEffect:sub(10))
 			end
 		end
 	end
