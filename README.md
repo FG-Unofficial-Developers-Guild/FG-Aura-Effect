@@ -6,7 +6,7 @@ This extension has been tested with [FantasyGrounds Unity](https://www.fantasygr
 
 Users might also want to use [GKEnialb](https://www.fantasygrounds.com/forums/member.php?70614-GKEnialb)'s [Token Height Indicator](https://www.fantasygrounds.com/forums/showthread.php?66566-5E-Token-Height-Indicator) which makes the auras height-aware.
 
-This extension is not currently compatible with SilentRuin's [Polymorphism Extension](https://www.fantasygrounds.com/forums/showthread.php?61009).
+This extension is not fully compatible with SilentRuin's [Polymorphism Extension](https://www.fantasygrounds.com/forums/showthread.php?61009). It seems that when concentration on polymorph is broken, a script error is triggered in SilentRuin's code (which I am unable to test for/fix since I don't own that extension).
 
 ### AURA Effect
 ```AURA: 10 friend; Aura of Protection; SAVE: 5```
