@@ -28,10 +28,9 @@ local function checkEffectRecursion(nodeEffect, sEffectComp)
 end
 
 ---	This function is called when effect components are changed.
-local function onEffectChanged(node)
-	local nodeEffect = node.getChild("..")
+local function onEffectChanged(nodeEffect)
 	if checkEffectRecursion(nodeEffect, auraString) and not checkEffectRecursion(nodeEffect, fromAuraString) then
-		local nodeCT = node.getChild("....")
+		local nodeCT = nodeEffect.getChild("...")
 		local tokenCT = CombatManager.getTokenFromCT(nodeCT);
 		if tokenCT then
 			if DB.getValue(nodeEffect, aEffectVarMap["nActive"]["sDBField"], 0) ~= 1 then
@@ -428,6 +427,14 @@ function handleApplyEffectSilent(msgOOB)
 	EffectManager.addEffect(msgOOB.user, msgOOB.identity, nodeCTEntry, rEffect, false);
 end
 
+local function manageHandlers(bRemove)
+	if bRemove then
+		DB.removeHandler(DB.getPath("combattracker.list.*.effects.*"), "onChildUpdate", onEffectChanged)
+	else
+		DB.addHandler(DB.getPath("combattracker.list.*.effects.*"), "onChildUpdate", onEffectChanged)
+	end
+end
+
 function expireEffectSilent(nodeActor, nodeEffect, nExpireComp)
 	if not nodeEffect then
 		-- Debug.chat(nodeActor, nodeEffect, nExpireComp)
@@ -446,12 +453,18 @@ function expireEffectSilent(nodeActor, nodeEffect, nExpireComp)
 			if sRebuiltEffect and sRebuiltEffect ~= "" then
 				DB.setValue(nodeEffect, aEffectVarMap["sName"]["sDBField"], "string", sRebuiltEffect);
 				return;
+			else
+				manageHandlers(true)
+				nodeEffect.delete()
+				manageHandlers(false)
 			end
 		end
 	end
 
 	-- Process full expiration
-	nodeEffect.delete();
+	manageHandlers(true)
+	nodeEffect.delete()
+	manageHandlers(false)
 end
 
 function handleExpireEffectSilent(msgOOB)
@@ -481,6 +494,10 @@ local function replaceOldFromAuraString()
 				if sFromAuraEffect and sFromAuraEffect ~= "" then
 					-- Debug.console(sLabelNodeEffect, index)
 					DB.setValue(nodeEffect, aEffectVarMap["sName"]["sDBField"], "string", sFromAuraEffect)
+				else
+					manageHandlers(true)
+					nodeEffect.delete()
+					manageHandlers(false)
 				end
 			end
 		end
@@ -515,10 +532,7 @@ function onInit()
 	Token.onMove = auraOnMove
 
 	if Session.IsHost then
-		DB.addHandler(DB.getPath("combattracker.list.*.effects.*.label"), "onUpdate", onEffectChanged)
-		DB.addHandler(DB.getPath("combattracker.list.*.effects.*.isactive"), "onUpdate", onEffectChanged)
-		DB.addHandler(DB.getPath("combattracker.list.*.effects.*.isgmonly"), "onUpdate", onEffectChanged)
-
+		manageHandlers(false)
 		replaceOldFromAuraString()
 	end
 end
