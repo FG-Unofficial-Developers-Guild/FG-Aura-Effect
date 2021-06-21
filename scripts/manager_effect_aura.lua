@@ -442,8 +442,11 @@ function expireEffectSilent(nodeActor, nodeEffect, nExpireComp)
 		local aEffectComps = parseEffect(sEffect);
 		if #aEffectComps > 1 then
 			table.remove(aEffectComps, nExpireComp);
-			DB.setValue(nodeEffect, aEffectVarMap["sName"]["sDBField"], "string", rebuildParsedEffect(aEffectComps));
-			return;
+			local sRebuiltEffect = EffectManager.rebuildParsedEffect(aEffectComps)
+			if sRebuiltEffect and sRebuiltEffect ~= "" then
+				DB.setValue(nodeEffect, aEffectVarMap["sName"]["sDBField"], "string", sRebuiltEffect);
+				return;
+			end
 		end
 	end
 
@@ -474,8 +477,11 @@ local function replaceOldFromAuraString()
 			local sLabelNodeEffect = DB.getValue(nodeEffect, aEffectVarMap["sName"]["sDBField"], "")
 			local index = string.find(sLabelNodeEffect, "FROMAURA:", 0, true)
 			if index and index == 1 then
-				-- Debug.console(sLabelNodeEffect, index)
-				DB.setValue(nodeEffect, aEffectVarMap["sName"]["sDBField"], "string", fromAuraString .. sLabelNodeEffect:sub(10))
+				local sFromAuraEffect = fromAuraString .. sLabelNodeEffect:sub(10)
+				if sFromAuraEffect and sFromAuraEffect ~= "" then
+					-- Debug.console(sLabelNodeEffect, index)
+					DB.setValue(nodeEffect, aEffectVarMap["sName"]["sDBField"], "string", sFromAuraEffect)
+				end
 			end
 		end
 	end
