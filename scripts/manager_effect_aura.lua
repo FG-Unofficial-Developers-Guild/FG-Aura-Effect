@@ -435,6 +435,12 @@ local function manageHandlers(bRemove)
 	end
 end
 
+local function removeNode(nodeEffect)
+	manageHandlers(true)
+	nodeEffect.delete()
+	manageHandlers(false)
+end
+
 function expireEffectSilent(nodeActor, nodeEffect, nExpireComp)
 	if not nodeEffect then
 		-- Debug.chat(nodeActor, nodeEffect, nExpireComp)
@@ -454,17 +460,13 @@ function expireEffectSilent(nodeActor, nodeEffect, nExpireComp)
 				DB.setValue(nodeEffect, aEffectVarMap["sName"]["sDBField"], "string", sRebuiltEffect);
 				return;
 			else
-				manageHandlers(true)
-				nodeEffect.delete()
-				manageHandlers(false)
+				removeNode(nodeEffect)
 			end
 		end
 	end
 
 	-- Process full expiration
-	manageHandlers(true)
-	nodeEffect.delete()
-	manageHandlers(false)
+	removeNode(nodeEffect)
 end
 
 function handleExpireEffectSilent(msgOOB)
@@ -495,9 +497,7 @@ local function replaceOldFromAuraString()
 					-- Debug.console(sLabelNodeEffect, index)
 					DB.setValue(nodeEffect, aEffectVarMap["sName"]["sDBField"], "string", sFromAuraEffect)
 				else
-					manageHandlers(true)
-					nodeEffect.delete()
-					manageHandlers(false)
+					removeNode(nodeEffect)
 				end
 			end
 		end
