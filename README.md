@@ -4,7 +4,7 @@ This extension accommodates auras and AoE buffs/debuffs by adding/removing effec
 # Compatibility and Instructions
 This extension has been tested with [FantasyGrounds Unity](https://www.fantasygrounds.com/home/FantasyGroundsUnity.php) 4.0.10 (2021-02-04) and 4.1.0 (2021-05-15). It works with the 3.5E, 4E, 5E, and PFRPG rulesets. When using with versions before v4.1.0, you must have token locking enabled (and you still may encounter some issues).
 
-Users might also want to use [GKEnialb](https://www.fantasygrounds.com/forums/member.php?70614-GKEnialb)'s [Token Height Indicator](https://www.fantasygrounds.com/forums/showthread.php?66566-5E-Token-Height-Indicator) which makes the auras height-aware.
+Users might also want to use [GKEnialb](https://www.fantasygrounds.com/forums/member.php?70614-GKEnialb)'s [Token Height Indicator](https://www.fantasygrounds.com/forums/showthread.php?66566-5E-Token-Height-Indicator) which makes the auras height-aware. Unfortuantely, some users are seeing some issues with script errors when using this pairing.
 
 This extension is not fully compatible with SilentRuin's [Polymorphism Extension](https://www.fantasygrounds.com/forums/showthread.php?61009). It seems that [when concentration on polymorph is broken, a script error is triggered](https://www.fantasygrounds.com/forums/showthread.php?57417-5E-Aura-Effects&p=607915&viewfull=1#post607915) in SilentRuin's code (which I am unable to test for/fix since I don't own that extension).
 
