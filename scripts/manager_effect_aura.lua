@@ -499,11 +499,9 @@ function onInit()
 	local DetectedEffectManager
 	if EffectManager35E then
 		DetectedEffectManager = EffectManager35E
-	end
-	if EffectManager5E then
+	elseif EffectManager5E then
 		DetectedEffectManager = EffectManager5E
-	end
-	if EffectManager4E then
+	elseif EffectManager4E then
 		DetectedEffectManager = EffectManager4E
 	end
 
