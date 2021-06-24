@@ -1,5 +1,5 @@
 # FG Aura Effect
-This extension accommodates auras and AoE buffs/debuffs by adding/removing effects to other characters based on proximity.
+This extension accommodates auras and area-of-effect buffs/debuffs by adding/removing effects to other characters based on proximity.
 
 # Compatibility and Instructions
 This extension has been tested with [FantasyGrounds Unity](https://www.fantasygrounds.com/home/FantasyGroundsUnity.php) 4.0.10 (2021-02-04) and 4.1.0 (2021-05-15). It works with the 3.5E, 4E, 5E, and PFRPG rulesets. When using with versions before v4.1.0, you must have token locking enabled (and you still may encounter some issues).
