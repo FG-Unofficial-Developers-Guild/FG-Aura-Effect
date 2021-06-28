@@ -2,7 +2,7 @@
 This extension accommodates auras and area-of-effect buffs/debuffs by adding/removing effects to other characters based on proximity.
 
 # Compatibility and Instructions
-This extension has been tested with [FantasyGrounds Unity](https://www.fantasygrounds.com/home/FantasyGroundsUnity.php) 4.0.10 (2021-02-04) and 4.1.4 (2021-06-08).
+This extension has been tested with [FantasyGrounds Unity](https://www.fantasygrounds.com/home/FantasyGroundsUnity.php) 4.1.4 (2021-06-08).
 
 It works with the 3.5E, 4E, 5E, and PFRPG rulesets.
 
