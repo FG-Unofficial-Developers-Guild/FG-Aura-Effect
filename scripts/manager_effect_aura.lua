@@ -516,6 +516,8 @@ function onInit()
 	local DetectedEffectManager
 	if EffectManager35E then
 		DetectedEffectManager = EffectManager35E
+	elseif EffectManagerPFRPG2 then
+		DetectedEffectManager = EffectManagerPFRPG2
 	elseif EffectManager5E then
 		DetectedEffectManager = EffectManager5E
 	elseif EffectManager4E then
