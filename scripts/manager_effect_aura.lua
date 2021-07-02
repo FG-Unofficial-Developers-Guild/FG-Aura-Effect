@@ -111,11 +111,13 @@ function notifyExpireSilent(varEffect, nMatch)
 	Comm.deliverOOBMessage(msgOOB, "");
 end
 
-local function removeAuraEffect(auraType, effect)
-	if checkSilentNotification(auraType) == true then
-		notifyExpireSilent(effect, nil, false);
-	else
-		EffectManager.notifyExpire(effect, nil, false);
+local function removeAuraEffect(auraType, nodeEffect)
+	if DB.getValue(nodeEffect, aEffectVarMap["nActive"]["sDBField"], 1) ~= 0 then
+		if checkSilentNotification(auraType) == true then
+			notifyExpireSilent(nodeEffect, nil, false);
+		else
+			EffectManager.notifyExpire(nodeEffect, nil, false);
+		end
 	end
 end
 
@@ -155,15 +157,15 @@ end
 function checkAuraAlreadyEffecting(nodeSource, nodeTarget, effect)
 	local sLabel = DB.getValue(effect, aEffectVarMap["sName"]["sDBField"], "");
 	for _, nodeEffect in pairs(DB.getChildren(nodeTarget, "effects")) do
-		if DB.getValue(nodeEffect, aEffectVarMap["nActive"]["sDBField"], 0) == 1 then
-			local sSource = DB.getValue(nodeEffect, aEffectVarMap["sSource"]["sDBField"]);
-			if sSource == nodeSource.getPath() then
-				local sEffect = DB.getValue(nodeEffect, aEffectVarMap["sName"]["sDBField"], ""):gsub(fromAuraString,"");
-				if string.find(sLabel, sEffect, 0, true) then
-					return nodeEffect;
-				end
+		-- if DB.getValue(nodeEffect, aEffectVarMap["nActive"]["sDBField"], 0) ~= 2 then
+		local sSource = DB.getValue(nodeEffect, aEffectVarMap["sSource"]["sDBField"]);
+		if sSource == nodeSource.getPath() then
+			local sEffect = DB.getValue(nodeEffect, aEffectVarMap["sName"]["sDBField"], ""):gsub(fromAuraString,"");
+			if string.find(sLabel, sEffect, 0, true) then
+				return nodeEffect;
 			end
 		end
+		-- end
 	end
 end
 
