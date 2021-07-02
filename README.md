@@ -27,6 +27,8 @@ The following aura types (used for AURA: 15 friend) are allowed:
 * foe
 * all
 
+If a resulting FROMAURA is set to "off" in the combat tracker, then the effect will not be removed based on token movement. This allows you to set the automatic effects of creatures that saved or are immune to "off".
+
 ### FACTION() conditional check
 To further limit bonuses/penalties/conditions applying to the bearer of the AURA effect, there is also an additional conditional type "FACTION()".
 ```AURA: 10 foe; Test; IF: FACTION(foe); ATK: -5```
