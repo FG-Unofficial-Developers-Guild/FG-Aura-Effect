@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
 <root version="3.3" >
 	<properties>
-		<name>Aura Effects</name>
+		<name>Feature: Aura Effects</name>
 		<version>1.4</version>
 		<author>Kent McCullough</author>
 		<description>Adds and removes effects based on proximity.</description>
