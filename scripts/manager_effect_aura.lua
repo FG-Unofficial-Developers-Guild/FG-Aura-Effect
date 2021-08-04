@@ -350,6 +350,50 @@ local function addAuraEffect(auraType, effect, targetNode, sourceNode)
 	end
 end
 
+-- compute distance between targets
+-- this is not as good as Unity's getDistanceBetween
+local function checkDistance(targetToken, sourceToken)
+	if not targetToken or not sourceToken then
+		return false;
+	end;
+	local ctrlImage = ImageManager.getImageControl(targetToken);
+	local srcCtrlImage = ImageManager.getImageControl(sourceToken);
+	if ctrlImage and srcCtrlImage and (ctrlImage == srcCtrlImage) then
+		local gridSize = ctrlImage.getGridSize() or 0;
+		local gridOffsetX = 0;
+		local gridOffsetY = 0;
+		if ctrlImage.hasGrid() then	
+			gridOffsetX, gridOffsetY = ctrlImage.getGridOffset();
+		end
+		local sourceX, sourceY = sourceToken.getPosition();
+		local targetX, targetY = targetToken.getPosition();
+
+		local targetGridX = (tonumber(targetX) + tonumber(gridOffsetX)) / gridSize;
+		local targetGridY = (tonumber(targetY) + tonumber(gridOffsetY)) / gridSize;
+		local sourceGridX = (tonumber(sourceX) + tonumber(gridOffsetX)) / gridSize;
+		local sourceGridY = (tonumber(sourceY) + tonumber(gridOffsetY)) / gridSize;
+		local xDiff = math.abs(targetGridX - sourceGridX);
+		local yDiff = math.abs(targetGridY - sourceGridY);
+		local totalDiff = math.floor(math.sqrt((xDiff*xDiff)+(yDiff*yDiff)));	
+		local nNotchScale = 5
+		if User.getRulesetName() == "4E" then
+			nNotchScale = 1
+		end
+		
+		return totalDiff * nNotchScale;
+	end
+end
+
+-- check FG version. if unity, use Token.getDistanceBetween.
+-- if classic, call checkDistance function above
+local function anyGetDistanceBetween(sourceToken, targetToken)
+	if UtilityManager.isClientFGU() then
+		return Token.getDistanceBetween(sourceToken, targetToken)
+	else
+		return checkDistance(sourceToken, targetToken)
+	end
+end
+
 function checkAuraApplicationAndAddOrRemove(sourceNode, targetNode, auraEffect, nodeInfo)
 	if not targetNode or not auraEffect then
 		return false
@@ -384,7 +428,7 @@ function checkAuraApplicationAndAddOrRemove(sourceNode, targetNode, auraEffect, 
 			local sourceToken = CombatManager.getTokenFromCT(sourceNode)
 			local targetToken = CombatManager.getTokenFromCT(targetNode)
 			if sourceToken and targetToken then
-				nodeInfo.distanceBetween = Token.getDistanceBetween(sourceToken, targetToken)
+				nodeInfo.distanceBetween = anyGetDistanceBetween(sourceToken, targetToken)
 			end
 		end
 		local existingAuraEffect = checkAuraAlreadyEffecting(sourceNode, targetNode, auraEffect)
