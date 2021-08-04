@@ -243,6 +243,17 @@ local function auraOnMove(tokenInstance)
 	end
 end
 
+local onDragEnd = nil;
+local function auraOnDragEnd(tokenInstance)
+	if onDragEnd then
+		onDragEnd(tokenInstance);
+	end
+	if Session.IsHost then
+		-- Debug.chat("onDragEnd aura update")
+		notifyTokenMove(tokenInstance)
+	end
+end
+
 local function getRelationship(sourceNode, targetNode)
 	if DB.getValue(sourceNode, "friendfoe", "") == DB.getValue(targetNode, "friendfoe", "") then
 		return "friend"
@@ -576,8 +587,13 @@ function onInit()
 	onWindowOpened = Interface.onWindowOpened;
 	Interface.onWindowOpened = auraOnWindowOpened;
 
-	onMove = Token.onMove
-	Token.onMove = auraOnMove
+	if UtilityManager.isClientFGU() then
+		onMove = Token.onMove
+		Token.onMove = auraOnMove
+	else
+		onDragEnd = Token.onDragEnd
+		Token.onDragEnd = auraOnDragEnd
+	end
 
 	if Session.IsHost then
 		manageHandlers(false)
