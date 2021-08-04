@@ -243,15 +243,14 @@ local function auraOnMove(tokenInstance)
 	end
 end
 
-local onDragEnd = nil;
-local function auraOnDragEnd(tokenInstance)
-	if onDragEnd then
-		onDragEnd(tokenInstance);
+local updateAttributesFromToken = nil;
+local function auraUpdateAttributesFromToken(tokenMap)
+	if updateAttributesFromToken then
+		updateAttributesFromToken(tokenMap);
 	end
-	if Session.IsHost then
-		-- Debug.chat("onDragEnd aura update")
-		notifyTokenMove(tokenInstance)
-	end
+	
+	onMove = tokenMap.onMove;
+	tokenMap.onMove = auraOnMove;
 end
 
 local function getRelationship(sourceNode, targetNode)
@@ -591,8 +590,8 @@ function onInit()
 		onMove = Token.onMove
 		Token.onMove = auraOnMove
 	else
-		onDragEnd = Token.onDragEnd
-		Token.onDragEnd = auraOnDragEnd
+		updateAttributesFromToken = TokenManager.updateAttributesFromToken;
+		TokenManager.updateAttributesFromToken = auraUpdateAttributesFromToken;
 	end
 
 	if Session.IsHost then
