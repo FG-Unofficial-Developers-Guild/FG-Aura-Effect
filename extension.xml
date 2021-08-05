@@ -23,7 +23,7 @@
 		</ruleset>
 	</properties>
 	
-	<announcement text="Aura Effects - Extension v1.5\r--by Kent McCullough 2020 updated by SoxMax and bmos" font="emotefont" />
+	<announcement text="Aura Effects - Extension v1.5\r--by Kent McCullough 2020 updated by SoxMax and bmos with contributions by GKEnialb." font="emotefont" />
 
 	<base>
 		<string name="option_header_aura">Auras (GM)</string>

@@ -360,37 +360,126 @@ local function addAuraEffect(auraType, effect, targetNode, sourceNode)
 	end
 end
 
+-- Get the closest position of token 1 (center of the square contained by token 1 which is closest
+-- along a straight line to the center of token 2)
+local function getClosestPosition(token1, token2)
+	local ctToken1 = CombatManager.getCTFromToken(token1)
+	local ctToken2 = CombatManager.getCTFromToken(token2)
+	if not ctToken1 or not ctToken2 then
+		return 0,0,0,0
+	end
+	
+	local gridsize = ImageManager.getImageControl(token1).getGridSize() or 0;
+	local units = GameSystem.getDistanceUnitsPerGrid();
+
+	local centerPos1x, centerPos1y = token1.getPosition();
+	local centerPos2x, centerPos2y = token2.getPosition();
+	local dx = centerPos2x - centerPos1x;
+	local dy = centerPos2y - centerPos1y;
+	local slope = 0
+	if dx ~= 0 then
+		slope = (dy) / (dx);
+	end
+	
+	local nSpace = DB.getValue(ctToken1, "space");
+	local nHalfSpace = nSpace / 2;
+	local nSquares = nSpace / units;
+	local center = (nSquares + 1) / 2;
+	local minPosX, minPosY;
+	
+	local intercept = 0;
+	local delta = 0;
+	local right = centerPos1x + nHalfSpace;
+	local left = centerPos1x - nHalfSpace;
+	local top = centerPos1y - nHalfSpace;
+	local bottom = centerPos1y + nHalfSpace;
+	
+	if math.abs(dx) > math.abs(dy) then
+		if dx < 0 then
+			-- Look at the left edge
+			intercept = centerPos1y - slope * nHalfSpace;
+			delta = math.max(1,math.ceil((intercept - top) / units));
+			shiftedDelta = delta - center;
+			minPosX = centerPos1x + ((center - nSquares) * gridsize);
+			minPosY = centerPos1y + (shiftedDelta * gridsize);
+		else
+			-- Look at the right edge
+			intercept = centerPos1y + slope * nHalfSpace;
+			delta = math.max(1,math.ceil((intercept - top) / units));
+			shiftedDelta = delta - center;
+			minPosX = centerPos1x + ((nSquares - center) * gridsize);
+			minPosY = centerPos1y + (shiftedDelta * gridsize);
+		end
+	else
+		if dy < 0 then
+			-- Look at the top edge
+			if slope == 0 then
+				minPosX = centerPos1x;
+			else
+				intercept = centerPos1x - nHalfSpace / slope;
+				delta = math.max(1,math.ceil((intercept - left) / units));
+				shiftedDelta = delta - center;
+				minPosX = centerPos1x + (shiftedDelta * gridsize);
+			end
+			minPosY = centerPos1y + ((center - nSquares) * gridsize);
+		else
+			-- Look at the bottom edge
+			if slope == 0 then
+				minPosX = centerPos1x;
+			else
+				intercept = centerPos1x + nHalfSpace / slope;
+				delta = math.max(1, math.ceil((intercept - left) / units));
+				shiftedDelta = delta - center;
+				minPosX = centerPos1x + (shiftedDelta * gridsize);
+			end
+			minPosY = centerPos1y + ((nSquares-center) * gridsize);
+		end
+	end
+	
+	return minPosX, minPosY
+end
+
 -- compute distance between targets
 -- this is not as good as Unity's getDistanceBetween
 local function checkDistance(targetToken, sourceToken)
 	if not targetToken or not sourceToken then
 		return false;
-	end;
+	end
 	local ctrlImage = ImageManager.getImageControl(targetToken);
 	local srcCtrlImage = ImageManager.getImageControl(sourceToken);
 	if ctrlImage and srcCtrlImage and (ctrlImage == srcCtrlImage) then
-		local gridSize = ctrlImage.getGridSize() or 0;
-		local gridOffsetX = 0;
-		local gridOffsetY = 0;
-		if ctrlImage.hasGrid() then	
-			gridOffsetX, gridOffsetY = ctrlImage.getGridOffset();
-		end
-		local sourceX, sourceY = sourceToken.getPosition();
-		local targetX, targetY = targetToken.getPosition();
+		local startx, starty = getClosestPosition(sourceToken, targetToken)
+		local endx, endy = getClosestPosition(targetToken, sourceToken)
+		local dx = math.abs(endx - startx) - 0.5;
+		local dy = math.abs(endy - starty) - 0.5;
+		local dz = 0;
 
-		local targetGridX = (tonumber(targetX) + tonumber(gridOffsetX)) / gridSize;
-		local targetGridY = (tonumber(targetY) + tonumber(gridOffsetY)) / gridSize;
-		local sourceGridX = (tonumber(sourceX) + tonumber(gridOffsetX)) / gridSize;
-		local sourceGridY = (tonumber(sourceY) + tonumber(gridOffsetY)) / gridSize;
-		local xDiff = math.abs(targetGridX - sourceGridX);
-		local yDiff = math.abs(targetGridY - sourceGridY);
-		local totalDiff = math.floor(math.sqrt((xDiff*xDiff)+(yDiff*yDiff)));	
-		local nNotchScale = 5
-		if User.getRulesetName() == "4E" then
-			nNotchScale = 1
+		local gridsize = ImageManager.getImageControl(sourceToken).getGridSize() or 0;
+		local units = GameSystem.getDistanceUnitsPerGrid();
+
+		local diagmult = Interface.getDistanceDiagMult()
+		if diagmult == 1 then
+			-- Just a max of each dimension
+			local longestLeg = math.max(dx, dy, dz)		
+			totalDistance = math.floor(longestLeg / gridsize + 0.5) * units
+		elseif diagmult == 0 then
+			-- Get 3D distance directly
+			local hyp = math.sqrt((dx ^ 2) + (dy ^ 2) + (dz ^ 2))
+			totalDistance = (hyp / gridsize) * units
+		else
+			-- You get full amount of the longest path and half from each of the others
+			local straight = math.max(dx, dy, dz)
+			local diagonal = 0
+			if straight == dx then
+				diagonal = math.floor((math.ceil(dy / gridsize) + math.ceil(dz / gridsize)) / 2) * gridsize + 5
+			elseif straight == dy then
+				diagonal = math.floor((math.ceil(dx / gridsize) + math.ceil(dz / gridsize)) / 2) * gridsize + 5
+			end
+			totalDistance = math.floor((straight + diagonal) / gridsize)
+			totalDistance = totalDistance * units
 		end
-		
-		return totalDiff * nNotchScale;
+
+		return totalDistance;
 	end
 end
 
