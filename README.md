@@ -3,6 +3,7 @@ This extension accommodates auras and area-of-effect buffs/debuffs by adding/rem
 
 # Compatibility and Instructions
 This extension has been tested with [FantasyGrounds Unity](https://www.fantasygrounds.com/home/FantasyGroundsUnity.php) 4.1.4 (2021-06-08).
+It is also partially-compatible with FantasyGrounds Classic 3.3.15, although all creatures are counted as medium--regardless of size.
 
 It works with the 3.5E, 4E, 5E, and PFRPG rulesets.
 
