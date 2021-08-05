@@ -2,7 +2,7 @@
 <root version="3.3" >
 	<properties>
 		<name>Feature: Aura Effects</name>
-		<version>1.5</version>
+		<version>1.6</version>
 		<author>Kent McCullough</author>
 		<description>Adds and removes effects based on proximity.</description>
 		<loadorder>999</loadorder>
@@ -23,7 +23,7 @@
 		</ruleset>
 	</properties>
 	
-	<announcement text="Aura Effects - Extension v1.5\r--by Kent McCullough 2020 updated by SoxMax and bmos with contributions by GKEnialb." font="emotefont" />
+	<announcement text="Aura Effects - Extension v1.6\r--by Kent McCullough 2020 updated by SoxMax and bmos with contributions by GKEnialb." font="emotefont" />
 
 	<base>
 		<string name="option_header_aura">Auras (GM)</string>
