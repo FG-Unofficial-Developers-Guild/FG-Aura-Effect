@@ -60,4 +60,5 @@ Although the effect will be visible on all actors within 10', the penalty will o
 
 # Effect Sharing Threads
 5E: https://www.fantasygrounds.com/forums/showthread.php?69965-5E-Aura-Effects-Coding
+
 ... if you create a thread for your ruleset let me know and I will add it to this list.
