@@ -617,14 +617,13 @@ end
 function handleExpireEffectSilent(msgOOB)
 	local nodeEffect = DB.findNode(msgOOB.sEffectNode);
 	if not nodeEffect then
-		-- Debug.chat(msgOOB, nodeEffect)
-		return false;
+		ChatManager.SystemMessage(Interface.getString("ct_error_effectdeletefail") .. " (" .. msgOOB.sEffectNode .. ")");
+		return;
 	end
-	
 	local nodeActor = nodeEffect.getChild("...");
 	if not nodeActor then
 		ChatManager.SystemMessage(Interface.getString("ct_error_effectmissingactor") .. " (" .. msgOOB.sEffectNode .. ")");
-		return false;
+		return;
 	end
 
 	expireEffectSilent(nodeActor, nodeEffect, tonumber(msgOOB.nExpireClause) or 0);
