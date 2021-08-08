@@ -112,7 +112,7 @@ function notifyExpireSilent(varEffect, nMatch)
 end
 
 local function removeAuraEffect(auraType, nodeEffect)
-	if nodeEffect and DB.getValue(nodeEffect, aEffectVarMap["nActive"]["sDBField"], 1) ~= 0 then
+	if DB.getValue(nodeEffect, aEffectVarMap["nActive"]["sDBField"], 1) ~= 0 then
 		if checkSilentNotification(auraType) == true then
 			notifyExpireSilent(nodeEffect, nil, false);
 		else
@@ -629,6 +629,13 @@ function handleExpireEffectSilent(msgOOB)
 	expireEffectSilent(nodeActor, nodeEffect, tonumber(msgOOB.nExpireClause) or 0);
 end
 
+local handleExpireEffect_old
+local function PFRPG2handleExpireEffect(msgOOB)
+	if DB.findNode(msgOOB.sEffectNode) then
+		handleExpireEffect_old(msgOOB)
+	end
+end
+
 function onInit()
 	OptionsManager.registerOption2("AURASILENT", false, "option_header_aura", "option_label_AURASILENT", "option_entry_cycler", { labels = "option_val_friend|option_val_foe|option_val_all", values="friend|foe|all", baselabel = "option_val_off", baseval="off", default="off"});
 
@@ -643,6 +650,9 @@ function onInit()
 		DetectedEffectManager = EffectManager35E
 	elseif EffectManagerPFRPG2 then
 		DetectedEffectManager = EffectManagerPFRPG2
+		handleExpireEffect_old = EffectManager.handleExpireEffect
+		OOBManager.registerOOBMsgHandler("expireeff", PFRPG2handleExpireEffect);
+		EffectManager.handleExpireEffect = PFRPG2handleExpireEffect
 	elseif EffectManager5E then
 		DetectedEffectManager = EffectManager5E
 	elseif EffectManager4E then

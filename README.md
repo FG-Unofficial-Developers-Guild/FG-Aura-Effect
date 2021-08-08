@@ -5,7 +5,7 @@ This extension accommodates auras and area-of-effect buffs/debuffs by adding/rem
 This extension has been tested with [FantasyGrounds Unity](https://www.fantasygrounds.com/home/FantasyGroundsUnity.php) 4.1.4 (2021-06-08).
 It is also partially-compatible with FantasyGrounds Classic 3.3.15, although all creatures are counted as medium--regardless of size.
 
-It works with the 3.5E, 4E, 5E, and PFRPG rulesets.
+It works with the 3.5E, 4E, 5E, PFRPG, and PFRPG2 rulesets.
 
 Users might also want to use [GKEnialb](https://www.fantasygrounds.com/forums/member.php?70614-GKEnialb)'s [Token Height Indicator](https://www.fantasygrounds.com/forums/showthread.php?66566-5E-Token-Height-Indicator) which makes the auras height-aware. Unfortuantely, some users are seeing some issues with script errors when using this pairing.
 
