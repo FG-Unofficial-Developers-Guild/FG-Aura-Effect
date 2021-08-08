@@ -344,7 +344,7 @@ local function addAuraEffect(auraType, effect, targetNode, sourceNode)
 	applyLabel = fromAuraString .. applyLabel;
 	
 	local rEffect = {};
-	rEffect.nDuration = DB.getValue(effect, aEffectVarMap["nDuration"]["sDBField"], 0);
+	rEffect.nDuration = 0;
 	rEffect.nGMOnly = DB.getValue(effect, aEffectVarMap["nGMOnly"]["sDBField"], 0);
 	rEffect.nInit = DB.getValue(effect, aEffectVarMap["nInit"]["sDBField"], 0);
 	rEffect.sLabel = applyLabel;
