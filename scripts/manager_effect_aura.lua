@@ -604,8 +604,8 @@ function expireEffectSilent(nodeActor, nodeEffect, nExpireComp)
 			if sRebuiltEffect and sRebuiltEffect ~= "" then
 				DB.setValue(nodeEffect, aEffectVarMap["sName"]["sDBField"], "string", sRebuiltEffect);
 				return;
-			else
-				removeNode(nodeEffect)
+			-- else
+				-- removeNode(nodeEffect)
 			end
 		end
 	end
@@ -628,25 +628,6 @@ function handleExpireEffectSilent(msgOOB)
 	end
 
 	expireEffectSilent(nodeActor, nodeEffect, tonumber(msgOOB.nExpireClause) or 0);
-end
-
--- This shouldn't remain long term
-local function replaceOldFromAuraString()
-	for _, nodeCT in pairs(CombatManager.getCombatantNodes()) do
-		for _, nodeEffect in pairs(DB.getChildren(nodeCT, "effects")) do
-			local sLabelNodeEffect = DB.getValue(nodeEffect, aEffectVarMap["sName"]["sDBField"], "")
-			local index = string.find(sLabelNodeEffect, "FROMAURA:", 0, true)
-			if index and index == 1 then
-				local sFromAuraEffect = fromAuraString .. sLabelNodeEffect:sub(10)
-				if sFromAuraEffect and sFromAuraEffect ~= "" then
-					-- Debug.console(sLabelNodeEffect, index)
-					DB.setValue(nodeEffect, aEffectVarMap["sName"]["sDBField"], "string", sFromAuraEffect)
-				else
-					removeNode(nodeEffect)
-				end
-			end
-		end
-	end
 end
 
 function onInit()
@@ -685,6 +666,5 @@ function onInit()
 
 	if Session.IsHost then
 		manageHandlers(false)
-		replaceOldFromAuraString()
 	end
 end
