@@ -112,7 +112,7 @@ function notifyExpireSilent(varEffect, nMatch)
 end
 
 local function removeAuraEffect(auraType, nodeEffect)
-	if DB.getValue(nodeEffect, aEffectVarMap["nActive"]["sDBField"], 1) ~= 0 then
+	if nodeEffect and DB.getValue(nodeEffect, aEffectVarMap["nActive"]["sDBField"], 1) ~= 0 then
 		if checkSilentNotification(auraType) == true then
 			notifyExpireSilent(nodeEffect, nil, false);
 		else
