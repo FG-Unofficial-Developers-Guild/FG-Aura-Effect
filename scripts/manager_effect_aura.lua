@@ -630,9 +630,9 @@ function handleExpireEffectSilent(msgOOB)
 end
 
 local handleExpireEffect_old
-local function PFRPG2handleExpireEffect(msgOOB)
+local function PFRPG2handleExpireEffect(msgOOB, ...)
 	if DB.findNode(msgOOB.sEffectNode) then
-		handleExpireEffect_old(msgOOB)
+		handleExpireEffect_old(msgOOB, ...)
 	end
 end
 
