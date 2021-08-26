@@ -1,8 +1,3 @@
---
--- Add functionality for SAVEO type effects similar to DMGO or REGEN
---
---
-
 OOB_MSGTYPE_AURATOKENMOVE = "aurasontokenmove";
 OOB_MSGTYPE_AURAAPPLYSILENT = "applyeffsilent";
 OOB_MSGTYPE_AURAEXPIRESILENT = "expireeffsilent";
@@ -78,7 +73,6 @@ end
 
 local function getAurasEffectingNode(nodeCT)
 	local auraEffects = {};
-
 	for _, nodeEffect in pairs(DB.getChildren(nodeCT, "effects")) do
 		if DB.getValue(nodeEffect, aEffectVarMap["nActive"]["sDBField"], 0) == 1 then
 			local sLabelNodeEffect = DB.getValue(nodeEffect, aEffectVarMap["sName"]["sDBField"], "");
@@ -232,13 +226,24 @@ function customCheckConditional(rActor, nodeEffect, aConditions, rTarget, aIgnor
 	return bReturn;
 end
 
+local onAdd = nil;
+local function auraOnAdd(tokenInstance)
+	if onAdd then
+		onAdd(tokenInstance);
+	end
+	if Session.IsHost then
+		-- Debug.chat("onAdd aura update", tokenInstance)
+		notifyTokenMove(tokenInstance)
+	end
+end
+
 local onMove = nil;
 local function auraOnMove(tokenInstance)
 	if onMove then
 		onMove(tokenInstance);
 	end
 	if Session.IsHost then
-		-- Debug.chat("onMove aura update")
+		-- Debug.chat("onMove aura update", tokenInstance)
 		notifyTokenMove(tokenInstance)
 	end
 end
@@ -248,7 +253,9 @@ local function auraUpdateAttributesFromToken(tokenMap)
 	if updateAttributesFromToken then
 		updateAttributesFromToken(tokenMap);
 	end
-	
+	onAdd = tokenMap.onAdd;
+	tokenMap.onAdd = auraOnAdd;
+
 	onMove = tokenMap.onMove;
 	tokenMap.onMove = auraOnMove;
 end
@@ -342,7 +349,7 @@ local function addAuraEffect(auraType, effect, targetNode, sourceNode)
 		return false;
 	end
 	applyLabel = fromAuraString .. applyLabel;
-	
+
 	local rEffect = {};
 	rEffect.nDuration = 0;
 	rEffect.nGMOnly = DB.getValue(effect, aEffectVarMap["nGMOnly"]["sDBField"], 0);
@@ -351,7 +358,7 @@ local function addAuraEffect(auraType, effect, targetNode, sourceNode)
 	rEffect.sName = applyLabel;
 	rEffect.sSource = sourceNode.getPath();
 	rEffect.sUnits = DB.getValue(effect, aEffectVarMap["sUnit"]["sDBField"], "");
-	
+
 	-- CHECK IF SILENT IS ON
 	if checkSilentNotification(auraType) == true then
 		notifyApplySilent(rEffect, targetNode.getPath());
@@ -368,7 +375,7 @@ local function getClosestPosition(token1, token2)
 	if not ctToken1 or not ctToken2 then
 		return 0,0,0,0
 	end
-	
+
 	local gridsize = ImageManager.getImageControl(token1).getGridSize() or 0;
 	local units = GameSystem.getDistanceUnitsPerGrid();
 
@@ -380,20 +387,20 @@ local function getClosestPosition(token1, token2)
 	if dx ~= 0 then
 		slope = (dy) / (dx);
 	end
-	
+
 	local nSpace = DB.getValue(ctToken1, "space");
 	local nHalfSpace = nSpace / 2;
 	local nSquares = nSpace / units;
 	local center = (nSquares + 1) / 2;
 	local minPosX, minPosY;
-	
+
 	local intercept = 0;
 	local delta = 0;
 	local right = centerPos1x + nHalfSpace;
 	local left = centerPos1x - nHalfSpace;
 	local top = centerPos1y - nHalfSpace;
 	local bottom = centerPos1y + nHalfSpace;
-	
+
 	if math.abs(dx) > math.abs(dy) then
 		if dx < 0 then
 			-- Look at the left edge
@@ -666,6 +673,9 @@ function onInit()
 	Interface.onWindowOpened = auraOnWindowOpened;
 
 	if UtilityManager.isClientFGU() then
+		onAdd = Token.onAdd
+		Token.onAdd = auraOnAdd
+
 		onMove = Token.onMove
 		Token.onMove = auraOnMove
 	else
