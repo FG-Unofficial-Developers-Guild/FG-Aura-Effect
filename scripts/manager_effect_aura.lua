@@ -226,25 +226,25 @@ function customCheckConditional(rActor, nodeEffect, aConditions, rTarget, aIgnor
 	return bReturn;
 end
 
-local onAdd = nil;
-local function auraOnAdd(tokenInstance)
-	if onAdd then
-		onAdd(tokenInstance);
+local onTokenAdd = nil;
+local function auraOnTokenAdd(tokenMap)
+	if onTokenAdd then
+		onTokenAdd(tokenMap);
 	end
 	if Session.IsHost then
-		-- Debug.chat("onAdd aura update", tokenInstance)
-		notifyTokenMove(tokenInstance)
+		-- Debug.chat("onAdd aura update", tokenMap)
+		notifyTokenMove(tokenMap)
 	end
 end
 
 local onMove = nil;
-local function auraOnMove(tokenInstance)
+local function auraOnMove(tokenMap)
 	if onMove then
-		onMove(tokenInstance);
+		onMove(tokenMap);
 	end
 	if Session.IsHost then
-		-- Debug.chat("onMove aura update", tokenInstance)
-		notifyTokenMove(tokenInstance)
+		-- Debug.chat("onMove aura update", tokenMap)
+		notifyTokenMove(tokenMap)
 	end
 end
 
@@ -670,8 +670,8 @@ function onInit()
 	Interface.onWindowOpened = auraOnWindowOpened;
 
 	if UtilityManager.isClientFGU() then
-		onAdd = Token.onAdd
-		Token.onAdd = auraOnAdd
+		onTokenAdd = ImageManager.onTokenAdd
+		ImageManager.onTokenAdd = auraOnTokenAdd
 
 		onMove = Token.onMove
 		Token.onMove = auraOnMove
