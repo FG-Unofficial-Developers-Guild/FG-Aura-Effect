@@ -253,9 +253,6 @@ local function auraUpdateAttributesFromToken(tokenMap)
 	if updateAttributesFromToken then
 		updateAttributesFromToken(tokenMap);
 	end
-	onAdd = tokenMap.onAdd;
-	tokenMap.onAdd = auraOnAdd;
-
 	onMove = tokenMap.onMove;
 	tokenMap.onMove = auraOnMove;
 end
