@@ -13,23 +13,23 @@ local aEffectVarMap = {
 	["sName"] = { sDBType = "string", sDBField = "label" },
 	["sSource"] = { sDBType = "string", sDBField = "source_name", bClearOnUntargetedDrop = true },
 	["sTarget"] = { sDBType = "string", bClearOnUntargetedDrop = true },
-	["sUnit"] = { sDBType = "string", sDBField = "unit" },
+	["sUnit"] = { sDBType = "string", sDBField = "unit" }
 };
 
 ---	This function checks whether an effect should trigger recalculation.
 --	It does this by checking the effect text for a series of three letters followed by a colon (as used in bonuses like CON: 4).
 local function checkEffectRecursion(nodeEffect, sEffectComp)
-	return string.find(DB.getValue(nodeEffect, aEffectVarMap["sName"]["sDBField"], ""), sEffectComp) ~= nil
+	return string.find(DB.getValue(nodeEffect, aEffectVarMap["sName"]["sDBField"], ""), sEffectComp) ~= nil;
 end
 
 ---	This function is called when effect components are changed.
 local function onEffectChanged(nodeEffect)
 	if checkEffectRecursion(nodeEffect, auraString) and not checkEffectRecursion(nodeEffect, fromAuraString) then
-		local nodeCT = nodeEffect.getChild("...")
+		local nodeCT = nodeEffect.getChild("...");
 		local tokenCT = CombatManager.getTokenFromCT(nodeCT);
 		if tokenCT then
 			if DB.getValue(nodeEffect, aEffectVarMap["nActive"]["sDBField"], 0) ~= 1 then
-				checkDeletedAuraEffects(nodeEffect)
+				checkDeletedAuraEffects(nodeEffect);
 			else
 				updateAuras(tokenCT);
 			end
@@ -565,6 +565,7 @@ function handleApplyEffectSilent(msgOOB)
 	EffectManager.addEffect(msgOOB.user, msgOOB.identity, nodeCTEntry, rEffect, false);
 end
 
+---	This function creates and removes handlers on the effects list
 local function manageHandlers(bRemove)
 	if bRemove then
 		DB.removeHandler(DB.getPath("combattracker.list.*.effects.*"), "onChildUpdate", onEffectChanged)
@@ -573,6 +574,7 @@ local function manageHandlers(bRemove)
 	end
 end
 
+---	This function removes nodes without triggering recursion
 local function removeNode(nodeEffect)
 	manageHandlers(true)
 	nodeEffect.delete()
@@ -630,15 +632,19 @@ local function PFRPG2handleExpireEffect(msgOOB, ...)
 end
 
 function onInit()
+	-- register option for silent aura messages
 	OptionsManager.registerOption2("AURASILENT", false, "option_header_aura", "option_label_AURASILENT", "option_entry_cycler", { labels = "option_val_friend|option_val_foe|option_val_all", values="friend|foe|all", baselabel = "option_val_off", baseval="off", default="off"});
 
+	-- register OOB message handlers to allow player movement
 	OOBManager.registerOOBMsgHandler(OOB_MSGTYPE_AURATOKENMOVE, handleTokenMovement);
 	OOBManager.registerOOBMsgHandler(OOB_MSGTYPE_AURAAPPLYSILENT, handleApplyEffectSilent);
 	OOBManager.registerOOBMsgHandler(OOB_MSGTYPE_AURAEXPIRESILENT, handleExpireEffectSilent);
 
+	-- register function to recalculate auras when effects are deleted
 	CombatManager.setCustomDeleteCombatantEffectHandler(checkDeletedAuraEffects);
 
-	local DetectedEffectManager
+	-- set up the effect manager proxy functions for the detected ruleset
+	local DetectedEffectManager = nil
 	if EffectManager35E then
 		DetectedEffectManager = EffectManager35E
 	elseif EffectManagerPFRPG2 then
@@ -652,20 +658,24 @@ function onInit()
 		DetectedEffectManager = EffectManager4E
 	end
 
+	-- create proxy function to add FACTION conditional
 	checkConditional = DetectedEffectManager.checkConditional;
 	DetectedEffectManager.checkConditional = customCheckConditional;
 
+	-- create proxy function to recalculate auras when new windows are opened
 	onWindowOpened = Interface.onWindowOpened;
 	Interface.onWindowOpened = auraOnWindowOpened;
 
-	if UtilityManager.isClientFGU() then
-		onMove = Token.onMove
-		Token.onMove = auraOnMove
-	else
+	-- create the appropriate proxy function for the FG version being used.
+	if UtilityManager and UtilityManager.isClientFGU and not UtilityManager.isClientFGU() then
 		updateAttributesFromToken = TokenManager.updateAttributesFromToken;
 		TokenManager.updateAttributesFromToken = auraUpdateAttributesFromToken;
+	else
+		onMove = Token.onMove
+		Token.onMove = auraOnMove
 	end
 
+	-- all handlers should be created on GM machine
 	if Session.IsHost then
 		manageHandlers(false)
 	end
