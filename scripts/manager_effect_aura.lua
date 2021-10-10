@@ -26,6 +26,18 @@ local function checkEffectRecursion(nodeEffect, sEffectComp)
 	return string.find(DB.getValue(nodeEffect, aEffectVarMap["sName"]["sDBField"], ""), sEffectComp) ~= nil;
 end
 
+local function isCombatantDisabled(nodeChar)
+	local rActor = ActorManager.resolveActor(nodeChar);
+	local sStatus = ActorHealthManager.getHealthStatus(rActor);
+	if sStatus ~= ActorHealthManager.STATUS_DEAD then
+		return;
+	elseif sStatus ~= ActorHealthManager.STATUS_DYING then
+		return;
+	elseif sStatus ~= ActorHealthManager.STATUS_UNCONSCIOUS then
+		return;
+	end
+end
+
 ---	This function is called when effect components are changed.
 local function onEffectChanged(nodeEffect)
 	if checkEffectRecursion(nodeEffect, auraString) and not checkEffectRecursion(nodeEffect, fromAuraString) then
@@ -335,7 +347,7 @@ end
 local function addAuraEffect(auraType, effect, targetNode, sourceNode)
 	local sLabel = DB.getValue(effect, aEffectVarMap["sName"]["sDBField"], "");
 	local applyLabel = string.match(sLabel, auraString .. ".-;%s*(.*)$");
-	if not applyLabel then
+	if not applyLabel or not sourceNode or not targetNode then
 		return false;
 	end
 	applyLabel = fromAuraString .. applyLabel;
@@ -352,7 +364,7 @@ local function addAuraEffect(auraType, effect, targetNode, sourceNode)
 	-- CHECK IF SILENT IS ON
 	if checkSilentNotification(auraType) == true then
 		notifyApplySilent(rEffect, targetNode.getPath());
-	else
+	elseif not isCombatantDisabled(sourceNode) then
 		EffectManager.notifyApply(rEffect, targetNode.getPath());
 	end
 end
@@ -530,7 +542,7 @@ function checkAuraApplicationAndAddOrRemove(sourceNode, targetNode, auraEffect, 
 		local existingAuraEffect = checkAuraAlreadyEffecting(sourceNode, targetNode, auraEffect)
 		if (nodeInfo.distanceBetween and nodeInfo.distanceBetween <= nRange) and not existingAuraEffect then
 			addAuraEffect(auraType, auraEffect, targetNode, sourceNode)
-		elseif existingAuraEffect then
+		elseif existingAuraEffect or isCombatantDisabled(sourceNode) then
 			removeAuraEffect(auraType, existingAuraEffect)
 		end
 	end
