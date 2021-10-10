@@ -364,7 +364,7 @@ local function addAuraEffect(auraType, effect, targetNode, sourceNode)
 	-- CHECK IF SILENT IS ON
 	if checkSilentNotification(auraType) == true then
 		notifyApplySilent(rEffect, targetNode.getPath());
-	else
+	elseif not isCombatantDisabled(sourceNode) then
 		EffectManager.notifyApply(rEffect, targetNode.getPath());
 	end
 end
@@ -542,7 +542,7 @@ function checkAuraApplicationAndAddOrRemove(sourceNode, targetNode, auraEffect, 
 		local existingAuraEffect = checkAuraAlreadyEffecting(sourceNode, targetNode, auraEffect)
 		if (nodeInfo.distanceBetween and nodeInfo.distanceBetween <= nRange) and not existingAuraEffect then
 			addAuraEffect(auraType, auraEffect, targetNode, sourceNode)
-		elseif existingAuraEffect then
+		elseif existingAuraEffect or isCombatantDisabled(sourceNode) then
 			removeAuraEffect(auraType, existingAuraEffect)
 		end
 	end
