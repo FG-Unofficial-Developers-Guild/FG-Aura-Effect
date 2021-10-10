@@ -2,7 +2,7 @@
 This extension accommodates auras and area-of-effect buffs/debuffs by adding/removing effects to other characters based on proximity.
 
 # Compatibility and Instructions
-This extension has been tested with [FantasyGrounds Unity](https://www.fantasygrounds.com/home/FantasyGroundsUnity.php) 4.1.5 (2021-08-24), but retains some legacy code to work with FG Classic as well.
+This extension has been tested with [FantasyGrounds Unity](https://www.fantasygrounds.com/home/FantasyGroundsUnity.php) 4.1.10 (2021-10-05), but retains some legacy code to work with FG Classic as well.
 
 It works with the 3.5E, 4E, 5E, PFRPG, and PFRPG2 rulesets.
 
@@ -18,6 +18,8 @@ This will add a 10 foot aura around the person who has this effect.
 Allies within 10' will receive an effect "FROMAURA; Aura of Protection; SAVE: 5".
 
 While a name (such as 'Aura of Protection' in the above example) is not required it is highly reccomended to help avoid collisions between effects.
+
+Characters with the condition DEAD, DYING, or UNCONSCIOUS will have their auras disabled. In PFRPG this does not function for the "Unconscious" effect at this time.
 
 The bearer of the AURA effect will also receive its benefits.
 
