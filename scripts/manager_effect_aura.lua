@@ -1,3 +1,7 @@
+--
+--	Please see the LICENSE.md file included with this distribution for attribution and copyright information.
+--
+
 OOB_MSGTYPE_AURATOKENMOVE = "aurasontokenmove";
 OOB_MSGTYPE_AURAAPPLYSILENT = "applyeffsilent";
 OOB_MSGTYPE_AURAEXPIRESILENT = "expireeffsilent";
