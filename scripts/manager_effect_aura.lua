@@ -528,14 +528,10 @@ function checkAuraApplicationAndAddOrRemove(sourceNode, targetNode, auraEffect, 
 			end
 		end
 		local existingAuraEffect = checkAuraAlreadyEffecting(sourceNode, targetNode, auraEffect)
-		if nodeInfo.distanceBetween and nodeInfo.distanceBetween <= nRange then
-			if not existingAuraEffect then
-				addAuraEffect(auraType, auraEffect, targetNode, sourceNode)
-			end
-		else
-			if existingAuraEffect then
-				removeAuraEffect(auraType, existingAuraEffect)
-			end
+		if (nodeInfo.distanceBetween and nodeInfo.distanceBetween <= nRange) and not existingAuraEffect then
+			addAuraEffect(auraType, auraEffect, targetNode, sourceNode)
+		elseif existingAuraEffect then
+			removeAuraEffect(auraType, existingAuraEffect)
 		end
 	end
 end
