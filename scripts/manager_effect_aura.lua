@@ -29,11 +29,11 @@ end
 local function isCombatantDisabled(nodeChar)
 	local rActor = ActorManager.resolveActor(nodeChar);
 	local sStatus = ActorHealthManager.getHealthStatus(rActor);
-	if sStatus ~= ActorHealthManager.STATUS_DEAD then
+	if sStatus == ActorHealthManager.STATUS_DEAD then
 		return;
-	elseif sStatus ~= ActorHealthManager.STATUS_DYING then
+	elseif sStatus == ActorHealthManager.STATUS_DYING then
 		return;
-	elseif sStatus ~= ActorHealthManager.STATUS_UNCONSCIOUS then
+	elseif sStatus == ActorHealthManager.STATUS_UNCONSCIOUS then
 		return;
 	end
 end
