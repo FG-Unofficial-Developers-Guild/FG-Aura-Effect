@@ -26,6 +26,20 @@ local function checkEffectRecursion(nodeEffect, sEffectComp)
 	return string.find(DB.getValue(nodeEffect, aEffectVarMap["sName"]["sDBField"], ""), sEffectComp) ~= nil;
 end
 
+local function isSourceDisabled(nodeChar)
+	local rActor = ActorManager.resolveActor(nodeChar);
+	local sStatus = ActorHealthManager.getHealthStatus(rActor) or "";
+	if sStatus == ActorHealthManager.STATUS_DEAD then
+		return true;
+	elseif sStatus == ActorHealthManager.STATUS_DYING then
+		return true;
+	elseif sStatus == ActorHealthManager.STATUS_UNCONSCIOUS then
+		return true;
+	elseif DetectedEffectManager.hasEffect(rActor, "Unconscious") then
+		return true;
+	end
+end
+
 ---	This function is called when effect components are changed.
 local function onEffectChanged(nodeEffect)
 	if checkEffectRecursion(nodeEffect, auraString) and not checkEffectRecursion(nodeEffect, fromAuraString) then
@@ -528,8 +542,10 @@ function checkAuraApplicationAndAddOrRemove(sourceNode, targetNode, auraEffect, 
 			end
 		end
 		local existingAuraEffect = checkAuraAlreadyEffecting(sourceNode, targetNode, auraEffect)
-		if (nodeInfo.distanceBetween and nodeInfo.distanceBetween <= nRange) and not existingAuraEffect then
-			addAuraEffect(auraType, auraEffect, targetNode, sourceNode)
+		if (nodeInfo.distanceBetween and nodeInfo.distanceBetween <= nRange) and not isSourceDisabled(sourceNode) then
+			if not existingAuraEffect then
+				addAuraEffect(auraType, auraEffect, targetNode, sourceNode)
+			end
 		elseif existingAuraEffect then
 			removeAuraEffect(auraType, existingAuraEffect)
 		end
