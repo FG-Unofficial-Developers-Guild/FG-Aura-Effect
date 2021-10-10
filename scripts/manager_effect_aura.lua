@@ -26,8 +26,6 @@ local function checkEffectRecursion(nodeEffect, sEffectComp)
 	return string.find(DB.getValue(nodeEffect, aEffectVarMap["sName"]["sDBField"], ""), sEffectComp) ~= nil;
 end
 
-local DetectedEffectManager = nil
-
 local function isSourceDisabled(nodeChar)
 	local rActor = ActorManager.resolveActor(nodeChar);
 	local sStatus = ActorHealthManager.getHealthStatus(rActor) or "";
@@ -36,8 +34,6 @@ local function isSourceDisabled(nodeChar)
 	elseif sStatus == ActorHealthManager.STATUS_DYING then
 		return true;
 	elseif sStatus == ActorHealthManager.STATUS_UNCONSCIOUS then
-		return true;
-	elseif DetectedEffectManager.hasEffect(rActor, "Unconscious") then
 		return true;
 	end
 end
@@ -54,6 +50,15 @@ local function onEffectChanged(nodeEffect)
 				updateAuras(tokenCT);
 			end
 		end
+	end
+end
+
+---	This function is called when effect components are changed.
+local function onStatusChanged(nodeStatus)
+	local nodeCT = nodeStatus.getChild("..");
+	local tokenCT = CombatManager.getTokenFromCT(nodeCT);
+	if tokenCT then
+		updateAuras(tokenCT);
 	end
 end
 
@@ -587,8 +592,10 @@ end
 local function manageHandlers(bRemove)
 	if bRemove then
 		DB.removeHandler(DB.getPath("combattracker.list.*.effects.*"), "onChildUpdate", onEffectChanged)
+		DB.removeHandler(DB.getPath("combattracker.list.*.status"), "onUpdate", onStatusChanged)
 	else
 		DB.addHandler(DB.getPath("combattracker.list.*.effects.*"), "onChildUpdate", onEffectChanged)
+		DB.addHandler(DB.getPath("combattracker.list.*.status"), "onUpdate", onStatusChanged)
 	end
 end
 
@@ -662,6 +669,7 @@ function onInit()
 	CombatManager.setCustomDeleteCombatantEffectHandler(checkDeletedAuraEffects);
 
 	-- set up the effect manager proxy functions for the detected ruleset
+	local DetectedEffectManager = nil
 	if EffectManager35E then
 		DetectedEffectManager = EffectManager35E
 	elseif EffectManagerPFRPG2 then
