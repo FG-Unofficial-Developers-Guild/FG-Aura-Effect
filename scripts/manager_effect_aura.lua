@@ -26,6 +26,8 @@ local function checkEffectRecursion(nodeEffect, sEffectComp)
 	return string.find(DB.getValue(nodeEffect, aEffectVarMap["sName"]["sDBField"], ""), sEffectComp) ~= nil;
 end
 
+local DetectedEffectManager = nil
+
 local function isSourceDisabled(nodeChar)
 	local rActor = ActorManager.resolveActor(nodeChar);
 	local sStatus = ActorHealthManager.getHealthStatus(rActor) or "";
@@ -660,7 +662,6 @@ function onInit()
 	CombatManager.setCustomDeleteCombatantEffectHandler(checkDeletedAuraEffects);
 
 	-- set up the effect manager proxy functions for the detected ruleset
-	local DetectedEffectManager = nil
 	if EffectManager35E then
 		DetectedEffectManager = EffectManager35E
 	elseif EffectManagerPFRPG2 then
