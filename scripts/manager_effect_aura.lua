@@ -457,60 +457,6 @@ local function getClosestPosition(token1, token2)
 	return minPosX, minPosY
 end
 
--- compute distance between targets
--- this is not as good as Unity's getDistanceBetween
-local function checkDistance(targetToken, sourceToken)
-	if not targetToken or not sourceToken then
-		return false;
-	end
-	local ctrlImage = ImageManager.getImageControl(targetToken);
-	local srcCtrlImage = ImageManager.getImageControl(sourceToken);
-	if ctrlImage and srcCtrlImage and (ctrlImage == srcCtrlImage) then
-		local startx, starty = getClosestPosition(sourceToken, targetToken)
-		local endx, endy = getClosestPosition(targetToken, sourceToken)
-		local dx = math.abs(endx - startx) - 0.5;
-		local dy = math.abs(endy - starty) - 0.5;
-		local dz = 0;
-
-		local gridsize = ImageManager.getImageControl(sourceToken).getGridSize() or 0;
-		local units = GameSystem.getDistanceUnitsPerGrid();
-
-		local diagmult = Interface.getDistanceDiagMult()
-		if diagmult == 1 then
-			-- Just a max of each dimension
-			local longestLeg = math.max(dx, dy, dz)		
-			totalDistance = math.floor(longestLeg / gridsize + 0.5) * units
-		elseif diagmult == 0 then
-			-- Get 3D distance directly
-			local hyp = math.sqrt((dx ^ 2) + (dy ^ 2) + (dz ^ 2))
-			totalDistance = (hyp / gridsize) * units
-		else
-			-- You get full amount of the longest path and half from each of the others
-			local straight = math.max(dx, dy, dz)
-			local diagonal = 0
-			if straight == dx then
-				diagonal = math.floor((math.ceil(dy / gridsize) + math.ceil(dz / gridsize)) / 2) * gridsize + 5
-			elseif straight == dy then
-				diagonal = math.floor((math.ceil(dx / gridsize) + math.ceil(dz / gridsize)) / 2) * gridsize + 5
-			end
-			totalDistance = math.floor((straight + diagonal) / gridsize)
-			totalDistance = totalDistance * units
-		end
-
-		return totalDistance;
-	end
-end
-
--- check FG version. if unity, use Token.getDistanceBetween.
--- if classic, call checkDistance function above
-local function anyGetDistanceBetween(sourceToken, targetToken)
-	if UtilityManager.isClientFGU() then
-		return Token.getDistanceBetween(sourceToken, targetToken)
-	else
-		return checkDistance(sourceToken, targetToken)
-	end
-end
-
 function checkAuraApplicationAndAddOrRemove(sourceNode, targetNode, auraEffect, nodeInfo)
 	if not targetNode or not auraEffect then
 		return false
@@ -545,7 +491,7 @@ function checkAuraApplicationAndAddOrRemove(sourceNode, targetNode, auraEffect, 
 			local sourceToken = CombatManager.getTokenFromCT(sourceNode)
 			local targetToken = CombatManager.getTokenFromCT(targetNode)
 			if sourceToken and targetToken then
-				nodeInfo.distanceBetween = anyGetDistanceBetween(sourceToken, targetToken)
+				nodeInfo.distanceBetween = Token.getDistanceBetween(sourceToken, targetToken)
 			end
 		end
 		local existingAuraEffect = checkAuraAlreadyEffecting(sourceNode, targetNode, auraEffect)
@@ -691,14 +637,9 @@ function onInit()
 	onWindowOpened = Interface.onWindowOpened;
 	Interface.onWindowOpened = auraOnWindowOpened;
 
-	-- create the appropriate proxy function for the FG version being used.
-	if UtilityManager and UtilityManager.isClientFGU and not UtilityManager.isClientFGU() then
-		updateAttributesFromToken = TokenManager.updateAttributesFromToken;
-		TokenManager.updateAttributesFromToken = auraUpdateAttributesFromToken;
-	else
-		onMove = Token.onMove
-		Token.onMove = auraOnMove
-	end
+	-- create the proxy function to trigger aura calculation on token movement.
+	onMove = Token.onMove
+	Token.onMove = auraOnMove
 
 	-- all handlers should be created on GM machine
 	if Session.IsHost then
