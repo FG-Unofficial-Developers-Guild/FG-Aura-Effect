@@ -623,6 +623,8 @@ function onInit()
 		handleExpireEffect_old = EffectManager.handleExpireEffect
 		OOBManager.registerOOBMsgHandler("expireeff", PFRPG2handleExpireEffect);
 		EffectManager.handleExpireEffect = PFRPG2handleExpireEffect
+	elseif EffectManagerSFRPG then
+		DetectedEffectManager = EffectManagerSFRPG
 	elseif EffectManager5E then
 		DetectedEffectManager = EffectManager5E
 	elseif EffectManager4E then
