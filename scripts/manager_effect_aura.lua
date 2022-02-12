@@ -28,13 +28,10 @@ end
 
 local function isSourceDisabled(nodeChar)
 	local rActor = ActorManager.resolveActor(nodeChar);
-	local sStatus = ActorHealthManager.getHealthStatus(rActor) or "";
-	if sStatus == ActorHealthManager.STATUS_DEAD then
-		return true;
-	elseif sStatus == ActorHealthManager.STATUS_DYING then
-		return true;
-	elseif sStatus == ActorHealthManager.STATUS_UNCONSCIOUS then
-		return true;
+	if ActorHealthManager.isDyingOrDead(rActor) then
+		return
+	elseif ActorHealthManager.getHealthStatus(rActor) == ActorHealthManager.STATUS_UNCONSCIOUS then
+		return
 	end
 end
 
