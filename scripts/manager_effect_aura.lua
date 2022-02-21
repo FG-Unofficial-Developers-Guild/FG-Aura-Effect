@@ -146,11 +146,12 @@ local function checkAurasEffectingNodeForDelete(nodeCT)
 			local sourceNode = DB.findNode(sSource);
 			if sourceNode then
 				local sourceAuras = getAurasForNode(sourceNode);
-				local auraStillExists = nil;
+				local auraStillExists = false;
 				for _, sourceEffect in ipairs(sourceAuras) do
 					local sourceEffectLabel = DB.getValue(sourceEffect, aEffectVarMap["sName"]["sDBField"], "");
 					if string.find(sourceEffectLabel, targetEffectLabel, 0, true) then
 						auraStillExists = true;
+						break
 					end
 				end
 				if not auraStillExists then
