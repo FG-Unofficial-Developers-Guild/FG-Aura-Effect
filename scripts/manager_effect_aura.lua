@@ -534,11 +534,11 @@ end
 ---	This function creates and removes handlers on the effects list
 local function manageHandlers(bRemove)
 	if bRemove then
-		DB.removeHandler(DB.getPath("combattracker.list.*.effects.*"), "onChildUpdate", onEffectChanged)
-		DB.removeHandler(DB.getPath("combattracker.list.*.status"), "onUpdate", onStatusChanged)
+		DB.removeHandler(DB.getPath(CombatManager.CT_LIST .. ".*.effects.*"), "onChildUpdate", onEffectChanged)
+		DB.removeHandler(DB.getPath(CombatManager.CT_LIST .. ".*.status"), "onUpdate", onStatusChanged)
 	else
-		DB.addHandler(DB.getPath("combattracker.list.*.effects.*"), "onChildUpdate", onEffectChanged)
-		DB.addHandler(DB.getPath("combattracker.list.*.status"), "onUpdate", onStatusChanged)
+		DB.addHandler(DB.getPath(CombatManager.CT_LIST .. ".*.effects.*"), "onChildUpdate", onEffectChanged)
+		DB.addHandler(DB.getPath(CombatManager.CT_LIST .. ".*.status"), "onUpdate", onStatusChanged)
 	end
 end
 
