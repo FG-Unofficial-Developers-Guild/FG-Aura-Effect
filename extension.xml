@@ -26,7 +26,7 @@
 		</ruleset>
 	</properties>
 	
-	<announcement text="https://www.fantasygrounds.com/forums/showthread.php?57417-5E-Aura-Effects\rAura Effects v1.9\r--by Kent McCullough 2020 updated by SoxMax and bmos with contributions by GKEnialb and icon suggested by JustinFreitas ." font="emotefont" icon="aura_icon" />
+	<announcement text="https://www.fantasygrounds.com/forums/showthread.php?57417-5E-Aura-Effects\rAura Effects v1.9\rCreate by Kent McCullough, SoxMax, bmos, GKEnialb and with icon suggested by JustinFreitas." font="emotefont" icon="aura_icon" />
 
 	<base>
 		<string name="option_header_aura">Auras (GM)</string>
