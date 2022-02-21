@@ -36,6 +36,21 @@ local function isSourceDisabled(nodeChar)
 end
 
 ---	This function is called when effect components are changed.
+local function onEffectRemoved(nodeEffect)
+	if checkEffectRecursion(nodeEffect, auraString) and not checkEffectRecursion(nodeEffect, fromAuraString) then
+		local nodeCT = nodeEffect.getChild("...");
+		local tokenCT = CombatManager.getTokenFromCT(nodeCT);
+		if tokenCT then
+			if DB.getValue(nodeEffect, aEffectVarMap["nActive"]["sDBField"], 0) ~= 1 then
+				checkDeletedAuraEffects(nodeEffect);
+			else
+				updateAuras(tokenCT);
+			end
+		end
+	end
+end
+
+---	This function is called when effects are removed.
 local function onEffectChanged(nodeEffect)
 	if checkEffectRecursion(nodeEffect, auraString) and not checkEffectRecursion(nodeEffect, fromAuraString) then
 		local nodeCT = nodeEffect.getChild("...");
@@ -536,9 +551,11 @@ end
 local function manageHandlers(bRemove)
 	if bRemove then
 		DB.removeHandler(DB.getPath(CombatManager.CT_LIST .. ".*.effects.*"), "onChildUpdate", onEffectChanged)
+		DB.removeHandler(DB.getPath(CombatManager.CT_LIST .. ".*.effects"), 'onChildDeleted', onEffectRemoved)
 		DB.removeHandler(DB.getPath(CombatManager.CT_LIST .. ".*.status"), "onUpdate", onStatusChanged)
 	else
 		DB.addHandler(DB.getPath(CombatManager.CT_LIST .. ".*.effects.*"), "onChildUpdate", onEffectChanged)
+		DB.addHandler(DB.getPath(CombatManager.CT_LIST .. ".*.effects"), 'onChildDeleted', onEffectRemoved)
 		DB.addHandler(DB.getPath(CombatManager.CT_LIST .. ".*.status"), "onUpdate", onStatusChanged)
 	end
 end
@@ -608,9 +625,6 @@ function onInit()
 	OOBManager.registerOOBMsgHandler(OOB_MSGTYPE_AURATOKENMOVE, handleTokenMovement);
 	OOBManager.registerOOBMsgHandler(OOB_MSGTYPE_AURAAPPLYSILENT, handleApplyEffectSilent);
 	OOBManager.registerOOBMsgHandler(OOB_MSGTYPE_AURAEXPIRESILENT, handleExpireEffectSilent);
-
-	-- register function to recalculate auras when effects are deleted
-	CombatManager.setCustomDeleteCombatantEffectHandler(checkDeletedAuraEffects);
 
 	-- set up the effect manager proxy functions for the detected ruleset
 	local DetectedEffectManager = nil
