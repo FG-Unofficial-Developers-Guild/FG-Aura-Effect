@@ -39,12 +39,11 @@ end
 local function onEffectRemoved(nodeEffect)
 	if checkEffectRecursion(nodeEffect, auraString) and not checkEffectRecursion(nodeEffect, fromAuraString) then
 		local nodeCT = nodeEffect.getChild("...");
-		local tokenCT = CombatManager.getTokenFromCT(nodeCT);
-		if tokenCT then
+		if nodeCT then
 			if DB.getValue(nodeEffect, aEffectVarMap["nActive"]["sDBField"], 0) ~= 1 then
 				checkDeletedAuraEffects(nodeEffect);
 			else
-				updateAuras(tokenCT);
+				updateAuras(nodeCT);
 			end
 		end
 	end
@@ -54,12 +53,11 @@ end
 local function onEffectChanged(nodeEffect)
 	if checkEffectRecursion(nodeEffect, auraString) and not checkEffectRecursion(nodeEffect, fromAuraString) then
 		local nodeCT = nodeEffect.getChild("...");
-		local tokenCT = CombatManager.getTokenFromCT(nodeCT);
-		if tokenCT then
+		if nodeCT then
 			if DB.getValue(nodeEffect, aEffectVarMap["nActive"]["sDBField"], 0) ~= 1 then
 				checkDeletedAuraEffects(nodeEffect);
 			else
-				updateAuras(tokenCT);
+				updateAuras(nodeCT);
 			end
 		end
 	end
@@ -67,11 +65,7 @@ end
 
 ---	This function is called when effect components are changed.
 local function onStatusChanged(nodeStatus)
-	local nodeCT = nodeStatus.getChild("..");
-	local tokenCT = CombatManager.getTokenFromCT(nodeCT);
-	if tokenCT then
-		updateAuras(tokenCT);
-	end
+	updateAuras(nodeStatus.getChild(".."));
 end
 
 ---	This function requests aura processing to be performed on the host FG instance.
@@ -292,11 +286,7 @@ local function getRelationship(sourceNode, targetNode)
 	end
 end
 
-function updateAuras(tokenMap)
-	if not tokenMap.getContainerNode or not CombatManager then
-		return;
-	end
-	local sourceNode = CombatManager.getCTFromToken(tokenMap)
+function updateAuras(sourceNode)
 	if not sourceNode then
 		return false
 	end
@@ -522,8 +512,7 @@ function checkAuraApplicationAndAddOrRemove(sourceNode, targetNode, auraEffect, 
 end
 
 function handleTokenMovement(msgOOB)
-	local tokenCT = CombatManager.getTokenFromCT(DB.findNode(msgOOB.sCTNode));
-	updateAuras(tokenCT);
+	updateAuras(DB.findNode(msgOOB.sCTNode));
 end
 
 function handleApplyEffectSilent(msgOOB)
