@@ -490,6 +490,7 @@ function checkAuraApplicationAndAddOrRemove(sourceNode, targetNode, auraEffect, 
 	if nRange then
 		nRange = math.floor(tonumber(nRange))
 	else
+		Debug.console("Aura Effect: Aura range is missing. Proper aura format is AURA: 5");
 		return false
 	end
 	if not auraType then
