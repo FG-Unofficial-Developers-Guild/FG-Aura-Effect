@@ -360,6 +360,7 @@ local function addAuraEffect(auraType, effect, targetNode, sourceNode)
 	local sLabel = DB.getValue(effect, aEffectVarMap["sName"]["sDBField"], "");
 	local applyLabel = string.match(sLabel, auraString .. ".-;%s*(.*)$");
 	if not applyLabel then
+		Debug.console('Aura Effect: Aura text not found. FROMAURA effects will not be created.', sLabel, auraString)
 		return false;
 	end
 	applyLabel = fromAuraString .. applyLabel;
