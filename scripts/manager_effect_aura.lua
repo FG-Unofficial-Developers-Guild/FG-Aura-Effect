@@ -35,21 +35,7 @@ local function isSourceDisabled(nodeChar)
 	end
 end
 
----	This function is called when effect components are changed.
-local function onEffectRemoved(nodeEffect)
-	if checkEffectRecursion(nodeEffect, auraString) and not checkEffectRecursion(nodeEffect, fromAuraString) then
-		local nodeCT = nodeEffect.getChild("...");
-		if nodeCT then
-			if DB.getValue(nodeEffect, aEffectVarMap["nActive"]["sDBField"], 0) ~= 1 then
-				checkDeletedAuraEffects(nodeEffect);
-			else
-				updateAuras(nodeCT);
-			end
-		end
-	end
-end
-
----	This function is called when effects are removed.
+---	This function is called when effects are removed or effect components are changed.
 local function onEffectChanged(nodeEffect)
 	if checkEffectRecursion(nodeEffect, auraString) and not checkEffectRecursion(nodeEffect, fromAuraString) then
 		local nodeCT = nodeEffect.getChild("...");
@@ -544,11 +530,11 @@ end
 local function manageHandlers(bRemove)
 	if bRemove then
 		DB.removeHandler(DB.getPath(CombatManager.CT_LIST .. ".*.effects.*"), "onChildUpdate", onEffectChanged)
-		DB.removeHandler(DB.getPath(CombatManager.CT_LIST .. ".*.effects"), 'onChildDeleted', onEffectRemoved)
+		DB.removeHandler(DB.getPath(CombatManager.CT_LIST .. ".*.effects"), 'onChildDeleted', onEffectChanged)
 		DB.removeHandler(DB.getPath(CombatManager.CT_LIST .. ".*.status"), "onUpdate", onStatusChanged)
 	else
 		DB.addHandler(DB.getPath(CombatManager.CT_LIST .. ".*.effects.*"), "onChildUpdate", onEffectChanged)
-		DB.addHandler(DB.getPath(CombatManager.CT_LIST .. ".*.effects"), 'onChildDeleted', onEffectRemoved)
+		DB.addHandler(DB.getPath(CombatManager.CT_LIST .. ".*.effects"), 'onChildDeleted', onEffectChanged)
 		DB.addHandler(DB.getPath(CombatManager.CT_LIST .. ".*.status"), "onUpdate", onStatusChanged)
 	end
 end
