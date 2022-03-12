@@ -135,7 +135,8 @@ end
 local function checkAurasEffectingNodeForDelete(nodeCT)
 	local aurasEffectingNode = getAurasEffectingNode(nodeCT);
 	for _, targetEffect in ipairs(aurasEffectingNode) do
-		local targetEffectLabel = DB.getValue(targetEffect, aEffectVarMap["sName"]["sDBField"], ""):gsub(fromAuraString,"");
+		local targetEffectLabel = DB.getValue(targetEffect, aEffectVarMap["sName"]["sDBField"], "");
+		local targetEffectLabel = targetEffectLabel:gsub(fromAuraString,"");
 		if not string.find(targetEffectLabel, fromAuraString) then
 			local sSource = DB.getValue(targetEffect, aEffectVarMap["sSource"]["sDBField"], "");
 			local sourceNode = DB.findNode(sSource);
@@ -172,7 +173,8 @@ function checkAuraAlreadyEffecting(nodeSource, nodeTarget, effect)
 		-- if DB.getValue(nodeEffect, aEffectVarMap["nActive"]["sDBField"], 0) ~= 2 then
 		local sSource = DB.getValue(nodeEffect, aEffectVarMap["sSource"]["sDBField"]);
 		if sSource == nodeSource.getPath() then
-			local sEffect = DB.getValue(nodeEffect, aEffectVarMap["sName"]["sDBField"], ""):gsub(fromAuraString,"");
+			local sEffect = DB.getValue(nodeEffect, aEffectVarMap["sName"]["sDBField"], "");
+			sEffect = sEffect:gsub(fromAuraString,"");
 			if string.find(sLabel, sEffect, 0, true) then
 				return nodeEffect;
 			end
