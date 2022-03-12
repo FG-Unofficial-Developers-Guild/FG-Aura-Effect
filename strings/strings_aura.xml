@@ -8,4 +8,8 @@
 	<string name="option_label_AURASILENT">Silence Notifications for Aura Types</string>
 	<string name="option_val_friend">Friend</string>
 	<string name="option_val_foe">Foe</string>
+	<!-- Console Messages -->
+	<string name="aura_console_notext">Aura Effect: Aura text not found. FROMAURA effects will not be created.</string>
+	<string name="aura_console_norange">Aura Effect: Aura range is missing. Proper aura format is AURA: 5</string>
+	<string name="aura_console_expire_nonode">Aura Effect: Cannot expire effect as nodeEffect is not provided.</string>
 </root>
