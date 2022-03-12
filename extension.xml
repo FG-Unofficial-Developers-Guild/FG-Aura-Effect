@@ -29,13 +29,10 @@
 	<announcement text="https://www.fantasygrounds.com/forums/showthread.php?57417-5E-Aura-Effects\rAura Effects v1.9\rCreate by Kent McCullough, SoxMax, bmos, GKEnialb and with icon suggested by JustinFreitas." font="emotefont" icon="aura_icon" />
 
 	<base>
-		<string name="option_header_aura">Auras (GM)</string>
-		<string name="option_label_AURASILENT">Silence Notifications for Aura Types</string>
-		<string name="option_val_friend">Friend</string>
-		<string name="option_val_foe">Foe</string>
-
 		<script name="EffectManagerAURA" file="scripts/manager_effect_aura.lua" />
 
 		<icon name="aura_icon" file="graphics/aura_icon.png" />
+
+		<includefile source="strings/strings_aura.xml" />
 	</base>
 </root>
