@@ -9,10 +9,10 @@ on:
       - '**.lua'
   workflow_dispatch:
 
-name: Run Luacheck
+name: Luacheck
 
 jobs:
-  build:
+  luacheck:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
@@ -21,7 +21,7 @@ jobs:
         uses: leafo/gh-actions-lua@v8.0.0
         with:
           luaVersion: 5.1
-      - name: Call luacheck
+      - name: Running luacheck
         uses: nebularg/actions-luacheck@v1.1.0
         with:
           files: '.'
