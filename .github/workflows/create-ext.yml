@@ -4,24 +4,31 @@ on:
     tags:
     - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
 
-name: Create Release
+env:
+  EXTENSION: '.ext'
+  PROJECTNAME: format($GITHUB_REPOSITORY, $GITHUB_REPOSITORY_OWNER, '')
+  FILENAME: join([$PROJECTNAME,$EXTENSION])
+
+name: Build FG-Usable File
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1
-    - uses: ncipollo/release-action@v1.9.0
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-    - name: Archive Release
-      uses: thedoctor0/zip-release@master
-      with:
-        filename: 'extension_filename.ext'
-        exclusions: '*.git* /*node_modules/* .editorconfig body.md *.psd *.xcf thumbnail.png forge-thumbnail.png'
-    - name: Create Release
+    - name: Checkout Repo Assets
+      uses: actions/checkout@v1
+    - name: Create GitHub Release
       uses: ncipollo/release-action@v1.9.0
       with:
-        artifacts: "extension_filename.ext"
+        token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Zip Assets Into ${{ env.EXTENSION }} File
+      uses: thedoctor0/zip-release@master
+      with:
+        filename: ${{ env.FILENAME }}
+        exclusions: '*.git* /*node_modules/* .editorconfig body.md *.psd *.xcf forge-thumbnail.png'
+    - name: Add ${{ env.EXTENSION }} File to Release
+      uses: ncipollo/release-action@v1.9.0
+      with:
+        artifacts: ${{ env.FILENAME }}
         token: ${{ secrets.GITHUB_TOKEN }}
         allowUpdates: true
