@@ -4,10 +4,10 @@ on:
     tags:
     - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
 
+name: Build FG-Usable File
+
 env:
   EXTENSION: '.ext'
-
-name: Build FG-Usable File
 
 jobs:
   build:
