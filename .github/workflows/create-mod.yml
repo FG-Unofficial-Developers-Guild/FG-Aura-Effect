@@ -1,0 +1,27 @@
+on:
+  push:
+    # Sequence of patterns matched against refs/tags
+    tags:
+    - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
+
+name: Create Release
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - uses: ncipollo/release-action@v1
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Archive Release
+      uses: thedoctor0/zip-release@master
+      with:
+        filename: 'extension_filename.mod'
+        exclusions: '*.git* /*node_modules/* .editorconfig body.md *.psd *.xcf forge-thumbnail.png'
+    - name: Create Release
+      uses: ncipollo/release-action@v1
+      with:
+        artifacts: "extension_filename.ext"
+        token: ${{ secrets.GITHUB_TOKEN }}
+        allowUpdates: true
