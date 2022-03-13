@@ -6,8 +6,6 @@ on:
 
 env:
   EXTENSION: '.ext'
-  PROJECTNAME: format($GITHUB_REPOSITORY, $GITHUB_REPOSITORY_OWNER, '')
-  FILENAME: join([$PROJECTNAME,$EXTENSION])
 
 name: Build FG-Usable File
 
@@ -24,11 +22,11 @@ jobs:
     - name: Zip Assets Into ${{ env.EXTENSION }} File
       uses: thedoctor0/zip-release@master
       with:
-        filename: ${{ env.FILENAME }}
+        filename: join(format($GITHUB_REPOSITORY, $GITHUB_REPOSITORY_OWNER, ''), ${{ env.EXTENSION }}])
         exclusions: '*.git* /*node_modules/* .editorconfig body.md *.psd *.xcf forge-thumbnail.png'
     - name: Add ${{ env.EXTENSION }} File to Release
       uses: ncipollo/release-action@v1.9.0
       with:
-        artifacts: ${{ env.FILENAME }}
+        artifacts: join(format($GITHUB_REPOSITORY, $GITHUB_REPOSITORY_OWNER, ''), ${{ env.EXTENSION }}])
         token: ${{ secrets.GITHUB_TOKEN }}
         allowUpdates: true
