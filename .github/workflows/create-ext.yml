@@ -19,12 +19,12 @@ jobs:
       uses: ncipollo/release-action@v1.9.0
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
-    - name: Zip Assets Into ${{ env.EXTENSION }} File
+    - name: Zip Assets Into .ext File
       uses: thedoctor0/zip-release@master
       with:
         filename: join(format($GITHUB_REPOSITORY, $GITHUB_REPOSITORY_OWNER, ''), ${{ env.EXTENSION }}])
         exclusions: '*.git* /*node_modules/* .editorconfig body.md *.psd *.xcf forge-thumbnail.png'
-    - name: Add ${{ env.EXTENSION }} File to Release
+    - name: Add .ext File to Release
       uses: ncipollo/release-action@v1.9.0
       with:
         artifacts: join(format($GITHUB_REPOSITORY, $GITHUB_REPOSITORY_OWNER, ''), ${{ env.EXTENSION }}])
