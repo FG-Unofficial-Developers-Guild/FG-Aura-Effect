@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout Repo Assets
-      uses: actions/checkout@v1
+      uses: actions/checkout@v3
     - name: Create GitHub Release
       uses: ncipollo/release-action@v1.9.0
       with:
@@ -22,11 +22,11 @@ jobs:
     - name: Zip Assets Into .ext File
       uses: thedoctor0/zip-release@master
       with:
-        filename: join(format($GITHUB_REPOSITORY, $GITHUB_REPOSITORY_OWNER, ''), ${{ env.EXTENSION }}])
+        filename: ${{ github.event.repository.name }}${{ env.EXTENSION }}])
         exclusions: '*.git* /*node_modules/* .editorconfig body.md *.psd *.xcf forge-thumbnail.png'
     - name: Add .ext File to Release
       uses: ncipollo/release-action@v1.9.0
       with:
-        artifacts: join(format($GITHUB_REPOSITORY, $GITHUB_REPOSITORY_OWNER, ''), ${{ env.EXTENSION }}])
+        artifacts: ${{ github.event.repository.name }}${{ env.EXTENSION }}])
         token: ${{ secrets.GITHUB_TOKEN }}
         allowUpdates: true
