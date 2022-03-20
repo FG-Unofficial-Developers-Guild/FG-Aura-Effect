@@ -7,6 +7,8 @@ on:
     # Only run if pull request includes a change to a Lua (.lua) file.
     paths:
       - '**.lua'
+  schedule:
+    - cron: 0 0 * * *
   workflow_dispatch:
 
 name: Luacheck
