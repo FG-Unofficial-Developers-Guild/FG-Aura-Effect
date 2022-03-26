@@ -59,6 +59,10 @@ jobs:
           value: ${{ steps.removenameparenthetical.outputs.value }}
           regex: '[^A-Za-z0-9_]+'
           replacement: ''
+      - id: namelowercase
+        uses: ASzc/change-string-case-action@v2
+        with:
+          string: ${{ steps.removenamepunctuation.outputs.value }}
 
       # Determine extension author
       - name: Get Extension Name from XML
@@ -88,6 +92,10 @@ jobs:
           value: ${{ steps.removeauthorparenthetical.outputs.value }}
           regex: '[^A-Za-z0-9_]+'
           replacement: ''
+      - id: authorlowercase
+        uses: ASzc/change-string-case-action@v2
+        with:
+          string: ${{ steps.removeauthorpunctuation.outputs.value }}
 
       # Process extension code
       - name: Running luacheck
@@ -95,5 +103,5 @@ jobs:
         with:
           files: '.'
           config: https://raw.githubusercontent.com/bmos/FG-luacheck/main/.luacheckrc
-          args: '--no-color --std +${{ steps.removeauthorpunctuation.outputs.value }}${{ steps.removenamepunctuation.outputs.value }} --exclude-files .install/*'
+          args: '--no-color --std +${{ steps.authorlowercase.outputs.lowercase }}${{ steps.namelowercase.outputs.lowercase }} --exclude-files .install/*'
           annotate: 'warning'
