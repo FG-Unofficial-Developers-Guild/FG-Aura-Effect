@@ -38,11 +38,18 @@ jobs:
           value: ${{ steps.getnamefromxml.outputs.info }}
           regex: '.*:\s'
           replacement: ''
+      - name: Remove Ruleset Names from Extension Name
+        id: removerulesetname
+        uses: ashley-taylor/regex-property-action@1.2
+        with:
+          value: ${{ steps.removenameprefix.outputs.value }}
+          regex: ',.*'
+          replacement: ''
       - name: Remove Extension Name Parenthetical
         id: removenameparenthetical
         uses: ashley-taylor/regex-property-action@1.2
         with:
-          value: ${{ steps.removenameprefix.outputs.value }}
+          value: ${{ steps.removerulesetname.outputs.value }}
           regex: '\(.*\)'
           replacement: ''
       - name: Remove Extension Name Punctuation
@@ -50,7 +57,7 @@ jobs:
         uses: ashley-taylor/regex-property-action@1.2
         with:
           value: ${{ steps.removenameparenthetical.outputs.value }}
-          regex: '[^\a\d\.]+'
+          regex: '[^A-Za-z0-9_]+'
           replacement: ''
 
       # Determine extension author
@@ -79,7 +86,7 @@ jobs:
         uses: ashley-taylor/regex-property-action@1.2
         with:
           value: ${{ steps.removeauthorparenthetical.outputs.value }}
-          regex: '[^\a\d\.]+'
+          regex: '[^A-Za-z0-9_]+'
           replacement: ''
 
       # Process extension code
