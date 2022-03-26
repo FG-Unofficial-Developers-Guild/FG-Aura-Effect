@@ -36,21 +36,21 @@ jobs:
         uses: ashley-taylor/regex-property-action@1.2
         with:
           value: ${{ steps.getnamefromxml.outputs.info }}
-          regex: '.*:%s'
+          regex: '.*:\s'
           replacement: ''
       - name: Remove Extension Name Parenthetical
         id: removenameparenthetical
         uses: ashley-taylor/regex-property-action@1.2
         with:
           value: ${{ steps.removenameprefix.outputs.value }}
-          regex: '%(.*%)'
+          regex: '\(.*\)'
           replacement: ''
       - name: Remove Extension Name Punctuation
         id: removenamepunctuation
         uses: ashley-taylor/regex-property-action@1.2
         with:
           value: ${{ steps.removenameparenthetical.outputs.value }}
-          regex: '[^%a%d%.]+'
+          regex: '[^\a\d\.]+'
           replacement: ''
 
       # Determine extension author
@@ -65,21 +65,21 @@ jobs:
         uses: ashley-taylor/regex-property-action@1.2
         with:
           value: ${{ steps.getauthorfromxml.outputs.info }}
-          regex: '.*:%s'
+          regex: '.*:\s'
           replacement: ''
       - name: Remove Extension Name Parenthetical
         id: removeauthorparenthetical
         uses: ashley-taylor/regex-property-action@1.2
         with:
           value: ${{ steps.removeauthorprefix.outputs.value }}
-          regex: '%(.*%)'
+          regex: '\(.*\)'
           replacement: ''
       - name: Remove Extension Name Punctuation
         id: removeauthorpunctuation
         uses: ashley-taylor/regex-property-action@1.2
         with:
           value: ${{ steps.removeauthorparenthetical.outputs.value }}
-          regex: '[^%a%d%.]+'
+          regex: '[^\a\d\.]+'
           replacement: ''
 
       # Process extension code
