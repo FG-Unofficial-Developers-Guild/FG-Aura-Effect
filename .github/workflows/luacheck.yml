@@ -23,7 +23,6 @@ jobs:
         uses: leafo/gh-actions-lua@v9
         with:
           luaVersion: 5.1
-        jobs:
 
         # Determine extension name
       - name: Get Extension Name from XML
