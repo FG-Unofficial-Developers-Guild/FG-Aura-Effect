@@ -27,27 +27,27 @@ jobs:
         # Determine extension name
       - name: Get Extension Name from XML
         id: getnamefromxml
-        uses: mavrosxristoforos/get-xml-info@1.0
+        uses: mavrosxristoforos/get-xml-info@1.1.0
         with:
           xml-file: 'extension.xml'
           xpath: '//name'
       - name: Remove Extension Name Prefix
         id: removenameprefix
-        uses: ashley-taylor/regex-property-action@v1.2
+        uses: ashley-taylor/regex-property-action@1.2
         with:
           value: ${{ steps.getnamefromxml.outputs.info }}
           regex: '.*:%s'
           replacement: ''
       - name: Remove Extension Name Parenthetical
         id: removenameparenthetical
-        uses: ashley-taylor/regex-property-action@v1.2
+        uses: ashley-taylor/regex-property-action@1.2
         with:
           value: ${{ steps.removenameprefix.outputs.value }}
           regex: '%(.*%)'
           replacement: ''
       - name: Remove Extension Name Punctuation
         id: removenamepunctuation
-        uses: ashley-taylor/regex-property-action@v1.2
+        uses: ashley-taylor/regex-property-action@1.2
         with:
           value: ${{ steps.removenameparenthetical.outputs.value }}
           regex: '[^%a%d%.]+'
@@ -56,27 +56,27 @@ jobs:
       # Determine extension author
       - name: Get Extension Name from XML
         id: getauthorfromxml
-        uses: mavrosxristoforos/get-xml-info@1.0
+        uses: mavrosxristoforos/get-xml-info@1.1.0
         with:
           xml-file: 'extension.xml'
           xpath: '//author'
       - name: Remove Extension Name Prefix
         id: removeauthorprefix
-        uses: ashley-taylor/regex-property-action@v1.2
+        uses: ashley-taylor/regex-property-action@1.2
         with:
           value: ${{ steps.getauthorfromxml.outputs.info }}
           regex: '.*:%s'
           replacement: ''
       - name: Remove Extension Name Parenthetical
         id: removeauthorparenthetical
-        uses: ashley-taylor/regex-property-action@v1.2
+        uses: ashley-taylor/regex-property-action@1.2
         with:
           value: ${{ steps.removeauthorprefix.outputs.value }}
           regex: '%(.*%)'
           replacement: ''
       - name: Remove Extension Name Punctuation
         id: removeauthorpunctuation
-        uses: ashley-taylor/regex-property-action@v1.2
+        uses: ashley-taylor/regex-property-action@1.2
         with:
           value: ${{ steps.removeauthorparenthetical.outputs.value }}
           regex: '[^%a%d%.]+'
