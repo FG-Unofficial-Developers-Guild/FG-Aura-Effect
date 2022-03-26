@@ -30,7 +30,7 @@ jobs:
         uses: mavrosxristoforos/get-xml-info@1.1.0
         with:
           xml-file: 'extension.xml'
-          xpath: '//name'
+          xpath: '//properties//name'
       - name: Remove Extension Name Prefix
         id: removenameprefix
         uses: ashley-taylor/regex-property-action@1.2
@@ -59,7 +59,7 @@ jobs:
         uses: mavrosxristoforos/get-xml-info@1.1.0
         with:
           xml-file: 'extension.xml'
-          xpath: '//author'
+          xpath: '//properties//author'
       - name: Remove Extension Name Prefix
         id: removeauthorprefix
         uses: ashley-taylor/regex-property-action@1.2
