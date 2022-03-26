@@ -59,7 +59,8 @@ jobs:
           value: ${{ steps.removenameparenthetical.outputs.value }}
           regex: '[^A-Za-z0-9_]+'
           replacement: ''
-      - id: namelowercase
+      - name: Convert Case of Name
+        id: namelowercase
         uses: ASzc/change-string-case-action@v2
         with:
           string: ${{ steps.removenamepunctuation.outputs.value }}
@@ -92,7 +93,8 @@ jobs:
           value: ${{ steps.removeauthorparenthetical.outputs.value }}
           regex: '[^A-Za-z0-9_]+'
           replacement: ''
-      - id: authorlowercase
+      - name: Convert Case of Author
+        id: authorlowercase
         uses: ASzc/change-string-case-action@v2
         with:
           string: ${{ steps.removeauthorpunctuation.outputs.value }}
