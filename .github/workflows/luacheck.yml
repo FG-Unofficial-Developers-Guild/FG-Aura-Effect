@@ -23,10 +23,38 @@ jobs:
         uses: leafo/gh-actions-lua@v9
         with:
           luaVersion: 5.1
-      - name: Running luacheck
-        uses: nebularg/actions-luacheck@v1
-        with:
-          files: '.'
-          config: https://raw.githubusercontent.com/bmos/FG-luacheck/main/.luacheckrc
-          args: '--no-color --exclude-files .install/*'
-          annotate: 'warning'
+        jobs:
+    - name: Get Extension Name from XML
+      id: getxml
+      uses: mavrosxristoforos/get-xml-info@1.0
+      with:
+        xml-file: 'extension.xml'
+        xpath: '//name'
+    - name: Remove Extension Name Prefix
+      id: removeprefix
+      uses: ashley-taylor/regex-property-action@v1.2
+      with:
+        value: ${{ steps.getxml.outputs.info }}
+        regex: '.*:%s'
+        replacement: ''
+    - name: Remove Extension Name Parenthetical
+      id: removeparenthetical
+      uses: ashley-taylor/regex-property-action@v1.2
+      with:
+        value: ${{ steps.removeprefix.outputs.value }}
+        regex: '%(.*%)'
+        replacement: ''
+    - name: Remove Extension Name Punctuation
+      id: removepunctuation
+      uses: ashley-taylor/regex-property-action@v1.2
+      with:
+        value: ${{ steps.removeparenthetical.outputs.value }}
+        regex: '[^%a%d%.]+'
+        replacement: ''
+    - name: Running luacheck
+      uses: nebularg/actions-luacheck@v1
+      with:
+        files: '.'
+        config: https://raw.githubusercontent.com/bmos/FG-luacheck/main/.luacheckrc
+        args: '--no-color --std +${{ steps.removepunctuation.outputs.value }} --exclude-files .install/*'
+        annotate: 'warning'
