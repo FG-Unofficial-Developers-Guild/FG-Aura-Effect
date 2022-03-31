@@ -105,5 +105,5 @@ jobs:
         with:
           files: '.'
           config: https://raw.githubusercontent.com/bmos/FG-luacheck/main/.luacheckrc
-          args: '--no-color --std +${{ steps.authorlowercase.outputs.lowercase }}${{ steps.namelowercase.outputs.lowercase }} --exclude-files .install/*'
+          args: '--no-color --std +${{ steps.namelowercase.outputs.lowercase }}${{ steps.authorlowercase.outputs.lowercase }} --exclude-files .install/*'
           annotate: 'warning'
