@@ -16,7 +16,7 @@ jobs:
     - name: Checkout Repo Assets
       uses: actions/checkout@v3
     - name: Create GitHub Release
-      uses: ncipollo/release-action@v1.9.0
+      uses: ncipollo/release-action@v1
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
     - name: Zip Assets Into .ext File
@@ -25,7 +25,7 @@ jobs:
         filename: ${{ github.event.repository.name }}${{ env.EXTENSION }}])
         exclusions: '*.git* /*node_modules/* .editorconfig body.md *.psd *.xcf forge-thumbnail.png'
     - name: Add .ext File to Release
-      uses: ncipollo/release-action@v1.9.0
+      uses: ncipollo/release-action@v1
       with:
         artifacts: ${{ github.event.repository.name }}${{ env.EXTENSION }}])
         token: ${{ secrets.GITHUB_TOKEN }}
