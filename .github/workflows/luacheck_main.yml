@@ -11,7 +11,7 @@ on:
     - cron: 0 0 * * *
   workflow_dispatch:
 
-name: Run Luacheck on Branch ${{ github.event.repository.default_branch }}
+name: Run Luacheck on Default Branch
 
 jobs:
   luacheck:
