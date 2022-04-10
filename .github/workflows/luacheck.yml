@@ -1,14 +1,9 @@
 on:
   push:
-    paths:
-    # Only run if pushed commits include a change to a Lua (.lua) file.
-      - '**.lua'
-  pull_request:
-    # Only run if pull request includes a change to a Lua (.lua) file.
-    paths:
-      - '**.lua'
-  #schedule:
-   # - cron: 0 0 * * *
+    tags:
+      - '*'
+  schedule:
+    - cron: 0 0 * * *
   workflow_dispatch:
 
 name: Run Luacheck on Latest Release
@@ -19,7 +14,7 @@ jobs:
     steps:
       - name: Get Latest tag
         id: previoustag
-        uses: "WyriHaximus/github-action-get-previous-tag@v1"
+        uses: WyriHaximus/github-action-get-previous-tag@v1
 
       - name: Checkout repo
         uses: actions/checkout@v3
