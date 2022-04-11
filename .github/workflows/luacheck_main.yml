@@ -1,8 +1,8 @@
 on:
   push:
     paths:
-    # Only run if pushed commits include a change to a Lua (.lua) file.
-      - '**.lua'
+      - '**.lua'# Only run if pushed commits include a change to a Lua (.lua) file.
+      - 'extension.xml'
   pull_request:
     # Only run if pull request includes a change to a Lua (.lua) file.
     paths:
@@ -36,7 +36,7 @@ jobs:
           xml-file: 'extension.xml'
           xpath: '//properties//name'
 
-      - name: Remove Extension Name Prefix
+      - name: Format Extension Name
         id: removenameprefix
         uses: ashley-taylor/regex-property-action@1.2
         with:
@@ -44,32 +44,28 @@ jobs:
           regex: '.*:\s'
           replacement: ''
 
-      - name: Remove Ruleset Names from Extension Name
-        id: removerulesetname
+      - id: shortenextname
         uses: ashley-taylor/regex-property-action@1.2
         with:
           value: ${{ steps.removenameprefix.outputs.value }}
           regex: ',.*'
           replacement: ''
 
-      - name: Remove Extension Name Parenthetical
-        id: removenameparenthetical
+      - id: removenameparenthetical
         uses: ashley-taylor/regex-property-action@1.2
         with:
-          value: ${{ steps.removerulesetname.outputs.value }}
+          value: ${{ steps.shortenextname.outputs.value }}
           regex: '\(.*\)'
           replacement: ''
 
-      - name: Remove Extension Name Punctuation
-        id: removenamepunctuation
+      - id: removenamepunctuation
         uses: ashley-taylor/regex-property-action@1.2
         with:
           value: ${{ steps.removenameparenthetical.outputs.value }}
-          regex: '[^A-Za-z0-9_]+'
+          regex: '[^A-Za-z0-9]+'
           replacement: ''
 
-      - name: Convert Case of Name
-        id: namelowercase
+      - id: namelowercase
         uses: ASzc/change-string-case-action@v2
         with:
           string: ${{ steps.removenamepunctuation.outputs.value }}
@@ -83,7 +79,7 @@ jobs:
           xml-file: 'extension.xml'
           xpath: '//properties//author'
 
-      - name: Remove Extension Name Prefix
+      - name: Format author name
         id: removeauthorprefix
         uses: ashley-taylor/regex-property-action@1.2
         with:
@@ -91,24 +87,28 @@ jobs:
           regex: '.*:\s'
           replacement: ''
 
-      - name: Remove Extension Name Parenthetical
-        id: removeauthorparenthetical
+      - id: shortenauthorname
         uses: ashley-taylor/regex-property-action@1.2
         with:
           value: ${{ steps.removeauthorprefix.outputs.value }}
+          regex: ',.*'
+          replacement: ''
+
+      - id: removeauthorparenthetical
+        uses: ashley-taylor/regex-property-action@1.2
+        with:
+          value: ${{ steps.shortenauthorname.outputs.value }}
           regex: '\(.*\)'
           replacement: ''
 
-      - name: Remove Extension Name Punctuation
-        id: removeauthorpunctuation
+      - id: removeauthorpunctuation
         uses: ashley-taylor/regex-property-action@1.2
         with:
           value: ${{ steps.removeauthorparenthetical.outputs.value }}
-          regex: '[^A-Za-z0-9_]+'
+          regex: '[^A-Za-z0-9]+'
           replacement: ''
 
-      - name: Convert Case of Author
-        id: authorlowercase
+      - id: authorlowercase
         uses: ASzc/change-string-case-action@v2
         with:
           string: ${{ steps.removeauthorpunctuation.outputs.value }}
