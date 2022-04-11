@@ -1,7 +1,7 @@
 on:
   push:
     paths:
-      - '**.lua'# Only run if pushed commits include a change to a Lua (.lua) file.
+      - '**.lua' # Only run if pushed commits include a change to a Lua (.lua) file.
       - 'extension.xml'
   pull_request:
     # Only run if pull request includes a change to a Lua (.lua) file.
