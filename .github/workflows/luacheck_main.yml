@@ -14,18 +14,13 @@ on:
 name: Run Luacheck on Default Branch
 
 jobs:
-  luacheck:
+  getnames:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
         with:
           ref: ${{ github.event.repository.default_branch }}
-
-      - name: Install Lua/LuaJIT
-        uses: leafo/gh-actions-lua@v9
-        with:
-          luaVersion: 5.1
 
         # Determine extension name
 
@@ -113,11 +108,29 @@ jobs:
         with:
           string: ${{ steps.removeauthorpunctuation.outputs.value }}
 
+    outputs:
+      extension: ${{ steps.namelowercase.outputs.lowercase }}
+      author: ${{ steps.authorlowercase.outputs.lowercase }}
+
+  luacheck:
+    runs-on: ubuntu-latest
+    needs: getnames
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+
+      - name: Install Lua/LuaJIT
+        uses: leafo/gh-actions-lua@v9
+        with:
+          luaVersion: 5.1
+
       # Process extension code
       - name: Running luacheck
         uses: nebularg/actions-luacheck@v1
         with:
           files: '.'
           config: https://raw.githubusercontent.com/bmos/FG-luacheck/main/.luacheckrc
-          args: '--no-color --std +${{ steps.namelowercase.outputs.lowercase }}${{ steps.authorlowercase.outputs.lowercase }} --exclude-files .install/*'
+          args: '--no-color --std +${{ needs.getnames.outputs.extension }}${{ needs.getnames.outputs.author }} --exclude-files .install/*'
           annotate: 'warning'
