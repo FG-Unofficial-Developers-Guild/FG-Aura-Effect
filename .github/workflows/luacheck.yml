@@ -1,12 +1,12 @@
 on:
   push:
     paths:
-      - '**.lua' # Only run if pushed commits include a change to a Lua (.lua) file.
+      - '**.lua' # Run if pushed commits include a change to a Lua (.lua) file.
+      - 'extension.xml' # Run if pushed commits include a change to extension.xml.
   pull_request:
     paths:
-      - '**.lua' # Only run if pull request includes a change to a Lua (.lua) file.
-  schedule:
-    - cron: 0 0 * * *
+      - '**.lua' # Run if pull request includes a change to a Lua (.lua) file.
+      - 'extension.xml' # Run if pull request includes a change to extension.xml.
   workflow_dispatch:
 
 name: Run Luacheck
