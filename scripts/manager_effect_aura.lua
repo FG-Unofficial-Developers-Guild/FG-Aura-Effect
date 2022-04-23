@@ -2,7 +2,7 @@
 --	Please see the LICENSE.md file included with this distribution for attribution and copyright information.
 --
 
--- luacheck: globals updateAuras
+-- luacheck: globals updateAuras handleTokenMovement handleApplyEffectSilent handleExpireEffectSilent
 -- luacheck: globals OOB_MSGTYPE_AURATOKENMOVE
 -- luacheck: globals OOB_MSGTYPE_AURAAPPLYSILENT
 -- luacheck: globals OOB_MSGTYPE_AURAEXPIRESILENT
@@ -381,17 +381,17 @@ local function manageHandlers(bRemove)
 	end
 end
 
----	This function removes nodes without triggering recursion
-local function removeNode(nodeEffect)
-	manageHandlers(true)
-	nodeEffect.delete()
-	manageHandlers(false)
-end
-
-function expireEffectSilent(nodeEffect)
+local function expireEffectSilent(nodeEffect)
 	if not nodeEffect then
 		-- Debug.chat(nodeActor, nodeEffect, nExpireComp)
 		return false;
+	end
+
+	---	This function removes nodes without triggering recursion
+	local function removeNode(nodeEffect)
+		manageHandlers(true)
+		nodeEffect.delete()
+		manageHandlers(false)
 	end
 
 	-- Process full expiration
