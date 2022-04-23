@@ -388,14 +388,14 @@ local function expireEffectSilent(nodeEffect)
 	end
 
 	---	This function removes nodes without triggering recursion
-	local function removeNode(nodeEffect)
+	local function removeNode()
 		manageHandlers(true)
 		nodeEffect.delete()
 		manageHandlers(false)
 	end
 
 	-- Process full expiration
-	removeNode(nodeEffect)
+	removeNode()
 end
 
 function handleExpireEffectSilent(msgOOB)
