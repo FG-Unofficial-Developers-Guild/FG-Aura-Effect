@@ -113,6 +113,19 @@ local function removeAuraEffect(auraType, nodeEffect)
 	end
 end
 
+local function getAurasForNode(nodeCT)
+	if not nodeCT then return false; end
+	local auraEffects = {};
+	local nodeEffects = DB.getChildren(nodeCT, 'effects');
+	for _, nodeEffect in pairs(nodeEffects) do
+		if DB.getValue(nodeEffect, aEffectVarMap['nActive']['sDBField'], 0) == 1 then
+			local sLabelNodeEffect = DB.getValue(nodeEffect, aEffectVarMap['sName']['sDBField'], '');
+			if string.match(sLabelNodeEffect, '%s*' .. auraString) then table.insert(auraEffects, nodeEffect); end
+		end
+	end
+	return auraEffects;
+end
+
 local function checkAurasEffectingNodeForDelete(nodeCT)
 	local aurasEffectingNode = getAurasEffectingNode(nodeCT);
 	for _, targetEffect in ipairs(aurasEffectingNode) do
@@ -141,20 +154,6 @@ end
 function checkDeletedAuraEffects(nodeFromDelete)
 	local ctEntries = CombatManager.getSortedCombatantList();
 	for _, nodeCT in pairs(ctEntries) do if nodeCT ~= nodeFromDelete then checkAurasEffectingNodeForDelete(nodeCT); end end
-end
-
-function checkAuraAlreadyEffecting(nodeSource, nodeTarget, effect)
-	local sLabel = DB.getValue(effect, aEffectVarMap['sName']['sDBField'], '');
-	for _, nodeEffect in pairs(DB.getChildren(nodeTarget, 'effects')) do
-		-- if DB.getValue(nodeEffect, aEffectVarMap["nActive"]["sDBField"], 0) ~= 2 then
-		local sSource = DB.getValue(nodeEffect, aEffectVarMap['sSource']['sDBField']);
-		if sSource == nodeSource.getPath() then
-			local sEffect = DB.getValue(nodeEffect, aEffectVarMap['sName']['sDBField'], '');
-			sEffect = sEffect:gsub(fromAuraString, '');
-			if string.find(sLabel, sEffect, 0, true) then return nodeEffect; end
-		end
-		-- end
-	end
 end
 
 local function checkFaction(targetActor, nodeEffect, sFactionCheck)
@@ -193,7 +192,7 @@ local function checkFaction(targetActor, nodeEffect, sFactionCheck)
 	return bReturn;
 end
 
-local CheckConditional = nil;
+local checkConditional = nil;
 function customCheckConditional(rActor, nodeEffect, aConditions, rTarget, aIgnore)
 	local bReturn
 	if EffectManager4E then
@@ -225,13 +224,6 @@ local function auraOnMove(tokenMap)
 	end
 end
 
-local updateAttributesFromToken = nil;
-local function auraUpdateAttributesFromToken(tokenMap)
-	if updateAttributesFromToken then updateAttributesFromToken(tokenMap); end
-	onMove = tokenMap.onMove;
-	tokenMap.onMove = auraOnMove;
-end
-
 local function getRelationship(sourceNode, targetNode)
 	if DB.getValue(sourceNode, 'friendfoe', '') == DB.getValue(targetNode, 'friendfoe', '') then
 		return 'friend'
@@ -257,19 +249,6 @@ function updateAuras(sourceNode)
 			end
 		end
 	end
-end
-
-function getAurasForNode(nodeCT)
-	if not nodeCT then return false; end
-	local auraEffects = {};
-	local nodeEffects = DB.getChildren(nodeCT, 'effects');
-	for _, nodeEffect in pairs(nodeEffects) do
-		if DB.getValue(nodeEffect, aEffectVarMap['nActive']['sDBField'], 0) == 1 then
-			local sLabelNodeEffect = DB.getValue(nodeEffect, aEffectVarMap['sName']['sDBField'], '');
-			if string.match(sLabelNodeEffect, '%s*' .. auraString) then table.insert(auraEffects, nodeEffect); end
-		end
-	end
-	return auraEffects;
 end
 
 function notifyApplySilent(rEffect, vTargets)
@@ -330,81 +309,6 @@ local function addAuraEffect(auraType, effect, targetNode, sourceNode)
 	end
 end
 
--- Get the closest position of token 1 (center of the square contained by token 1 which is closest
--- along a straight line to the center of token 2)
-local function getClosestPosition(token1, token2)
-	local ctToken1 = CombatManager.getCTFromToken(token1)
-	local ctToken2 = CombatManager.getCTFromToken(token2)
-	if not ctToken1 or not ctToken2 then return 0, 0, 0, 0 end
-
-	local gridsize = ImageManager.getImageControl(token1).getGridSize() or 0;
-	local units = GameSystem.getDistanceUnitsPerGrid();
-
-	local centerPos1x, centerPos1y = token1.getPosition();
-	local centerPos2x, centerPos2y = token2.getPosition();
-	local dx = centerPos2x - centerPos1x;
-	local dy = centerPos2y - centerPos1y;
-	local slope = 0
-	if dx ~= 0 then slope = (dy) / (dx); end
-
-	local nSpace = DB.getValue(ctToken1, 'space');
-	local nHalfSpace = nSpace / 2;
-	local nSquares = nSpace / units;
-	local center = (nSquares + 1) / 2;
-	local minPosX, minPosY;
-
-	local intercept = 0;
-	local delta = 0;
-	local right = centerPos1x + nHalfSpace;
-	local left = centerPos1x - nHalfSpace;
-	local top = centerPos1y - nHalfSpace;
-	local bottom = centerPos1y + nHalfSpace;
-
-	if math.abs(dx) > math.abs(dy) then
-		if dx < 0 then
-			-- Look at the left edge
-			intercept = centerPos1y - slope * nHalfSpace;
-			delta = math.max(1, math.ceil((intercept - top) / units));
-			shiftedDelta = delta - center;
-			minPosX = centerPos1x + ((center - nSquares) * gridsize);
-			minPosY = centerPos1y + (shiftedDelta * gridsize);
-		else
-			-- Look at the right edge
-			intercept = centerPos1y + slope * nHalfSpace;
-			delta = math.max(1, math.ceil((intercept - top) / units));
-			shiftedDelta = delta - center;
-			minPosX = centerPos1x + ((nSquares - center) * gridsize);
-			minPosY = centerPos1y + (shiftedDelta * gridsize);
-		end
-	else
-		if dy < 0 then
-			-- Look at the top edge
-			if slope == 0 then
-				minPosX = centerPos1x;
-			else
-				intercept = centerPos1x - nHalfSpace / slope;
-				delta = math.max(1, math.ceil((intercept - left) / units));
-				shiftedDelta = delta - center;
-				minPosX = centerPos1x + (shiftedDelta * gridsize);
-			end
-			minPosY = centerPos1y + ((center - nSquares) * gridsize);
-		else
-			-- Look at the bottom edge
-			if slope == 0 then
-				minPosX = centerPos1x;
-			else
-				intercept = centerPos1x + nHalfSpace / slope;
-				delta = math.max(1, math.ceil((intercept - left) / units));
-				shiftedDelta = delta - center;
-				minPosX = centerPos1x + (shiftedDelta * gridsize);
-			end
-			minPosY = centerPos1y + ((nSquares - center) * gridsize);
-		end
-	end
-
-	return minPosX, minPosY
-end
-
 function checkAuraApplicationAndAddOrRemove(sourceNode, targetNode, auraEffect, nodeInfo)
 	if not targetNode or not auraEffect then return false end
 
@@ -429,7 +333,22 @@ function checkAuraApplicationAndAddOrRemove(sourceNode, targetNode, auraEffect, 
 			local targetToken = CombatManager.getTokenFromCT(targetNode)
 			if sourceToken and targetToken then nodeInfo.distanceBetween = Token.getDistanceBetween(sourceToken, targetToken) end
 		end
-		local existingAuraEffect = checkAuraAlreadyEffecting(sourceNode, targetNode, auraEffect)
+
+		local function checkAuraAlreadyEffecting()
+			local sLabel = DB.getValue(auraEffect, aEffectVarMap['sName']['sDBField'], '');
+			for _, nodeEffect in pairs(DB.getChildren(targetNode, 'effects')) do
+				-- if DB.getValue(nodeEffect, aEffectVarMap["nActive"]["sDBField"], 0) ~= 2 then
+				local sSource = DB.getValue(nodeEffect, aEffectVarMap['sSource']['sDBField']);
+				if sSource == sourceNode.getPath() then
+					local sEffect = DB.getValue(nodeEffect, aEffectVarMap['sName']['sDBField'], '');
+					sEffect = sEffect:gsub(fromAuraString, '');
+					if string.find(sLabel, sEffect, 0, true) then return nodeEffect; end
+				end
+				-- end
+			end
+		end
+
+		local existingAuraEffect = checkAuraAlreadyEffecting()
 		if (nodeInfo.distanceBetween and nodeInfo.distanceBetween <= nRange) and not isSourceDisabled(sourceNode) then
 			if not existingAuraEffect then addAuraEffect(auraType, auraEffect, targetNode, sourceNode) end
 		elseif existingAuraEffect then
@@ -484,28 +403,10 @@ local function removeNode(nodeEffect)
 	manageHandlers(false)
 end
 
-function expireEffectSilent(nodeActor, nodeEffect, nExpireComp)
+function expireEffectSilent(nodeEffect)
 	if not nodeEffect then
 		-- Debug.chat(nodeActor, nodeEffect, nExpireComp)
 		return false;
-	end
-
-	-- local bGMOnly = EffectManager.isGMEffect(nodeActor, nodeEffect);
-
-	-- Check for partial expiration
-	if (nExpireComp or 0) > 0 then
-		local sEffect = DB.getValue(nodeEffect, aEffectVarMap['sName']['sDBField'], '');
-		local aEffectComps = parseEffect(sEffect);
-		if #aEffectComps > 1 then
-			table.remove(aEffectComps, nExpireComp);
-			local sRebuiltEffect = EffectManager.rebuildParsedEffect(aEffectComps)
-			if sRebuiltEffect and sRebuiltEffect ~= '' then
-				DB.setValue(nodeEffect, aEffectVarMap['sName']['sDBField'], 'string', sRebuiltEffect);
-				return;
-				-- else
-				-- removeNode(nodeEffect)
-			end
-		end
 	end
 
 	-- Process full expiration
@@ -525,7 +426,7 @@ function handleExpireEffectSilent(msgOOB)
 		return;
 	end
 
-	expireEffectSilent(nodeActor, nodeEffect, tonumber(msgOOB.nExpireClause) or 0);
+	expireEffectSilent(nodeEffect);
 end
 
 local handleExpireEffect_old
@@ -570,7 +471,7 @@ function onInit()
 	DetectedEffectManager.checkConditional = customCheckConditional;
 
 	local onWindowOpened = nil;
-	function auraOnWindowOpened(window)
+	local function auraOnWindowOpened(window)
 		if onWindowOpened then onWindowOpened(window); end
 		if window.getClass() == 'imagewindow' then
 			local ctEntries = CombatManager.getSortedCombatantList();
