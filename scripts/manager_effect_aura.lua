@@ -52,7 +52,7 @@ end
 local function onStatusChanged(nodeStatus) updateAuras(nodeStatus.getChild('..')); end
 
 ---	This function requests aura processing to be performed on the host FG instance.
-function notifyTokenMove(tokenMap)
+local function notifyTokenMove(tokenMap)
 	if not tokenMap.getContainerNode or not CombatManager then return; end
 	local nodeCT = CombatManager.getCTFromToken(tokenMap)
 	if not nodeCT then return; end
@@ -62,19 +62,6 @@ function notifyTokenMove(tokenMap)
 	msgOOB.sCTNode = nodeCT.getNodeName()
 
 	Comm.deliverOOBMessage(msgOOB, '');
-end
-
-local onWindowOpened = nil;
-function auraOnWindowOpened(window)
-	if onWindowOpened then onWindowOpened(window); end
-	if window.getClass() == 'imagewindow' then
-		local ctEntries = CombatManager.getSortedCombatantList();
-		for _, nodeCT in pairs(ctEntries) do
-			local tokenMap = CombatManager.getTokenFromCT(nodeCT);
-			local ctrlImage, winImage = ImageManager.getImageControl(tokenMap);
-			if tokenMap and winImage and winImage == window then notifyTokenMove(tokenMap); end
-		end
-	end
 end
 
 local function getAurasEffectingNode(nodeCT)
@@ -94,25 +81,25 @@ local function checkSilentNotification(auraType)
 	return option == 'all' or option == auraType;
 end
 
-function notifyExpireSilent(varEffect, nMatch)
-	if type(varEffect) == 'databasenode' then
-		varEffect = varEffect.getNodeName();
-	elseif type(varEffect) ~= 'string' then
-		return false;
-	end
-
-	local msgOOB = {};
-	msgOOB.type = OOB_MSGTYPE_AURAEXPIRESILENT;
-	msgOOB.sEffectNode = varEffect;
-	msgOOB.nExpireClause = nMatch;
-
-	Comm.deliverOOBMessage(msgOOB, '');
-end
-
 local function removeAuraEffect(auraType, nodeEffect)
 	if DB.getValue(nodeEffect, aEffectVarMap['nActive']['sDBField'], 1) ~= 0 then
 		if checkSilentNotification(auraType) == true then
-			notifyExpireSilent(nodeEffect, nil, false);
+
+			function notifyExpireSilent()
+				if type(nodeEffect) == 'databasenode' then
+					varEffect = nodeEffect.getNodeName();
+				elseif type(nodeEffect) ~= 'string' then
+					return false;
+				end
+
+				local msgOOB = {};
+				msgOOB.type = OOB_MSGTYPE_AURAEXPIRESILENT;
+				msgOOB.sEffectNode = varEffect;
+
+				Comm.deliverOOBMessage(msgOOB, '');
+			end
+
+			notifyExpireSilent();
 		else
 			EffectManager.notifyExpire(nodeEffect, nil, false);
 		end
@@ -143,6 +130,7 @@ local function checkAurasEffectingNodeForDelete(nodeCT)
 	end
 end
 
+-- luacheck: globals checkDeletedAuraEffects
 function checkDeletedAuraEffects(nodeFromDelete)
 	local ctEntries = CombatManager.getSortedCombatantList();
 	for _, nodeCT in pairs(ctEntries) do if nodeCT ~= nodeFromDelete then checkAurasEffectingNodeForDelete(nodeCT); end end
@@ -245,6 +233,7 @@ local function getRelationship(sourceNode, targetNode)
 	end
 end
 
+-- luacheck: globals updateAuras
 function updateAuras(sourceNode)
 	if not sourceNode then return false end
 
@@ -573,6 +562,19 @@ function onInit()
 	-- create proxy function to add FACTION conditional
 	checkConditional = DetectedEffectManager.checkConditional;
 	DetectedEffectManager.checkConditional = customCheckConditional;
+
+	local onWindowOpened = nil;
+	function auraOnWindowOpened(window)
+		if onWindowOpened then onWindowOpened(window); end
+		if window.getClass() == 'imagewindow' then
+			local ctEntries = CombatManager.getSortedCombatantList();
+			for _, nodeCT in pairs(ctEntries) do
+				local tokenMap = CombatManager.getTokenFromCT(nodeCT);
+				local _, winImage = ImageManager.getImageControl(tokenMap);
+				if tokenMap and winImage and winImage == window then notifyTokenMove(tokenMap); end
+			end
+		end
+	end
 
 	-- create proxy function to recalculate auras when new windows are opened
 	onWindowOpened = Interface.onWindowOpened;
