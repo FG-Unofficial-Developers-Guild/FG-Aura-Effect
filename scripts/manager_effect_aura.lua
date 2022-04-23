@@ -1,6 +1,12 @@
 --
 --	Please see the LICENSE.md file included with this distribution for attribution and copyright information.
 --
+
+-- luacheck: globals updateAuras
+-- luacheck: globals OOB_MSGTYPE_AURATOKENMOVE
+-- luacheck: globals OOB_MSGTYPE_AURAAPPLYSILENT
+-- luacheck: globals OOB_MSGTYPE_AURAEXPIRESILENT
+
 OOB_MSGTYPE_AURATOKENMOVE = 'aurasontokenmove';
 OOB_MSGTYPE_AURAAPPLYSILENT = 'applyeffsilent';
 OOB_MSGTYPE_AURAEXPIRESILENT = 'expireeffsilent';
@@ -85,7 +91,8 @@ local function removeAuraEffect(auraType, nodeEffect)
 	if DB.getValue(nodeEffect, aEffectVarMap['nActive']['sDBField'], 1) ~= 0 then
 		if checkSilentNotification(auraType) == true then
 
-			function notifyExpireSilent()
+			local function notifyExpireSilent()
+				local varEffect
 				if type(nodeEffect) == 'databasenode' then
 					varEffect = nodeEffect.getNodeName();
 				elseif type(nodeEffect) ~= 'string' then
@@ -110,7 +117,7 @@ local function checkAurasEffectingNodeForDelete(nodeCT)
 	local aurasEffectingNode = getAurasEffectingNode(nodeCT);
 	for _, targetEffect in ipairs(aurasEffectingNode) do
 		local targetEffectLabel = DB.getValue(targetEffect, aEffectVarMap['sName']['sDBField'], '');
-		local targetEffectLabel = targetEffectLabel:gsub(fromAuraString, '');
+		targetEffectLabel = targetEffectLabel:gsub(fromAuraString, '');
 		if not string.find(targetEffectLabel, fromAuraString) then
 			local sSource = DB.getValue(targetEffect, aEffectVarMap['sSource']['sDBField'], '');
 			local sourceNode = DB.findNode(sSource);
@@ -233,7 +240,6 @@ local function getRelationship(sourceNode, targetNode)
 	end
 end
 
--- luacheck: globals updateAuras
 function updateAuras(sourceNode)
 	if not sourceNode then return false end
 
