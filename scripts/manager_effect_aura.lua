@@ -40,42 +40,14 @@ local function isSourceDisabled(nodeChar)
 	end
 end
 
----	This function is called when effects are removed or effect components are changed.
-local function onEffectChanged(nodeEffect)
-	if checkEffectRecursion(nodeEffect, auraString) and not checkEffectRecursion(nodeEffect, fromAuraString) then
-		local nodeCT = nodeEffect.getChild('...');
-		if nodeCT then
-			if DB.getValue(nodeEffect, aEffectVarMap['nActive']['sDBField'], 0) ~= 1 then
-				checkDeletedAuraEffects(nodeEffect);
-			else
-				updateAuras(nodeCT);
-			end
-		end
-	end
-end
-
----	This function is called when effect components are changed.
-local function onStatusChanged(nodeStatus) updateAuras(nodeStatus.getChild('..')); end
-
----	This function requests aura processing to be performed on the host FG instance.
-local function notifyTokenMove(tokenMap)
-	if not tokenMap.getContainerNode or not CombatManager then return; end
-	local nodeCT = CombatManager.getCTFromToken(tokenMap)
-	if not nodeCT then return; end
-
-	local msgOOB = {};
-	msgOOB.type = OOB_MSGTYPE_AURATOKENMOVE;
-	msgOOB.sCTNode = nodeCT.getNodeName()
-
-	Comm.deliverOOBMessage(msgOOB, '');
-end
-
-local function getAurasEffectingNode(nodeCT)
+local function getAurasForNode(nodeCT)
+	if not nodeCT then return false; end
 	local auraEffects = {};
-	for _, nodeEffect in pairs(DB.getChildren(nodeCT, 'effects')) do
+	local nodeEffects = DB.getChildren(nodeCT, 'effects');
+	for _, nodeEffect in pairs(nodeEffects) do
 		if DB.getValue(nodeEffect, aEffectVarMap['nActive']['sDBField'], 0) == 1 then
 			local sLabelNodeEffect = DB.getValue(nodeEffect, aEffectVarMap['sName']['sDBField'], '');
-			if string.find(sLabelNodeEffect, fromAuraString, 0, true) then table.insert(auraEffects, nodeEffect); end
+			if string.match(sLabelNodeEffect, '%s*' .. auraString) then table.insert(auraEffects, nodeEffect); end
 		end
 	end
 	return auraEffects;
@@ -83,8 +55,7 @@ end
 
 local function checkSilentNotification(auraType)
 	local option = OptionsManager.getOption('AURASILENT'):lower();
-	auraType = auraType:lower():gsub('enemy', 'foe');
-	return option == 'all' or option == auraType;
+	return option == 'all' or option == auraType:lower():gsub('enemy', 'foe');
 end
 
 local function removeAuraEffect(auraType, nodeEffect)
@@ -113,47 +84,81 @@ local function removeAuraEffect(auraType, nodeEffect)
 	end
 end
 
-local function getAurasForNode(nodeCT)
-	if not nodeCT then return false; end
-	local auraEffects = {};
-	local nodeEffects = DB.getChildren(nodeCT, 'effects');
-	for _, nodeEffect in pairs(nodeEffects) do
-		if DB.getValue(nodeEffect, aEffectVarMap['nActive']['sDBField'], 0) == 1 then
-			local sLabelNodeEffect = DB.getValue(nodeEffect, aEffectVarMap['sName']['sDBField'], '');
-			if string.match(sLabelNodeEffect, '%s*' .. auraString) then table.insert(auraEffects, nodeEffect); end
-		end
-	end
-	return auraEffects;
-end
+---	This function is called when effects are removed or effect components are changed.
+local function onEffectChanged(nodeEffect)
+	if checkEffectRecursion(nodeEffect, auraString) and not checkEffectRecursion(nodeEffect, fromAuraString) then
+		local nodeCT = nodeEffect.getChild('...');
+		if nodeCT then
+			if DB.getValue(nodeEffect, aEffectVarMap['nActive']['sDBField'], 0) ~= 1 then
 
-local function checkAurasEffectingNodeForDelete(nodeCT)
-	local aurasEffectingNode = getAurasEffectingNode(nodeCT);
-	for _, targetEffect in ipairs(aurasEffectingNode) do
-		local targetEffectLabel = DB.getValue(targetEffect, aEffectVarMap['sName']['sDBField'], '');
-		targetEffectLabel = targetEffectLabel:gsub(fromAuraString, '');
-		if not string.find(targetEffectLabel, fromAuraString) then
-			local sSource = DB.getValue(targetEffect, aEffectVarMap['sSource']['sDBField'], '');
-			local sourceNode = DB.findNode(sSource);
-			if sourceNode then
-				local sourceAuras = getAurasForNode(sourceNode);
-				local auraStillExists = false;
-				for _, sourceEffect in ipairs(sourceAuras) do
-					local sourceEffectLabel = DB.getValue(sourceEffect, aEffectVarMap['sName']['sDBField'], '');
-					if string.find(sourceEffectLabel, targetEffectLabel, 0, true) then
-						auraStillExists = true;
-						break
+				local function checkDeletedAuraEffects()
+					local ctEntries = CombatManager.getSortedCombatantList();
+					for _, node in pairs(ctEntries) do
+						if node ~= nodeEffect then
+
+							local function checkAurasEffectingNodeForDelete()
+
+								local function getAurasEffectingNode()
+									local auraEffects = {};
+									for _, nodeEffectingEffect in pairs(DB.getChildren(node, 'effects')) do
+										if DB.getValue(nodeEffectingEffect, aEffectVarMap['nActive']['sDBField'], 0) == 1 then
+											local sLabelNodeEffect = DB.getValue(nodeEffectingEffect, aEffectVarMap['sName']['sDBField'], '');
+											if string.find(sLabelNodeEffect, fromAuraString, 0, true) then table.insert(auraEffects, nodeEffectingEffect); end
+										end
+									end
+									return auraEffects;
+								end
+
+								local aurasEffectingNode = getAurasEffectingNode();
+								for _, targetEffect in ipairs(aurasEffectingNode) do
+									local targetEffectLabel = DB.getValue(targetEffect, aEffectVarMap['sName']['sDBField'], '');
+									targetEffectLabel = targetEffectLabel:gsub(fromAuraString, '');
+									if not string.find(targetEffectLabel, fromAuraString) then
+										local sSource = DB.getValue(targetEffect, aEffectVarMap['sSource']['sDBField'], '');
+										local sourceNode = DB.findNode(sSource);
+										if sourceNode then
+											local sourceAuras = getAurasForNode(sourceNode);
+											local auraStillExists = false;
+											for _, sourceEffect in ipairs(sourceAuras) do
+												local sourceEffectLabel = DB.getValue(sourceEffect, aEffectVarMap['sName']['sDBField'], '');
+												if string.find(sourceEffectLabel, targetEffectLabel, 0, true) then
+													auraStillExists = true;
+													break
+												end
+											end
+											if not auraStillExists then removeAuraEffect('all', targetEffect); end
+										end
+									end
+								end
+							end
+
+							checkAurasEffectingNodeForDelete();
+						end
 					end
 				end
-				if not auraStillExists then removeAuraEffect('all', targetEffect); end
+
+				checkDeletedAuraEffects();
+			else
+				updateAuras(nodeCT);
 			end
 		end
 	end
 end
 
--- luacheck: globals checkDeletedAuraEffects
-function checkDeletedAuraEffects(nodeFromDelete)
-	local ctEntries = CombatManager.getSortedCombatantList();
-	for _, nodeCT in pairs(ctEntries) do if nodeCT ~= nodeFromDelete then checkAurasEffectingNodeForDelete(nodeCT); end end
+---	This function is called when effect components are changed.
+local function onStatusChanged(nodeStatus) updateAuras(nodeStatus.getChild('..')); end
+
+---	This function requests aura processing to be performed on the host FG instance.
+local function notifyTokenMove(tokenMap)
+	if not tokenMap.getContainerNode or not CombatManager then return; end
+	local nodeCT = CombatManager.getCTFromToken(tokenMap)
+	if not nodeCT then return; end
+
+	local msgOOB = {};
+	msgOOB.type = OOB_MSGTYPE_AURATOKENMOVE;
+	msgOOB.sCTNode = nodeCT.getNodeName()
+
+	Comm.deliverOOBMessage(msgOOB, '');
 end
 
 local function checkFaction(targetActor, nodeEffect, sFactionCheck)
@@ -164,7 +169,7 @@ local function checkFaction(targetActor, nodeEffect, sFactionCheck)
 	local sourceActor, sourceFaction
 	local sEffectSource = DB.getValue(nodeEffect, aEffectVarMap['sSource']['sDBField'], '');
 	if sFactionCheck:match('notself') then
-		return not (sEffectSource == '');
+		return sEffectSource ~= '';
 	elseif sEffectSource ~= '' then
 		sourceActor = ActorManager.resolveActor(DB.findNode(sEffectSource));
 		sourceFaction = ActorManager.getFaction(sourceActor);
@@ -192,29 +197,6 @@ local function checkFaction(targetActor, nodeEffect, sFactionCheck)
 	return bReturn;
 end
 
-local checkConditional = nil;
-function customCheckConditional(rActor, nodeEffect, aConditions, rTarget, aIgnore)
-	local bReturn
-	if EffectManager4E then
-		local rEffectComp = aConditions
-		aConditions = aConditions.remainder
-		bReturn = checkConditional(rActor, nodeEffect, rEffectComp, rTarget, aIgnore);
-	else
-		bReturn = checkConditional(rActor, nodeEffect, aConditions, rTarget, aIgnore);
-	end
-	for _, v in ipairs(aConditions) do
-		local sLower = v:lower();
-		local sFactionCheck = sLower:match('^faction%s*%(([^)]+)%)$');
-		if sFactionCheck then
-			if not checkFaction(rActor, nodeEffect, sFactionCheck) then
-				bReturn = false
-				break
-			end
-		end
-	end
-	return bReturn;
-end
-
 local onMove = nil;
 local function auraOnMove(tokenMap)
 	if onMove then onMove(tokenMap); end
@@ -238,6 +220,115 @@ function updateAuras(sourceNode)
 	local ctEntries = CombatManager.getSortedCombatantList();
 	for _, otherNode in pairs(ctEntries) do
 		if otherNode ~= sourceNode then
+
+			local function checkAuraApplicationAndAddOrRemove(node1, node2, auraEffect, nodeInfo)
+				if not node2 or not auraEffect then return false end
+
+				local sLabelNodeEffect = DB.getValue(auraEffect, aEffectVarMap['sName']['sDBField'], '')
+				local nRange, auraType = string.match(sLabelNodeEffect, '(%d+) (%w+)')
+				if nRange then
+					nRange = math.floor(tonumber(nRange))
+				else
+					Debug.console(Interface.getString('aura_console_norange'));
+					return false
+				end
+				if not auraType then
+					auraType = 'all'
+				elseif auraType == 'enemy' then
+					auraType = 'foe'
+				end
+
+				if not nodeInfo.relationship then nodeInfo.relationship = getRelationship(node1, node2) end
+				if auraType == nodeInfo.relationship or auraType == 'all' then
+					if not nodeInfo.distanceBetween then
+						local sourceToken = CombatManager.getTokenFromCT(node1)
+						local targetToken = CombatManager.getTokenFromCT(node2)
+						if sourceToken and targetToken then nodeInfo.distanceBetween = Token.getDistanceBetween(sourceToken, targetToken) end
+					end
+
+					local function checkAuraAlreadyEffecting()
+						local sLabel = DB.getValue(auraEffect, aEffectVarMap['sName']['sDBField'], '');
+						for _, nodeEffect in pairs(DB.getChildren(node2, 'effects')) do
+							-- if DB.getValue(nodeEffect, aEffectVarMap["nActive"]["sDBField"], 0) ~= 2 then
+							local sSource = DB.getValue(nodeEffect, aEffectVarMap['sSource']['sDBField']);
+							if sSource == node1.getPath() then
+								local sEffect = DB.getValue(nodeEffect, aEffectVarMap['sName']['sDBField'], '');
+								sEffect = sEffect:gsub(fromAuraString, '');
+								if string.find(sLabel, sEffect, 0, true) then return nodeEffect; end
+							end
+							-- end
+						end
+					end
+
+					local existingAuraEffect = checkAuraAlreadyEffecting()
+					if (nodeInfo.distanceBetween and nodeInfo.distanceBetween <= nRange) and not isSourceDisabled(node1) then
+
+						local function addAuraEffect()
+							local sLabel = DB.getValue(auraEffect, aEffectVarMap['sName']['sDBField'], '');
+							local applyLabel = string.match(sLabel, auraString .. '.-;%s*(.*)$');
+							if not applyLabel then
+								Debug.console(Interface.getString('aura_console_notext'), sLabel, auraString);
+								return false;
+							end
+							applyLabel = fromAuraString .. applyLabel;
+
+							local rEffect = {};
+							rEffect.nDuration = 0;
+							rEffect.nGMOnly = DB.getValue(auraEffect, aEffectVarMap['nGMOnly']['sDBField'], 0);
+							rEffect.nInit = DB.getValue(auraEffect, aEffectVarMap['nInit']['sDBField'], 0);
+							rEffect.sLabel = applyLabel;
+							rEffect.sName = applyLabel;
+							rEffect.sSource = node1.getPath();
+							rEffect.sUnits = DB.getValue(auraEffect, aEffectVarMap['sUnit']['sDBField'], '');
+
+							-- CHECK IF SILENT IS ON
+							if checkSilentNotification(auraType) == true then
+
+								local function notifyApplySilent(vTargets)
+									-- Build OOB message to pass effect to host
+									local msgOOB = {};
+									msgOOB.type = OOB_MSGTYPE_AURAAPPLYSILENT;
+									for k, _ in pairs(rEffect) do
+										if aEffectVarMap[k] then
+											if aEffectVarMap[k].sDBType == 'number' then
+												msgOOB[k] = rEffect[k] or aEffectVarMap[k].vDBDefault or 0;
+											else
+												msgOOB[k] = rEffect[k] or aEffectVarMap[k].vDBDefault or '';
+											end
+										end
+									end
+									if Session.IsHost then
+										msgOOB.user = '';
+									else
+										msgOOB.user = User.getUsername();
+									end
+									msgOOB.identity = User.getIdentityLabel();
+
+									-- Send one message for each target
+									if type(vTargets) == 'table' then
+										for _, v in pairs(vTargets) do
+											msgOOB.sTargetNode = v;
+											Comm.deliverOOBMessage(msgOOB, '');
+										end
+									else
+										msgOOB.sTargetNode = vTargets;
+										Comm.deliverOOBMessage(msgOOB, '');
+									end
+								end
+
+								notifyApplySilent(rEffect, node2.getPath());
+							else
+								EffectManager.notifyApply(rEffect, node2.getPath());
+							end
+						end
+
+						if not existingAuraEffect then addAuraEffect() end
+					elseif existingAuraEffect then
+						removeAuraEffect(auraType, existingAuraEffect)
+					end
+				end
+			end
+
 			local nodeInfo = {}
 			-- Check if the moved token has auras to apply/remove
 			for _, auraEffect in pairs(getAurasForNode(sourceNode)) do
@@ -247,112 +338,6 @@ function updateAuras(sourceNode)
 			for _, auraEffect in pairs(getAurasForNode(otherNode)) do
 				checkAuraApplicationAndAddOrRemove(otherNode, sourceNode, auraEffect, nodeInfo)
 			end
-		end
-	end
-end
-
-function notifyApplySilent(rEffect, vTargets)
-	-- Build OOB message to pass effect to host
-	local msgOOB = {};
-	msgOOB.type = OOB_MSGTYPE_AURAAPPLYSILENT;
-	for k, v in pairs(rEffect) do
-		if aEffectVarMap[k] then
-			if aEffectVarMap[k].sDBType == 'number' then
-				msgOOB[k] = rEffect[k] or aEffectVarMap[k].vDBDefault or 0;
-			else
-				msgOOB[k] = rEffect[k] or aEffectVarMap[k].vDBDefault or '';
-			end
-		end
-	end
-	if Session.IsHost then
-		msgOOB.user = '';
-	else
-		msgOOB.user = User.getUsername();
-	end
-	msgOOB.identity = User.getIdentityLabel();
-
-	-- Send one message for each target
-	if type(vTargets) == 'table' then
-		for _, v in pairs(vTargets) do
-			msgOOB.sTargetNode = v;
-			Comm.deliverOOBMessage(msgOOB, '');
-		end
-	else
-		msgOOB.sTargetNode = vTargets;
-		Comm.deliverOOBMessage(msgOOB, '');
-	end
-end
-
-local function addAuraEffect(auraType, effect, targetNode, sourceNode)
-	local sLabel = DB.getValue(effect, aEffectVarMap['sName']['sDBField'], '');
-	local applyLabel = string.match(sLabel, auraString .. '.-;%s*(.*)$');
-	if not applyLabel then
-		Debug.console(Interface.getString('aura_console_notext'), sLabel, auraString);
-		return false;
-	end
-	applyLabel = fromAuraString .. applyLabel;
-
-	local rEffect = {};
-	rEffect.nDuration = 0;
-	rEffect.nGMOnly = DB.getValue(effect, aEffectVarMap['nGMOnly']['sDBField'], 0);
-	rEffect.nInit = DB.getValue(effect, aEffectVarMap['nInit']['sDBField'], 0);
-	rEffect.sLabel = applyLabel;
-	rEffect.sName = applyLabel;
-	rEffect.sSource = sourceNode.getPath();
-	rEffect.sUnits = DB.getValue(effect, aEffectVarMap['sUnit']['sDBField'], '');
-
-	-- CHECK IF SILENT IS ON
-	if checkSilentNotification(auraType) == true then
-		notifyApplySilent(rEffect, targetNode.getPath());
-	else
-		EffectManager.notifyApply(rEffect, targetNode.getPath());
-	end
-end
-
-function checkAuraApplicationAndAddOrRemove(sourceNode, targetNode, auraEffect, nodeInfo)
-	if not targetNode or not auraEffect then return false end
-
-	local sLabelNodeEffect = DB.getValue(auraEffect, aEffectVarMap['sName']['sDBField'], '')
-	local nRange, auraType = string.match(sLabelNodeEffect, '(%d+) (%w+)')
-	if nRange then
-		nRange = math.floor(tonumber(nRange))
-	else
-		Debug.console(Interface.getString('aura_console_norange'));
-		return false
-	end
-	if not auraType then
-		auraType = 'all'
-	elseif auraType == 'enemy' then
-		auraType = 'foe'
-	end
-
-	if not nodeInfo.relationship then nodeInfo.relationship = getRelationship(sourceNode, targetNode) end
-	if auraType == nodeInfo.relationship or auraType == 'all' then
-		if not nodeInfo.distanceBetween then
-			local sourceToken = CombatManager.getTokenFromCT(sourceNode)
-			local targetToken = CombatManager.getTokenFromCT(targetNode)
-			if sourceToken and targetToken then nodeInfo.distanceBetween = Token.getDistanceBetween(sourceToken, targetToken) end
-		end
-
-		local function checkAuraAlreadyEffecting()
-			local sLabel = DB.getValue(auraEffect, aEffectVarMap['sName']['sDBField'], '');
-			for _, nodeEffect in pairs(DB.getChildren(targetNode, 'effects')) do
-				-- if DB.getValue(nodeEffect, aEffectVarMap["nActive"]["sDBField"], 0) ~= 2 then
-				local sSource = DB.getValue(nodeEffect, aEffectVarMap['sSource']['sDBField']);
-				if sSource == sourceNode.getPath() then
-					local sEffect = DB.getValue(nodeEffect, aEffectVarMap['sName']['sDBField'], '');
-					sEffect = sEffect:gsub(fromAuraString, '');
-					if string.find(sLabel, sEffect, 0, true) then return nodeEffect; end
-				end
-				-- end
-			end
-		end
-
-		local existingAuraEffect = checkAuraAlreadyEffecting()
-		if (nodeInfo.distanceBetween and nodeInfo.distanceBetween <= nRange) and not isSourceDisabled(sourceNode) then
-			if not existingAuraEffect then addAuraEffect(auraType, auraEffect, targetNode, sourceNode) end
-		elseif existingAuraEffect then
-			removeAuraEffect(auraType, existingAuraEffect)
 		end
 	end
 end
@@ -369,7 +354,7 @@ function handleApplyEffectSilent(msgOOB)
 
 	-- Reconstitute the effect details
 	local rEffect = {};
-	for k, v in pairs(msgOOB) do
+	for k, _ in pairs(msgOOB) do
 		if aEffectVarMap[k] then
 			if aEffectVarMap[k].sDBType == 'number' then
 				rEffect[k] = tonumber(msgOOB[k]) or 0;
@@ -464,6 +449,29 @@ function onInit()
 		DetectedEffectManager = EffectManager5E
 	elseif EffectManager4E then
 		DetectedEffectManager = EffectManager4E
+	end
+
+	local checkConditional = nil;
+	local function customCheckConditional(rActor, nodeEffect, aConditions, rTarget, aIgnore)
+		local bReturn
+		if EffectManager4E then
+			local rEffectComp = aConditions
+			aConditions = aConditions.remainder
+			bReturn = checkConditional(rActor, nodeEffect, rEffectComp, rTarget, aIgnore);
+		else
+			bReturn = checkConditional(rActor, nodeEffect, aConditions, rTarget, aIgnore);
+		end
+		for _, v in ipairs(aConditions) do
+			local sLower = v:lower();
+			local sFactionCheck = sLower:match('^faction%s*%(([^)]+)%)$');
+			if sFactionCheck then
+				if not checkFaction(rActor, nodeEffect, sFactionCheck) then
+					bReturn = false
+					break
+				end
+			end
+		end
+		return bReturn;
 	end
 
 	-- create proxy function to add FACTION conditional
