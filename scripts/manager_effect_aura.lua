@@ -65,7 +65,7 @@ local function removeAuraEffect(auraType, nodeEffect)
 			local function notifyExpireSilent()
 				local varEffect
 				if type(nodeEffect) == 'databasenode' then
-					varEffect = nodeEffect.getNodeName();
+					varEffect = nodeEffect.getPath();
 				elseif type(nodeEffect) ~= 'string' then
 					return false;
 				end
@@ -156,7 +156,7 @@ local function notifyTokenMove(tokenMap)
 
 	local msgOOB = {};
 	msgOOB.type = OOB_MSGTYPE_AURATOKENMOVE;
-	msgOOB.sCTNode = nodeCT.getNodeName()
+	msgOOB.sCTNode = nodeCT.getPath()
 
 	Comm.deliverOOBMessage(msgOOB, '');
 end
@@ -284,7 +284,7 @@ function updateAuras(sourceNode)
 							-- CHECK IF SILENT IS ON
 							if checkSilentNotification(auraType) == true then
 
-								local function notifyApplySilent(vTargets)
+								local function notifyApplySilent()
 									-- Build OOB message to pass effect to host
 									local msgOOB = {};
 									msgOOB.type = OOB_MSGTYPE_AURAAPPLYSILENT;
@@ -305,18 +305,18 @@ function updateAuras(sourceNode)
 									msgOOB.identity = User.getIdentityLabel();
 
 									-- Send one message for each target
-									if type(vTargets) == 'table' then
-										for _, v in pairs(vTargets) do
+									if type(node2.getPath()) == 'table' then
+										for _, v in pairs(node2.getPath()) do
 											msgOOB.sTargetNode = v;
 											Comm.deliverOOBMessage(msgOOB, '');
 										end
 									else
-										msgOOB.sTargetNode = vTargets;
+										msgOOB.sTargetNode = node2.getPath();
 										Comm.deliverOOBMessage(msgOOB, '');
 									end
 								end
 
-								notifyApplySilent(rEffect, node2.getPath());
+								notifyApplySilent(rEffect);
 							else
 								EffectManager.notifyApply(rEffect, node2.getPath());
 							end
