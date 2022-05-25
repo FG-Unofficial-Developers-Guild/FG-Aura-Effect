@@ -227,7 +227,7 @@ function updateAuras(sourceNode)
 				if not node2 or not auraEffect then return false end
 
 				local sLabelNodeEffect = DB.getValue(auraEffect, aEffectVarMap['sName']['sDBField'], ''):gsub(concentrationPrefix, '')
-				local nRange, auraType = string.match(sLabelNodeEffect:gsub(concentrationPrefix, ''), '(%d+) (%w+)')
+				local nRange, auraType = string.match(sLabelNodeEffect, '(%d+) (%w+)')
 				if nRange then
 					nRange = math.floor(tonumber(nRange))
 				else
