@@ -200,8 +200,8 @@ local function checkFaction(targetActor, nodeEffect, sFactionCheck)
 end
 
 local onMove = nil;
-local function auraOnMove(tokenMap)
-	if onMove then onMove(tokenMap); end
+local function auraOnMove(tokenMap, ...)
+	if onMove then onMove(tokenMap, ...); end
 	if Session.IsHost then
 		-- Debug.chat("onMove aura update", tokenMap)
 		notifyTokenMove(tokenMap)
@@ -481,14 +481,14 @@ function onInit()
 	DetectedEffectManager.checkConditional = customCheckConditional;
 
 	local onWindowOpened = nil;
-	local function auraOnWindowOpened(window)
-		if onWindowOpened then onWindowOpened(window); end
+	local function auraOnWindowOpened(window, ...)
+		if onWindowOpened then onWindowOpened(window, ...); end
 		if window.getClass() == 'imagewindow' then
 			local ctEntries = CombatManager.getSortedCombatantList();
 			for _, nodeCT in pairs(ctEntries) do
 				local tokenMap = CombatManager.getTokenFromCT(nodeCT);
 				local _, winImage = ImageManager.getImageControl(tokenMap);
-				if tokenMap and winImage and winImage == window then notifyTokenMove(tokenMap); end
+				if tokenMap and winImage == window then notifyTokenMove(tokenMap); end
 			end
 		end
 	end
