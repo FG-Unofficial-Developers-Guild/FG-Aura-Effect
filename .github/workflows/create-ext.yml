@@ -23,7 +23,7 @@ jobs:
       uses: thedoctor0/zip-release@master
       with:
         filename: ${{ github.event.repository.name }}${{ env.EXTENSION }}])
-        exclusions: '*.git* /*node_modules/* .editorconfig body.md *.psd *.xcf forge-thumbnail.png'
+        exclusions: '*.git* /*node_modules/* .editorconfig body.md *.psd *.xcf forge-thumbnail.png thumbnail.png'
     - name: Add .ext File to Release
       uses: ncipollo/release-action@v1
       with:
