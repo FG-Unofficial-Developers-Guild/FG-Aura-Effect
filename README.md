@@ -10,6 +10,8 @@ It works with the 3.5E, 4E, 5E, PFRPG, PFRPG2, and SFRPG rulesets.
 
 Users might also want to use [GKEnialb](https://www.fantasygrounds.com/forums/member.php?70614-GKEnialb)'s [Token Height Indicator](https://www.fantasygrounds.com/forums/showthread.php?66566-5E-Token-Height-Indicator) which makes the auras height-aware.
 
+Mattekure's [Complete Offensive Package Aura Extension](https://forge.fantasygrounds.com/shop/items/620/view) also allows you to see the auras that this extension creates. It is a paid extension.
+
 ### AURA Effect
 ```AURA: 10 friend; Aura of Protection; SAVE: 5```
 
