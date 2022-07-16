@@ -10,10 +10,6 @@ It works with the 3.5E, 4E, 5E, PFRPG, PFRPG2, and SFRPG rulesets.
 
 Users might also want to use [GKEnialb](https://www.fantasygrounds.com/forums/member.php?70614-GKEnialb)'s [Token Height Indicator](https://www.fantasygrounds.com/forums/showthread.php?66566-5E-Token-Height-Indicator) which makes the auras height-aware.
 
-This extension is not fully compatible with SilentRuin's [Polymorphism Extension](https://www.fantasygrounds.com/forums/showthread.php?61009). It seems that [when concentration on polymorph is broken, a script error is triggered](https://www.fantasygrounds.com/forums/showthread.php?57417-5E-Aura-Effects&p=607915&viewfull=1#post607915) in SilentRuin's code. If you can repeatedly trigger this error, please pass along clear instructions so I can fix the issue (thus far I have not been able to reproduce the issue).
-
-A user reported significant lag when this extension is used with the [Combat Groups](https://www.fantasygrounds.com/forums/showthread.php?64103-Combat-Groups-Extension-(Fantasy-Grounds-Unity-5E-Ruleset)) extension.
-
 ### AURA Effect
 ```AURA: 10 friend; Aura of Protection; SAVE: 5```
 
