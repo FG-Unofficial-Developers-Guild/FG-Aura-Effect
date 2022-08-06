@@ -455,17 +455,12 @@ function onInit()
 
 	local checkConditional = nil;
 	local function customCheckConditional(rActor, nodeEffect, aConditions, rTarget, aIgnore)
-		local bReturn
-		if EffectManager4E then
-			local rEffectComp = aConditions
+		local bReturn = checkConditional(rActor, nodeEffect, aConditions, rTarget, aIgnore);
+		if aConditions and aConditions.remainder then
 			aConditions = aConditions.remainder
-			bReturn = checkConditional(rActor, nodeEffect, rEffectComp, rTarget, aIgnore);
-		else
-			bReturn = checkConditional(rActor, nodeEffect, aConditions, rTarget, aIgnore);
 		end
 		for _, v in ipairs(aConditions) do
-			local sLower = v:lower();
-			local sFactionCheck = sLower:match('^faction%s*%(([^)]+)%)$');
+			local sFactionCheck = v:lower():match('^faction%s*%(([^)]+)%)$');
 			if sFactionCheck then
 				if not checkFaction(rActor, nodeEffect, sFactionCheck) then
 					bReturn = false
