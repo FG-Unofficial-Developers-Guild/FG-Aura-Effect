@@ -32,7 +32,7 @@ jobs:
         uses: ashley-taylor/regex-property-action@1.2
         with:
           value: ${{ steps.getnamefromxml.outputs.info }}
-          regex: '[A-Za-z]+:\s'
+          regex: '[A-Za-z]+:\s+'
           replacement: ''
 
       - id: removeapostrophes
@@ -45,14 +45,21 @@ jobs:
       - id: removenamepunctuation
         uses: ashley-taylor/regex-property-action@1.2
         with:
-          value: ${{ steps.removenameparenthetical.outputs.value }}
-          regex: '\W.*'
+          value: ${{ steps.removeapostrophes.outputs.value }}
+          regex: '[^\w\s].*'
+          replacement: ''
+
+      - id: removenamespaces
+        uses: ashley-taylor/regex-property-action@1.2
+        with:
+          value: ${{ steps.removenamepunctuation.outputs.value }}
+          regex: '\s'
           replacement: ''
 
       - id: namelowercase
         uses: ASzc/change-string-case-action@v2
         with:
-          string: ${{ steps.removenamepunctuation.outputs.value }}
+          string: ${{ steps.removenamespaces.outputs.value }}
 
       # Determine extension author
 
@@ -71,24 +78,31 @@ jobs:
           regex: '[A-Za-z]+:\s'
           replacement: ''
 
-      - id: removeapostrophes
+      - id: removeauthorapostrophes
         uses: ashley-taylor/regex-property-action@1.2
         with:
           value: ${{ steps.removeauthorprefix.outputs.value }}
           regex: "'"
           replacement: ''
 
-      - id: removenamepunctuation
+      - id: removeauthorpunctuation
         uses: ashley-taylor/regex-property-action@1.2
         with:
-          value: ${{ steps.removeauthorparenthetical.outputs.value }}
-          regex: '\W.*'
+          value: ${{ steps.removeauthorapostrophes.outputs.value }}
+          regex: '[^\w\s].*'
+          replacement: ''
+
+      - id: removeauthorspaces
+        uses: ashley-taylor/regex-property-action@1.2
+        with:
+          value: ${{ steps.removeauthorpunctuation.outputs.value }}
+          regex: '\s'
           replacement: ''
 
       - id: authorlowercase
         uses: ASzc/change-string-case-action@v2
         with:
-          string: ${{ steps.removeauthorpunctuation.outputs.value }}
+          string: ${{ steps.removeauthorspaces.outputs.value }}
 
     outputs:
       extension: ${{ steps.namelowercase.outputs.lowercase }}
