@@ -32,7 +32,7 @@ jobs:
         uses: ashley-taylor/regex-property-action@1.2
         with:
           value: ${{ steps.getnamefromxml.outputs.info }}
-          regex: '.*:\s'
+          regex: '[A-Za-z]+:\s'
           replacement: ''
 
       - id: shortenextname
@@ -75,7 +75,7 @@ jobs:
         uses: ashley-taylor/regex-property-action@1.2
         with:
           value: ${{ steps.getauthorfromxml.outputs.info }}
-          regex: '.*:\s'
+          regex: '[A-Za-z]+:\s'
           replacement: ''
 
       - id: shortenauthorname
