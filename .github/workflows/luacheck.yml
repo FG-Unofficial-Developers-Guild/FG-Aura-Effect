@@ -35,25 +35,18 @@ jobs:
           regex: '[A-Za-z]+:\s'
           replacement: ''
 
-      - id: shortenextname
+      - id: removeapostrophes
         uses: ashley-taylor/regex-property-action@1.2
         with:
           value: ${{ steps.removenameprefix.outputs.value }}
-          regex: ',.*'
-          replacement: ''
-
-      - id: removenameparenthetical
-        uses: ashley-taylor/regex-property-action@1.2
-        with:
-          value: ${{ steps.shortenextname.outputs.value }}
-          regex: '\(.*\)'
+          regex: "'"
           replacement: ''
 
       - id: removenamepunctuation
         uses: ashley-taylor/regex-property-action@1.2
         with:
           value: ${{ steps.removenameparenthetical.outputs.value }}
-          regex: '[^A-Za-z0-9]+'
+          regex: '\W.*'
           replacement: ''
 
       - id: namelowercase
@@ -78,25 +71,18 @@ jobs:
           regex: '[A-Za-z]+:\s'
           replacement: ''
 
-      - id: shortenauthorname
+      - id: removeapostrophes
         uses: ashley-taylor/regex-property-action@1.2
         with:
           value: ${{ steps.removeauthorprefix.outputs.value }}
-          regex: ',.*'
+          regex: "'"
           replacement: ''
 
-      - id: removeauthorparenthetical
-        uses: ashley-taylor/regex-property-action@1.2
-        with:
-          value: ${{ steps.shortenauthorname.outputs.value }}
-          regex: '\(.*\)'
-          replacement: ''
-
-      - id: removeauthorpunctuation
+      - id: removenamepunctuation
         uses: ashley-taylor/regex-property-action@1.2
         with:
           value: ${{ steps.removeauthorparenthetical.outputs.value }}
-          regex: '[^A-Za-z0-9]+'
+          regex: '\W.*'
           replacement: ''
 
       - id: authorlowercase
