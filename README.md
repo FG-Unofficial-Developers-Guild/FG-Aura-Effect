@@ -42,11 +42,10 @@ The IF: FACTION(foe) ensures that the penalty to attacks does not impact the bea
 
 The following faction types (used for IF: FACTION(friend)) are allowed:
 
+* notself
 * friend
 * foe
 * neutral
-* faction
-* notself
 
 You can also use the "!" operator in a FACTION conditional to reverse the results:
 ```AURA: 10 all; Test; IF: FACTION(!foe); ATK: -5```
