@@ -11,5 +11,6 @@
 	<!-- Console Messages -->
 	<string name="aura_console_notext">Aura Effect: Aura text not found. FROMAURA effects will not be created.</string>
 	<string name="aura_console_norange">Aura Effect: Aura range is missing. Proper aura format is AURA: 5</string>
+	<string name="aura_console_nofaction">Aura Effect: Aura faction is missing. Assuming type 'all.'</string>
 	<string name="aura_console_expire_nonode">Aura Effect: Cannot expire effect as nodeEffect is not provided.</string>
 </root>

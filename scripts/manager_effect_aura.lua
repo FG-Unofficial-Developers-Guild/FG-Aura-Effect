@@ -3,16 +3,13 @@
 --
 
 -- luacheck: globals updateAuras handleTokenMovement handleApplyEffectSilent handleExpireEffectSilent
--- luacheck: globals OOB_MSGTYPE_AURATOKENMOVE
--- luacheck: globals OOB_MSGTYPE_AURAAPPLYSILENT
--- luacheck: globals OOB_MSGTYPE_AURAEXPIRESILENT
 
 OOB_MSGTYPE_AURATOKENMOVE = 'aurasontokenmove';
 OOB_MSGTYPE_AURAAPPLYSILENT = 'applyeffsilent';
 OOB_MSGTYPE_AURAEXPIRESILENT = 'expireeffsilent';
 
 local fromAuraString = 'FROMAURA;'
-local auraString = 'AURA:'
+local auraString = 'AURA: %d'
 
 local concentrationPrefix = '%s*%(C%)'
 
@@ -227,14 +224,15 @@ function updateAuras(sourceNode)
 				if not node2 or not auraEffect then return false end
 
 				local sLabelNodeEffect = DB.getValue(auraEffect, aEffectVarMap['sName']['sDBField'], ''):gsub(concentrationPrefix, '')
-				local nRange, auraType = string.match(sLabelNodeEffect, '(%d+) (%w+)')
+				local nRange, auraType = string.match(sLabelNodeEffect, '(%d+)%s*(%a*)')
 				if nRange then
 					nRange = math.floor(tonumber(nRange))
 				else
 					Debug.console(Interface.getString('aura_console_norange'));
 					return false
 				end
-				if not auraType then
+				if not auraType or auraType == '' then
+					--Debug.console(Interface.getString('aura_console_nofaction'));
 					auraType = 'all'
 				elseif auraType == 'enemy' then
 					auraType = 'foe'
