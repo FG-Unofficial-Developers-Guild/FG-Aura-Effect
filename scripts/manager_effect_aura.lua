@@ -9,9 +9,7 @@ OOB_MSGTYPE_AURAAPPLYSILENT = 'applyeffsilent';
 OOB_MSGTYPE_AURAEXPIRESILENT = 'expireeffsilent';
 
 local fromAuraString = 'FROMAURA;'
-local auraString = 'AURA: %d'
-
-local concentrationPrefix = '%s*%(C%)'
+local auraString = 'AURA: %d+'
 
 local aEffectVarMap = {
 	['nActive'] = { sDBType = 'number', sDBField = 'isactive' },
@@ -25,52 +23,41 @@ local aEffectVarMap = {
 };
 
 local function getEffectString(nodeEffect)
+	local sLabel = DB.getValue(nodeEffect, "label", "");
 
-	local function readString()
-		local sLabel = DB.getValue(nodeEffect, "label", "");
+	local aEffectComps = EffectManager.parseEffect(sLabel);
 
-		local aEffectComps = EffectManager.parseEffect(sLabel);
-
-		if EffectManager.isTargetedEffect(nodeEffect) then
-			local sTargets = table.concat(EffectManager.getEffectTargets(nodeEffect, true), ",");
-			table.insert(aEffectComps, 1, "[TRGT: " .. sTargets .. "]");
-		end
-
-		for _,v in pairs(aEffectVarMap) do
-			if v.fDisplay then
-				local vValue = v.fDisplay(nodeEffect);
-				if vValue then
-					table.insert(aEffectComps, vValue);
-				end
-			elseif v.sDisplay and v.sDBField then
-				local vDBValue;
-				if v.sDBType == "number" then
-					vDBValue = DB.getValue(nodeEffect, v.sDBField, v.vDBDefault or 0);
-					if vDBValue == 0 then
-						vDBValue = nil;
-					end
-				else
-					vDBValue = DB.getValue(nodeEffect, v.sDBField, v.vDBDefault or "");
-					if vDBValue == "" then
-						vDBValue = nil;
-					end
-				end
-				if vDBValue then
-					table.insert(aEffectComps, string.format(v.sDisplay, tostring(vDBValue):upper()));
-				end
-			end
-		end
-
-		return EffectManager.rebuildParsedEffect(aEffectComps);
+	if EffectManager.isTargetedEffect(nodeEffect) then
+		local sTargets = table.concat(EffectManager.getEffectTargets(nodeEffect, true), ",");
+		table.insert(aEffectComps, 1, "[TRGT: " .. sTargets .. "]");
 	end
 
-	return readString():gsub('%s*%(C%)', '')
-end
+	for _,v in pairs(aEffectVarMap) do
+		if v.fDisplay then
+			local vValue = v.fDisplay(nodeEffect);
+			if vValue then
+				table.insert(aEffectComps, vValue);
+			end
+		elseif v.sDisplay and v.sDBField then
+			local vDBValue;
+			if v.sDBType == "number" then
+				vDBValue = DB.getValue(nodeEffect, v.sDBField, v.vDBDefault or 0);
+				if vDBValue == 0 then
+					vDBValue = nil;
+				end
+			else
+				vDBValue = DB.getValue(nodeEffect, v.sDBField, v.vDBDefault or "");
+				if vDBValue == "" then
+					vDBValue = nil;
+				end
+			end
+			if vDBValue then
+				table.insert(aEffectComps, string.format(v.sDisplay, tostring(vDBValue):upper()));
+			end
+		end
+	end
 
----	This function checks whether an effect should trigger recalculation.
---	It does this by checking the effect text for a series of three letters followed by a colon (as used in bonuses like CON: 4).
-local function checkEffectRecursion(nodeEffect, sEffectComp)
-	return string.find(getEffectString(nodeEffect), sEffectComp) ~= nil;
+	return EffectManager.rebuildParsedEffect(aEffectComps):gsub('%s*%(C%)', '');
 end
 
 local function isSourceDisabled(nodeChar)
@@ -83,7 +70,7 @@ local function isSourceDisabled(nodeChar)
 end
 
 local function getAurasForNode(nodeCT)
-	if not nodeCT then return false; end
+	if not ActorManager.resolveActor(nodeCT) then return false; end
 	local auraEffects = {};
 	local nodeEffects = DB.getChildren(nodeCT, 'effects');
 	for _, nodeEffect in pairs(nodeEffects) do
@@ -128,7 +115,7 @@ end
 
 ---	This function is called when effects are removed or effect components are changed.
 local function onEffectChanged(nodeEffect)
-	if checkEffectRecursion(nodeEffect, auraString) and not checkEffectRecursion(nodeEffect, fromAuraString) then
+	if string.match(getEffectString(nodeEffect), auraString) and not string.match(getEffectString(nodeEffect), fromAuraString) then
 		local nodeCT = nodeEffect.getChild('...');
 		if nodeCT then
 			if DB.getValue(nodeEffect, aEffectVarMap['nActive']['sDBField'], 0) ~= 1 then
@@ -261,13 +248,16 @@ function updateAuras(sourceNode)
 
 	local ctEntries = CombatManager.getSortedCombatantList();
 	for _, otherNode in pairs(ctEntries) do
-		if otherNode ~= sourceNode then
+		if otherNode and otherNode ~= sourceNode then
 
 			local function checkAuraApplicationAndAddOrRemove(node1, node2, auraEffect, nodeInfo)
-				if not node2 or not auraEffect then return false end
+				if not auraEffect then return false end
 
 				local sLabelNodeEffect = getEffectString(auraEffect);
-				local nRange, auraType = string.match(sLabelNodeEffect, '(%d+)%s*(%a*)')
+
+				if sLabelNodeEffect:match(fromAuraString) then return false end
+
+				local nRange, auraType = string.match(sLabelNodeEffect, 'AURA:%s*(%d+)%s*(%a*);')
 				if nRange then
 					nRange = math.floor(tonumber(nRange))
 				else
