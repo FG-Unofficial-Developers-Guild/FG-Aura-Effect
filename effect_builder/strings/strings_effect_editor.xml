@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+
+<!-- 
+  Please see the license.html file included with this distribution for 
+  attribution and copyright information.
+-->
+
+<root version="3.0">
+    <string name="conditional_aura_faction">Faction</string>
+
+    <string name="effect_aura">Aura</string>
+</root>

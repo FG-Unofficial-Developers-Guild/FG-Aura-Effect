@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+
+<!-- 
+  Please see the license.html file included with this distribution for 
+  attribution and copyright information.
+-->
+
+<root version="3.0">
+    <windowclass name="conditional_FACTION">
+        <script file="effect_builder/conditional/scripts/conditional_FACTION.lua" />
+		<margins control="0,0,0,2" />
+        <sheetdata>
+            <leftanchor_eb />
+
+            <cycler_eb_aura_faction_conditional name="aura_faction_conditional"/>
+        </sheetdata>
+    </windowclass>
+    <script name="loader_conditional_FACTION">
+        function onInit()
+            if EditorManager and EditorManager.addEditor then
+                EditorManager.addEditor(
+                    "category_conditional",
+                    {
+                        value="FACTION",
+                        labelres="conditional_aura_faction",
+                        windowclass="conditional_FACTION"
+                    }
+                )
+            end
+        end
+    </script>
+</root>

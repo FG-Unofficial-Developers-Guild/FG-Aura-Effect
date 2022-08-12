@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+
+<!-- 
+  Please see the license.html file included with this distribution for 
+  attribution and copyright information.
+-->
+
+<root version="3.0">
+    <windowclass name="effect_AURA">
+        <script file="effect_builder/effects/scripts/AURA.lua" />
+		<margins control="0,0,0,2" />
+        <sheetdata>
+            <leftanchor_eb />
+
+            <subwindow_eb_number_value />
+
+            <cycler_eb_aura_faction name="effect_faction" />
+        </sheetdata>
+    </windowclass>
+    <script name="loader_AURA">
+        function onInit()
+            if EditorManager and EditorManager.addEditor then
+                EditorManager.addEditor(
+                    "category_misc",
+                    {
+                        value="AURA",
+                        labelres="effect_aura",
+                        windowclass="effect_AURA"
+                    }
+                )
+            end
+        end
+    </script>
+</root>
