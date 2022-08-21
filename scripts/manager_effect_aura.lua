@@ -57,7 +57,7 @@ local function getEffectString(nodeEffect)
 		end
 	end
 
-	return EffectManager.rebuildParsedEffect(aEffectComps):gsub('%s*%(C%)', '');
+	return EffectManager.rebuildParsedEffect(aEffectComps):gsub('%s*%(C%)', ''):gsub('%s*%[D: %d+%]', '');
 end
 
 local function isSourceDisabled(nodeChar)
@@ -312,6 +312,7 @@ function updateAuras(sourceNode)
 							rEffect.sLabel = applyLabel;
 							rEffect.sName = applyLabel;
 							rEffect.sSource = node1.getPath();
+							--rEffect.sTarget = .... how to get targeting here?
 							rEffect.sUnits = DB.getValue(auraEffect, aEffectVarMap['sUnit']['sDBField'], '');
 
 							-- CHECK IF SILENT IS ON
