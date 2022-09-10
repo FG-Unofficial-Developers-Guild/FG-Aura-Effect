@@ -69,16 +69,20 @@ local function isSourceDisabled(nodeChar)
 	end
 end
 
-local function getAurasForNode(nodeCT)
-	if not ActorManager.resolveActor(nodeCT) then return {}; end
-	local auraEffects = {};
+local function getAurasForNode(nodeCT, searchString)
 	local nodeEffects = DB.getChildren(nodeCT, 'effects');
+	if not nodeEffects then return {}; end
+
+	local auraEffects = {};
 	for _, nodeEffect in pairs(nodeEffects) do
 		if DB.getValue(nodeEffect, aEffectVarMap['nActive']['sDBField'], 0) == 1 then
 			local sLabelNodeEffect = getEffectString(nodeEffect);
-			if string.match(sLabelNodeEffect, '%s*' .. auraString) then table.insert(auraEffects, nodeEffect); end
+			if sLabelNodeEffect:match(searchString) then
+				table.insert(auraEffects, nodeEffect);
+			end
 		end
 	end
+
 	return auraEffects;
 end
 
@@ -126,27 +130,14 @@ local function onEffectChanged(nodeEffect)
 						if node ~= nodeEffect then
 
 							local function checkAurasEffectingNodeForDelete()
-
-								local function getAurasEffectingNode()
-									local auraEffects = {};
-									for _, nodeEffectingEffect in pairs(DB.getChildren(node, 'effects')) do
-										if DB.getValue(nodeEffectingEffect, aEffectVarMap['nActive']['sDBField'], 0) == 1 then
-											local sLabelNodeEffect = getEffectString(nodeEffectingEffect);
-											if string.find(sLabelNodeEffect, fromAuraString, 0, true) then table.insert(auraEffects, nodeEffectingEffect); end
-										end
-									end
-									return auraEffects;
-								end
-
-								local aurasEffectingNode = getAurasEffectingNode();
-								for _, targetEffect in ipairs(aurasEffectingNode) do
+								for _, targetEffect in ipairs(getAurasForNode(node, fromAuraString)) do
 									local targetEffectLabel = getEffectString(targetEffect);
 									targetEffectLabel = targetEffectLabel:gsub(fromAuraString, '');
 									if not string.find(targetEffectLabel, fromAuraString) then
 										local sSource = DB.getValue(targetEffect, aEffectVarMap['sSource']['sDBField'], '');
 										local sourceNode = DB.findNode(sSource);
 										if sourceNode then
-											local sourceAuras = getAurasForNode(sourceNode);
+											local sourceAuras = getAurasForNode(sourceNode, auraString);
 											local auraStillExists = false;
 											for _, sourceEffect in ipairs(sourceAuras) do
 												local sourceEffectLabel = getEffectString(sourceEffect);
@@ -365,11 +356,11 @@ function updateAuras(sourceNode)
 
 			local nodeInfo = {}
 			-- Check if the moved token has auras to apply/remove
-			for _, auraEffect in pairs(getAurasForNode(sourceNode)) do
+			for _, auraEffect in pairs(getAurasForNode(sourceNode, auraString)) do
 				checkAuraApplicationAndAddOrRemove(sourceNode, otherNode, auraEffect, nodeInfo)
 			end
 			-- Check if the moved token is subject to other's auras
-			for _, auraEffect in pairs(getAurasForNode(otherNode)) do
+			for _, auraEffect in pairs(getAurasForNode(otherNode, auraString)) do
 				checkAuraApplicationAndAddOrRemove(otherNode, sourceNode, auraEffect, nodeInfo)
 			end
 		end
