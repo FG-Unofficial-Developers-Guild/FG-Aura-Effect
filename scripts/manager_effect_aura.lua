@@ -70,7 +70,7 @@ local function isSourceDisabled(nodeChar)
 end
 
 local function getAurasForNode(nodeCT)
-	if not ActorManager.resolveActor(nodeCT) then return false; end
+	if not ActorManager.resolveActor(nodeCT) then return {}; end
 	local auraEffects = {};
 	local nodeEffects = DB.getChildren(nodeCT, 'effects');
 	for _, nodeEffect in pairs(nodeEffects) do
