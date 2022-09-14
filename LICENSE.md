@@ -21,4 +21,4 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 "Fantasy Grounds" is a trademark of SmiteWorks USA LLC and is Copyright 2004-2022 SmiteWorks USA LLC.
-The CoreRPG, 3.5E, 4E, 5E, PFRPG, PFRPG2, and SFRPG rulesets and all files included therein are copyright 2004-2021, Smiteworks USA LLC.
+The CoreRPG ruleset, all other official SmiteWorks rulesets, and all files included therein are copyright 2004-2022, Smiteworks USA LLC.
