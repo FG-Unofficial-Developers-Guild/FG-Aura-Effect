@@ -1,0 +1,3 @@
+column_width = 150
+quote_style = "AutoPreferSingle"
+collapse_simple_statement = "Always"
