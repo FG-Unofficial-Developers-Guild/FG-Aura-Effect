@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+
+<!-- 
+  Please see the LICENSE.md file included with this distribution for 
+  attribution and copyright information.
+-->
+
+<root version="3.0">
+	<string name="string_update_notifier_title">Announcement</string>
+
+    <!-- Color Select -->
+    <windowclass name="update_notifier">
+        <margins control="0,0,0,7" />
+        <frame>utilitybox3</frame>
+        <placement>
+            <size width="350" height="215" />
+        </placement>
+		<sizelimits>
+			<minimum width="350" height="215" />
+			<dynamic />
+		</sizelimits>
+        <script file="update_notifier/common/scripts/updatewindow.lua" />
+        <sheetdata>
+            <windowtitlebar name="title">
+                <resource>string_update_notifier_title</resource>
+            </windowtitlebar>
+            <anchor_title_utilitybox3 name="contentanchor" />
+
+            <frame_utilitybox3 name="frame_update_notifier">
+				<anchored height="105" />
+            </frame_utilitybox3>
+
+            <ft_update_notifier_message name="message">
+				<text>If you like this aura extension and want something like it built into Fantasy Grounds, please vote for it on the official SmiteWorks wishlist.</text>
+			</ft_update_notifier_message>
+
+            <button_update_notifier_link name="link">
+                <text>Vote on Wishlist</text>
+                <url>http://fgapp.idea.informer.com/proj/?ia=135352</url>
+                <uniquename>bmosaurawishlist</uniquename>
+            </button_update_notifier_link>
+            <button_update_notifier_skip name="notnow" />
+
+            <helper_color />
+			<resize_utilitybox3 />
+            <close_utilitybox3 />
+        </sheetdata>
+    </windowclass>
+
+    <template name="ft_update_notifier_message">
+        <formattedtextcontrol>
+            <anchored to="frame_update_notifier">
+                <top offset="20" />
+                <left offset="20" />
+                <right offset="-20" />
+            </anchored>
+            <readonly />
+            <script>
+                function onInit()
+                    if text then
+                        setValue(text[1])
+                    end
+                end
+            </script>
+        </formattedtextcontrol>
+    </template>
+
+    <template name="button_update_notifier_link">
+        <button_update_notifier>
+            <anchored>
+                <right anchor="center" offset="-15" />
+            </anchored>
+            <text>Open Link</text>
+            <script>
+                function onButtonPress()
+                    if url and url[1] then
+                        local sURL = url[1] or ''
+                        Interface.openWindow('url', sURL)
+                    end
+                    if uniquename and uniquename[1] then
+                        DB.getRoot().createChild('update_notifier').createChild(uniquename[1])
+                    end
+                    window.close()
+                end
+            </script>
+        </button_update_notifier>
+    </template>
+
+    <template name="button_update_notifier_skip">
+        <button_update_notifier>
+            <anchored>
+                <left anchor="center" offset="15" />
+            </anchored>
+            <text>Later</text>
+            <script>
+                function onButtonPress()
+                    window.close()
+                end
+            </script>
+        </button_update_notifier>
+    </template>
+
+    <template name="button_update_notifier">
+        <buttoncontrol>
+            <anchored width="100" height="20">
+                <bottom offset="-30" />
+            </anchored>
+            <state frame="buttonup" frameoffset="5,5,5,5" />
+            <state frame="buttondown" frameoffset="5,5,5,5" offset="1,1" />
+            <font>button-white</font>
+        </buttoncontrol>
+    </template>
+</root>
