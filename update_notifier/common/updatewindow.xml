@@ -19,7 +19,6 @@
 			<minimum width="350" height="215" />
 			<dynamic />
 		</sizelimits>
-        <script file="update_notifier/common/scripts/updatewindow.lua" />
         <sheetdata>
             <windowtitlebar name="title">
                 <resource>string_update_notifier_title</resource>
