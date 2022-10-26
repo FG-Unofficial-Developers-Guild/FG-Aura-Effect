@@ -1,6 +1,6 @@
-
 function onInit()
-    if not DB.getRoot().createChild('update_notifier').getChild('bmosaurawishlist') then
-        Interface.openWindow('update_notifier', DB.getRoot().createChild('update_notifier'))
+    local nodeUpdateNotifier = DB.getRoot().createChild('update_notifier')
+    if nodeUpdateNotifier and not nodeUpdateNotifier.getChild('bmosaurawishlist') then
+        Interface.openWindow('update_notifier', nodeUpdateNotifier.createChild('bmosaurawishlist'))
     end
 end
