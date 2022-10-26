@@ -77,7 +77,7 @@
                         Interface.openWindow('url', sURL)
                     end
                     if uniquename and uniquename[1] then
-                        DB.getRoot().createChild('update_notifier').createChild(uniquename[1])
+                        window.getDatabaseNode().createChild(uniquename[1])
                     end
                     window.close()
                 end
