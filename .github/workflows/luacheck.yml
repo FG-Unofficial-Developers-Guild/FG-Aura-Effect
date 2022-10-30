@@ -57,7 +57,7 @@ jobs:
           replace-with: ''
 
       - id: namelowercase
-        uses: ASzc/change-string-case-action@v2
+        uses: ASzc/change-string-case-action@v4
         with:
           string: ${{ steps.removenamespaces.outputs.replaced }}
 
@@ -100,7 +100,7 @@ jobs:
           replace-with: ''
 
       - id: authorlowercase
-        uses: ASzc/change-string-case-action@v2
+        uses: ASzc/change-string-case-action@v4
         with:
           string: ${{ steps.removeauthorspaces.outputs.replaced }}
 
