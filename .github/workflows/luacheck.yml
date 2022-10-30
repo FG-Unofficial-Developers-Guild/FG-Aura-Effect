@@ -22,87 +22,87 @@ jobs:
 
       - name: Get Extension Name from XML
         id: getnamefromxml
-        uses: mavrosxristoforos/get-xml-info@1.1.0
+        uses: mavrosxristoforos/get-xml-info@1.1.1
         with:
           xml-file: 'extension.xml'
           xpath: '//properties//name'
 
       - name: Format Extension Name
         id: removenameprefix
-        uses: ashley-taylor/regex-property-action@1.2
+        uses: frabert/replace-string-action@v2.2
         with:
-          value: ${{ steps.getnamefromxml.outputs.info }}
-          regex: '[A-Za-z]+:\s+'
-          replacement: ''
+          string: ${{ steps.getnamefromxml.outputs.info }}
+          pattern: '[A-Za-z]+:\s+'
+          replace-with: ''
 
       - id: removeapostrophes
-        uses: ashley-taylor/regex-property-action@1.2
+        uses: frabert/replace-string-action@2.2
         with:
-          value: ${{ steps.removenameprefix.outputs.value }}
-          regex: "'"
-          replacement: ''
+          string: ${{ steps.removenameprefix.outputs.replaced }}
+          pattern: "'"
+          replace-with: ''
 
       - id: removenamepunctuation
-        uses: ashley-taylor/regex-property-action@1.2
+        uses: frabert/replace-string-action@2.2
         with:
-          value: ${{ steps.removeapostrophes.outputs.value }}
-          regex: '[^\w\s].*'
-          replacement: ''
+          string: ${{ steps.removeapostrophes.outputs.replaced }}
+          pattern: '[^\w\s].*'
+          replace-with: ''
 
       - id: removenamespaces
-        uses: ashley-taylor/regex-property-action@1.2
+        uses: frabert/replace-string-action@2.2
         with:
-          value: ${{ steps.removenamepunctuation.outputs.value }}
-          regex: '\s'
-          replacement: ''
+          string: ${{ steps.removenamepunctuation.outputs.replaced }}
+          pattern: '\s'
+          replace-with: ''
 
       - id: namelowercase
         uses: ASzc/change-string-case-action@v2
         with:
-          string: ${{ steps.removenamespaces.outputs.value }}
+          string: ${{ steps.removenamespaces.outputs.replaced }}
 
       # Determine extension author
 
       - name: Get Extension Name from XML
         id: getauthorfromxml
-        uses: mavrosxristoforos/get-xml-info@1.1.0
+        uses: mavrosxristoforos/get-xml-info@1.1.1
         with:
           xml-file: 'extension.xml'
           xpath: '//properties//author'
 
       - name: Format author name
         id: removeauthorprefix
-        uses: ashley-taylor/regex-property-action@1.2
+        uses: frabert/replace-string-action@2.2
         with:
-          value: ${{ steps.getauthorfromxml.outputs.info }}
-          regex: '[A-Za-z]+:\s'
-          replacement: ''
+          string: ${{ steps.getauthorfromxml.outputs.info }}
+          pattern: '[A-Za-z]+:\s'
+          replace-with: ''
 
       - id: removeauthorapostrophes
-        uses: ashley-taylor/regex-property-action@1.2
+        uses: frabert/replace-string-action@2.2
         with:
-          value: ${{ steps.removeauthorprefix.outputs.value }}
-          regex: "'"
-          replacement: ''
+          string: ${{ steps.removeauthorprefix.outputs.replaced }}
+          pattern: "'"
+          replace-with: ''
 
       - id: removeauthorpunctuation
-        uses: ashley-taylor/regex-property-action@1.2
+        uses: frabert/replace-string-action@2.2
         with:
-          value: ${{ steps.removeauthorapostrophes.outputs.value }}
-          regex: '[^\w\s].*'
-          replacement: ''
+          string: ${{ steps.removeauthorapostrophes.outputs.replaced }}
+          pattern: '[^\w\s].*'
+          replace-with: ''
 
       - id: removeauthorspaces
-        uses: ashley-taylor/regex-property-action@1.2
+        uses: frabert/replace-string-action@2.2
         with:
-          value: ${{ steps.removeauthorpunctuation.outputs.value }}
-          regex: '\s'
-          replacement: ''
+          string: ${{ steps.removeauthorpunctuation.outputs.replaced }}
+          pattern: '\s'
+          replace-with: ''
 
       - id: authorlowercase
         uses: ASzc/change-string-case-action@v2
         with:
-          string: ${{ steps.removeauthorspaces.outputs.value }}
+          string: ${{ steps.removeauthorspaces.outputs.replaced }}
 
     outputs:
       extension: ${{ steps.namelowercase.outputs.lowercase }}
