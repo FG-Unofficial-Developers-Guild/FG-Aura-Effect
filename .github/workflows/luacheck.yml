@@ -29,28 +29,28 @@ jobs:
 
       - name: Format Extension Name
         id: removenameprefix
-        uses: bmos/replace-string-action@patch-1
+        uses: frabert/replace-string-action@v2.3
         with:
           string: ${{ steps.getnamefromxml.outputs.info }}
           pattern: '[A-Za-z]+:\s+'
           replace-with: ''
 
       - id: removeapostrophes
-        uses: bmos/replace-string-action@patch-1
+        uses: frabert/replace-string-action@v2.3
         with:
           string: ${{ steps.removenameprefix.outputs.replaced }}
           pattern: "'"
           replace-with: ''
 
       - id: removenamepunctuation
-        uses: bmos/replace-string-action@patch-1
+        uses: frabert/replace-string-action@v2.3
         with:
           string: ${{ steps.removeapostrophes.outputs.replaced }}
           pattern: '[^\w\s].*'
           replace-with: ''
 
       - id: removenamespaces
-        uses: bmos/replace-string-action@patch-1
+        uses: frabert/replace-string-action@v2.3
         with:
           string: ${{ steps.removenamepunctuation.outputs.replaced }}
           pattern: '\s'
@@ -72,28 +72,28 @@ jobs:
 
       - name: Format author name
         id: removeauthorprefix
-        uses: bmos/replace-string-action@patch-1
+        uses: frabert/replace-string-action@v2.3
         with:
           string: ${{ steps.getauthorfromxml.outputs.info }}
           pattern: '[A-Za-z]+:\s'
           replace-with: ''
 
       - id: removeauthorapostrophes
-        uses: bmos/replace-string-action@patch-1
+        uses: frabert/replace-string-action@v2.3
         with:
           string: ${{ steps.removeauthorprefix.outputs.replaced }}
           pattern: "'"
           replace-with: ''
 
       - id: removeauthorpunctuation
-        uses: bmos/replace-string-action@patch-1
+        uses: frabert/replace-string-action@v2.3
         with:
           string: ${{ steps.removeauthorapostrophes.outputs.replaced }}
           pattern: '[^\w\s].*'
           replace-with: ''
 
       - id: removeauthorspaces
-        uses: bmos/replace-string-action@patch-1
+        uses: frabert/replace-string-action@v2.3
         with:
           string: ${{ steps.removeauthorpunctuation.outputs.replaced }}
           pattern: '\s'
