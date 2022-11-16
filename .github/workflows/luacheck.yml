@@ -18,8 +18,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v3
 
-        # Determine extension name
-
+      # Determine extension name
       - name: Get Extension Name from XML
         id: getnamefromxml
         uses: mavrosxristoforos/get-xml-info@1.1.1
@@ -29,32 +28,32 @@ jobs:
 
       - name: Format Extension Name
         id: removenameprefix
-        uses: frabert/replace-string-action@v2.3
+        uses: ashley-taylor/regex-property-action@1.4
         with:
-          string: ${{ steps.getnamefromxml.outputs.info }}
-          pattern: '[A-Za-z]+:\s+'
-          replace-with: ''
+          value: ${{ steps.getnamefromxml.outputs.info }}
+          regex: '[A-Za-z]+:\s+'
+          replacement: ''
 
       - id: removeapostrophes
-        uses: frabert/replace-string-action@v2.3
+        uses: ashley-taylor/regex-property-action@1.4
         with:
-          string: ${{ steps.removenameprefix.outputs.replaced }}
-          pattern: "'"
-          replace-with: ''
+          value: ${{ steps.removenameprefix.outputs.replaced }}
+          regex: "'"
+          replacement: ''
 
       - id: removenamepunctuation
-        uses: frabert/replace-string-action@v2.3
+        uses: ashley-taylor/regex-property-action@1.4
         with:
-          string: ${{ steps.removeapostrophes.outputs.replaced }}
-          pattern: '[^\w\s].*'
-          replace-with: ''
+          value: ${{ steps.removeapostrophes.outputs.replaced }}
+          regex: '[^\w\s].*'
+          replacement: ''
 
       - id: removenamespaces
-        uses: frabert/replace-string-action@v2.3
+        uses: ashley-taylor/regex-property-action@1.4
         with:
-          string: ${{ steps.removenamepunctuation.outputs.replaced }}
-          pattern: '\s'
-          replace-with: ''
+          value: ${{ steps.removenamepunctuation.outputs.replaced }}
+          regex: '\s'
+          replacement: ''
 
       - id: namelowercase
         uses: ASzc/change-string-case-action@v4
@@ -62,7 +61,6 @@ jobs:
           string: ${{ steps.removenamespaces.outputs.replaced }}
 
       # Determine extension author
-
       - name: Get Extension Name from XML
         id: getauthorfromxml
         uses: mavrosxristoforos/get-xml-info@1.1.1
@@ -72,41 +70,41 @@ jobs:
 
       - name: Format author name
         id: removeauthorprefix
-        uses: frabert/replace-string-action@v2.3
+        uses: ashley-taylor/regex-property-action@1.4
         with:
-          string: ${{ steps.getauthorfromxml.outputs.info }}
-          pattern: '[A-Za-z]+:\s'
-          replace-with: ''
+          value: ${{ steps.getauthorfromxml.outputs.info }}
+          regex: '[A-Za-z]+:\s'
+          replacement: ''
 
       - id: removeauthorapostrophes
-        uses: frabert/replace-string-action@v2.3
+        uses: ashley-taylor/regex-property-action@1.4
         with:
-          string: ${{ steps.removeauthorprefix.outputs.replaced }}
-          pattern: "'"
-          replace-with: ''
+          value: ${{ steps.removeauthorprefix.outputs.replaced }}
+          regex: "'"
+          replacement: ''
 
       - id: removeauthorpunctuation
-        uses: frabert/replace-string-action@v2.3
+        uses: ashley-taylor/regex-property-action@1.4
         with:
-          string: ${{ steps.removeauthorapostrophes.outputs.replaced }}
-          pattern: '[^\w\s].*'
-          replace-with: ''
+          value: ${{ steps.removeauthorapostrophes.outputs.replaced }}
+          regex: '[^\w\s].*'
+          replacement: ''
 
       - id: removeauthorspaces
-        uses: frabert/replace-string-action@v2.3
+        uses: ashley-taylor/regex-property-action@1.4
         with:
-          string: ${{ steps.removeauthorpunctuation.outputs.replaced }}
-          pattern: '\s'
-          replace-with: ''
+          value: ${{ steps.removeauthorpunctuation.outputs.replaced }}
+          regex: '\s'
+          replacement: ''
 
       - id: authorlowercase
         uses: ASzc/change-string-case-action@v4
         with:
           string: ${{ steps.removeauthorspaces.outputs.replaced }}
 
-    outputs:
-      extension: ${{ steps.namelowercase.outputs.lowercase }}
-      author: ${{ steps.authorlowercase.outputs.lowercase }}
+      outputs:
+        extension: ${{ steps.namelowercase.outputs.lowercase }}
+        author: ${{ steps.authorlowercase.outputs.lowercase }}
 
   luacheck:
     runs-on: ubuntu-latest
@@ -120,7 +118,7 @@ jobs:
         with:
           luaVersion: 5.1
 
-      # Process extension code
+    # Process extension code
       - name: Running luacheck
         uses: nebularg/actions-luacheck@v1
         with:
