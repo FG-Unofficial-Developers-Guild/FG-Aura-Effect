@@ -28,28 +28,28 @@ jobs:
 
       - name: Format Extension Name
         id: removenameprefix
-        uses: ashley-taylor/regex-property-action@1.4
+        uses: ashley-taylor/regex-property-action@v1
         with:
           value: ${{ steps.getnamefromxml.outputs.info }}
           regex: '[A-Za-z]+:\s+'
           replacement: ''
 
       - id: removeapostrophes
-        uses: ashley-taylor/regex-property-action@1.4
+        uses: ashley-taylor/regex-property-action@v1
         with:
           value: ${{ steps.removenameprefix.outputs.replaced }}
           regex: "'"
           replacement: ''
 
       - id: removenamepunctuation
-        uses: ashley-taylor/regex-property-action@1.4
+        uses: ashley-taylor/regex-property-action@v1
         with:
           value: ${{ steps.removeapostrophes.outputs.replaced }}
           regex: '[^\w\s].*'
           replacement: ''
 
       - id: removenamespaces
-        uses: ashley-taylor/regex-property-action@1.4
+        uses: ashley-taylor/regex-property-action@v1
         with:
           value: ${{ steps.removenamepunctuation.outputs.replaced }}
           regex: '\s'
@@ -70,28 +70,28 @@ jobs:
 
       - name: Format author name
         id: removeauthorprefix
-        uses: ashley-taylor/regex-property-action@1.4
+        uses: ashley-taylor/regex-property-action@v1
         with:
           value: ${{ steps.getauthorfromxml.outputs.info }}
           regex: '[A-Za-z]+:\s'
           replacement: ''
 
       - id: removeauthorapostrophes
-        uses: ashley-taylor/regex-property-action@1.4
+        uses: ashley-taylor/regex-property-action@v1
         with:
           value: ${{ steps.removeauthorprefix.outputs.replaced }}
           regex: "'"
           replacement: ''
 
       - id: removeauthorpunctuation
-        uses: ashley-taylor/regex-property-action@1.4
+        uses: ashley-taylor/regex-property-action@v1
         with:
           value: ${{ steps.removeauthorapostrophes.outputs.replaced }}
           regex: '[^\w\s].*'
           replacement: ''
 
       - id: removeauthorspaces
-        uses: ashley-taylor/regex-property-action@1.4
+        uses: ashley-taylor/regex-property-action@v1
         with:
           value: ${{ steps.removeauthorpunctuation.outputs.replaced }}
           regex: '\s'
