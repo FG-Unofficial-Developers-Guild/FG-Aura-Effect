@@ -102,9 +102,9 @@ jobs:
         with:
           string: ${{ steps.removeauthorspaces.outputs.replaced }}
 
-      outputs:
-        extension: ${{ steps.namelowercase.outputs.lowercase }}
-        author: ${{ steps.authorlowercase.outputs.lowercase }}
+    outputs:
+      extension: ${{ steps.namelowercase.outputs.lowercase }}
+      author: ${{ steps.authorlowercase.outputs.lowercase }}
 
   luacheck:
     runs-on: ubuntu-latest
