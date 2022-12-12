@@ -263,11 +263,11 @@ function updateAuras(sourceNode)
 							local sSource = DB.getValue(nodeEffect, aEffectVarMap['sSource']['sDBField'])
 							if sSource == auraEffect.getPath() then
 								return nodeEffect
-                            elseif sSource == node1.getPath() then
-                                local sEffect = getEffectString(nodeEffect)
-                                sEffect = sEffect:gsub(fromAuraString, '')
-                                if string.find(sLabel, sEffect, 0, true) then return nodeEffect end
-                            end
+							elseif sSource == node1.getPath() then
+								local sEffect = getEffectString(nodeEffect)
+								sEffect = sEffect:gsub(fromAuraString, '')
+								if string.find(sLabel, sEffect, 0, true) then return nodeEffect end
+							end
 							-- end
 						end
 					end
