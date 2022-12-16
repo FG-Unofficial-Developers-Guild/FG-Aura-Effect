@@ -146,18 +146,16 @@ local function onEffectChanged(nodeEffect)
 					for _, node in pairs(ctEntries) do
 						if node ~= nodeEffect then
 							local function checkAurasEffectingNodeForDelete()
-								for _, targetEffect in ipairs(getAurasForNode(node, fromAuraString)) do
+								for _, targetEffect in ipairs(getAurasForNode(node, fromAuraString, nodeCT)) do
 									local targetEffectLabel = getEffectString(targetEffect)
 									targetEffectLabel = targetEffectLabel:gsub(fromAuraString, '')
 									if not string.find(targetEffectLabel, fromAuraString) then
 										local sSource = DB.getValue(targetEffect, aEffectVarMap['sSource']['sDBField'], '')
 										local sourceNode = DB.findNode(sSource)
 										if sourceNode then
-											local sourceAuras = getAurasForNode(sourceNode, auraString)
-											local auraStillExists = false
-											for _, sourceEffect in ipairs(sourceAuras) do
-												local sourceEffectLabel = getEffectString(sourceEffect)
-												if string.find(sourceEffectLabel, targetEffectLabel, 0, true) then
+											local auraStillExists
+											for _, sourceEffect in ipairs(getAurasForNode(sourceNode.getChild('...'), auraString)) do
+												if string.find(getEffectString(sourceEffect), targetEffectLabel, 0, true) then
 													auraStillExists = true
 													break
 												end
