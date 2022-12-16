@@ -22,6 +22,8 @@ local aEffectVarMap = {
 	['sUnit'] = { sDBType = 'string', sDBField = 'unit' },
 }
 
+local DetectedEffectManager = nil
+
 local function getEffectString(nodeEffect)
 	local sLabel = DB.getValue(nodeEffect, 'label', '')
 
@@ -61,7 +63,7 @@ local function isSourceDisabled(nodeChar)
 	end
 end
 
-local function getAurasForNode(nodeCT, searchString)
+local function getAurasForNode(nodeCT, searchString, targetNodeCT)
 	local nodeEffects = DB.getChildren(nodeCT, 'effects')
 	if not nodeEffects then return {} end
 
@@ -69,7 +71,35 @@ local function getAurasForNode(nodeCT, searchString)
 	for _, nodeEffect in pairs(nodeEffects) do
 		if DB.getValue(nodeEffect, aEffectVarMap['nActive']['sDBField'], 0) == 1 then
 			local sLabelNodeEffect = getEffectString(nodeEffect)
-			if sLabelNodeEffect:match(searchString) then table.insert(auraEffects, nodeEffect) end
+			if sLabelNodeEffect:match(searchString) then
+				local bSkipAura
+				if DetectedEffectManager.parseEffectComp then
+					-- make sure conditions allow for this to be processed.
+					local aEffectComps = EffectManager.parseEffect(sLabelNodeEffect);
+					for _,sEffectComp in ipairs(aEffectComps) do
+						local rEffectComp = DetectedEffectManager.parseEffectComp(sEffectComp);
+						local rActor = ActorManager.resolveActor(nodeCT)
+						-- Check conditionals
+						if rEffectComp.type == "IF" then
+							if not DetectedEffectManager.checkConditional(rActor, nodeEffect, rEffectComp.remainder) then
+								bSkipAura = true
+								break
+							end
+						elseif rEffectComp.type == "IFT" then
+							local rTarget = ActorManager.resolveActor(targetNodeCT)
+							if rTarget and not DetectedEffectManager.checkConditional(rTarget, nodeEffect, rEffectComp.remainder, rActor) then
+								bSkipAura = true
+								break
+							end
+						elseif rEffectComp.type == "AURA" then
+							break
+						end
+					end
+				end
+				if not bSkipAura then
+					table.insert(auraEffects, nodeEffect)
+				end
+			end
 		end
 	end
 
@@ -446,7 +476,6 @@ function onInit()
 	OOBManager.registerOOBMsgHandler(OOB_MSGTYPE_AURAEXPIRESILENT, handleExpireEffectSilent)
 
 	-- set up the effect manager proxy functions for the detected ruleset
-	local DetectedEffectManager = nil
 	if EffectManager35E then
 		DetectedEffectManager = EffectManager35E
 	elseif EffectManagerPFRPG2 then
