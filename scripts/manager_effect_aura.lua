@@ -137,7 +137,9 @@ end
 
 ---	This function is called when effects are removed or effect components are changed.
 local function onEffectChanged(nodeEffect)
-	if not string.match(getEffectString(nodeEffect), fromAuraString) then
+	local sEffect = getEffectString(nodeEffect)
+	if sEffect == '' then return end
+	if not getEffectString(nodeEffect):match(fromAuraString) then
 		local nodeCT = nodeEffect.getChild('...')
 		if nodeCT then
 			if DB.getValue(nodeEffect, aEffectVarMap['nActive']['sDBField'], 0) ~= 1 then
@@ -147,15 +149,14 @@ local function onEffectChanged(nodeEffect)
 						if node ~= nodeEffect then
 							local function checkAurasEffectingNodeForDelete()
 								for _, targetEffect in ipairs(getAurasForNode(node, fromAuraString, nodeCT)) do
-									local targetEffectLabel = getEffectString(targetEffect)
-									targetEffectLabel = targetEffectLabel:gsub(fromAuraString, '')
-									if not string.find(targetEffectLabel, fromAuraString) then
+									local targetEffectLabel = sEffect:gsub(fromAuraString, '')
+									if not targetEffectLabel:find(fromAuraString) then
 										local sSource = DB.getValue(targetEffect, aEffectVarMap['sSource']['sDBField'], '')
 										local sourceNode = DB.findNode(sSource)
 										if sourceNode then
 											local auraStillExists
 											for _, sourceEffect in ipairs(getAurasForNode(sourceNode.getChild('...'), auraString)) do
-												if string.find(getEffectString(sourceEffect), targetEffectLabel, 0, true) then
+												if getEffectString(sourceEffect):find(targetEffectLabel, 0, true) then
 													auraStillExists = true
 													break
 												end
