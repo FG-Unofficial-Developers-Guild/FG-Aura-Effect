@@ -137,7 +137,7 @@ end
 
 ---	This function is called when effects are removed or effect components are changed.
 local function onEffectChanged(nodeEffect)
-	if string.match(getEffectString(nodeEffect), auraString) and not string.match(getEffectString(nodeEffect), fromAuraString) then
+	if not string.match(getEffectString(nodeEffect), fromAuraString) then
 		local nodeCT = nodeEffect.getChild('...')
 		if nodeCT then
 			if DB.getValue(nodeEffect, aEffectVarMap['nActive']['sDBField'], 0) ~= 1 then
@@ -258,7 +258,6 @@ function updateAuras(sourceNode)
 				if not auraEffect then return false end
 
 				local sLabelNodeEffect = getEffectString(auraEffect)
-
 				if sLabelNodeEffect:match(fromAuraString) then return false end
 
 				local nRange, auraType = string.match(sLabelNodeEffect, 'AURA:%s*(%d+)%s*(%a*);')
@@ -369,11 +368,11 @@ function updateAuras(sourceNode)
 
 			local nodeInfo = {}
 			-- Check if the moved token has auras to apply/remove
-			for _, auraEffect in pairs(getAurasForNode(sourceNode, auraString)) do
+			for _, auraEffect in pairs(getAurasForNode(sourceNode, auraString, otherNode)) do
 				checkAuraApplicationAndAddOrRemove(sourceNode, otherNode, auraEffect, nodeInfo)
 			end
 			-- Check if the moved token is subject to other's auras
-			for _, auraEffect in pairs(getAurasForNode(otherNode, auraString)) do
+			for _, auraEffect in pairs(getAurasForNode(otherNode, auraString, otherNode)) do
 				checkAuraApplicationAndAddOrRemove(otherNode, sourceNode, auraEffect, nodeInfo)
 			end
 		end
