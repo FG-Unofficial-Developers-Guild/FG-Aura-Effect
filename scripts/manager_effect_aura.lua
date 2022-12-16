@@ -22,6 +22,8 @@ local aEffectVarMap = {
 	['sUnit'] = { sDBType = 'string', sDBField = 'unit' },
 }
 
+local DetectedEffectManager = nil
+
 local function getEffectString(nodeEffect)
 	local sLabel = DB.getValue(nodeEffect, 'label', '')
 
@@ -61,7 +63,7 @@ local function isSourceDisabled(nodeChar)
 	end
 end
 
-local function getAurasForNode(nodeCT, searchString)
+local function getAurasForNode(nodeCT, searchString, targetNodeCT)
 	local nodeEffects = DB.getChildren(nodeCT, 'effects')
 	if not nodeEffects then return {} end
 
@@ -69,7 +71,34 @@ local function getAurasForNode(nodeCT, searchString)
 	for _, nodeEffect in pairs(nodeEffects) do
 		if DB.getValue(nodeEffect, aEffectVarMap['nActive']['sDBField'], 0) == 1 then
 			local sLabelNodeEffect = getEffectString(nodeEffect)
-			if sLabelNodeEffect:match(searchString) then table.insert(auraEffects, nodeEffect) end
+			if sLabelNodeEffect:match(searchString) then
+				local bSkipAura
+				if DetectedEffectManager.parseEffectComp then -- check conditionals if supported
+					local aEffectComps = EffectManager.parseEffect(sLabelNodeEffect);
+					for _,sEffectComp in ipairs(aEffectComps) do
+						local rEffectComp = DetectedEffectManager.parseEffectComp(sEffectComp);
+						local rActor = ActorManager.resolveActor(nodeCT)
+						-- Check conditionals
+						if rEffectComp.type == "IF" then
+							if not DetectedEffectManager.checkConditional(rActor, nodeEffect, rEffectComp.remainder) then
+								bSkipAura = true
+								break
+							end
+						elseif rEffectComp.type == "IFT" then
+							local rTarget = ActorManager.resolveActor(targetNodeCT)
+							if rTarget and not DetectedEffectManager.checkConditional(rTarget, nodeEffect, rEffectComp.remainder, rActor) then
+								bSkipAura = true
+								break
+							end
+						elseif rEffectComp.type == "AURA" then
+							break
+						end
+					end
+				end
+				if not bSkipAura then
+					table.insert(auraEffects, nodeEffect)
+				end
+			end
 		end
 	end
 
@@ -108,7 +137,7 @@ end
 
 ---	This function is called when effects are removed or effect components are changed.
 local function onEffectChanged(nodeEffect)
-	if string.match(getEffectString(nodeEffect), auraString) and not string.match(getEffectString(nodeEffect), fromAuraString) then
+	if not string.match(getEffectString(nodeEffect), fromAuraString) then
 		local nodeCT = nodeEffect.getChild('...')
 		if nodeCT then
 			if DB.getValue(nodeEffect, aEffectVarMap['nActive']['sDBField'], 0) ~= 1 then
@@ -117,18 +146,16 @@ local function onEffectChanged(nodeEffect)
 					for _, node in pairs(ctEntries) do
 						if node ~= nodeEffect then
 							local function checkAurasEffectingNodeForDelete()
-								for _, targetEffect in ipairs(getAurasForNode(node, fromAuraString)) do
+								for _, targetEffect in ipairs(getAurasForNode(node, fromAuraString, nodeCT)) do
 									local targetEffectLabel = getEffectString(targetEffect)
 									targetEffectLabel = targetEffectLabel:gsub(fromAuraString, '')
 									if not string.find(targetEffectLabel, fromAuraString) then
 										local sSource = DB.getValue(targetEffect, aEffectVarMap['sSource']['sDBField'], '')
 										local sourceNode = DB.findNode(sSource)
 										if sourceNode then
-											local sourceAuras = getAurasForNode(sourceNode, auraString)
-											local auraStillExists = false
-											for _, sourceEffect in ipairs(sourceAuras) do
-												local sourceEffectLabel = getEffectString(sourceEffect)
-												if string.find(sourceEffectLabel, targetEffectLabel, 0, true) then
+											local auraStillExists
+											for _, sourceEffect in ipairs(getAurasForNode(sourceNode.getChild('...'), auraString)) do
+												if string.find(getEffectString(sourceEffect), targetEffectLabel, 0, true) then
 													auraStillExists = true
 													break
 												end
@@ -231,7 +258,6 @@ function updateAuras(sourceNode)
 				if not auraEffect then return false end
 
 				local sLabelNodeEffect = getEffectString(auraEffect)
-
 				if sLabelNodeEffect:match(fromAuraString) then return false end
 
 				local nRange, auraType = string.match(sLabelNodeEffect, 'AURA:%s*(%d+)%s*(%a*);')
@@ -342,11 +368,11 @@ function updateAuras(sourceNode)
 
 			local nodeInfo = {}
 			-- Check if the moved token has auras to apply/remove
-			for _, auraEffect in pairs(getAurasForNode(sourceNode, auraString)) do
+			for _, auraEffect in pairs(getAurasForNode(sourceNode, auraString, otherNode)) do
 				checkAuraApplicationAndAddOrRemove(sourceNode, otherNode, auraEffect, nodeInfo)
 			end
 			-- Check if the moved token is subject to other's auras
-			for _, auraEffect in pairs(getAurasForNode(otherNode, auraString)) do
+			for _, auraEffect in pairs(getAurasForNode(otherNode, auraString, otherNode)) do
 				checkAuraApplicationAndAddOrRemove(otherNode, sourceNode, auraEffect, nodeInfo)
 			end
 		end
@@ -446,7 +472,6 @@ function onInit()
 	OOBManager.registerOOBMsgHandler(OOB_MSGTYPE_AURAEXPIRESILENT, handleExpireEffectSilent)
 
 	-- set up the effect manager proxy functions for the detected ruleset
-	local DetectedEffectManager = nil
 	if EffectManager35E then
 		DetectedEffectManager = EffectManager35E
 	elseif EffectManagerPFRPG2 then
