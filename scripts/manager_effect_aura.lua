@@ -373,7 +373,7 @@ function updateAuras(sourceNode)
 				checkAuraApplicationAndAddOrRemove(sourceNode, otherNode, auraEffect, nodeInfo)
 			end
 			-- Check if the moved token is subject to other's auras
-			for _, auraEffect in pairs(getAurasForNode(otherNode, auraString, otherNode)) do
+			for _, auraEffect in pairs(getAurasForNode(otherNode, auraString, sourceNode)) do
 				checkAuraApplicationAndAddOrRemove(otherNode, sourceNode, auraEffect, nodeInfo)
 			end
 		end
