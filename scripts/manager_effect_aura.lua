@@ -72,7 +72,7 @@ local function getAurasForNode(nodeCT, searchString, targetNodeCT)
 		if DB.getValue(nodeEffect, aEffectVarMap['nActive']['sDBField'], 0) == 1 then
 			local sLabelNodeEffect = getEffectString(nodeEffect)
 			if sLabelNodeEffect:match(searchString) then
-				local bSkipAura
+				local bSkipAura = nil
 				if DetectedEffectManager.parseEffectComp then -- check conditionals if supported
 					local aEffectComps = EffectManager.parseEffect(sLabelNodeEffect);
 					for _,sEffectComp in ipairs(aEffectComps) do
