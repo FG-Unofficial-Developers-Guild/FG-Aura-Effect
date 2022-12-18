@@ -4,7 +4,7 @@
 This extension accommodates auras and area-of-effect buffs/debuffs by adding/removing effects to other characters based on proximity.
 
 # Compatibility and Instructions
-This extension has been tested with [FantasyGrounds Unity](https://www.fantasygrounds.com/home/FantasyGroundsUnity.php) 4.3.0 (2022-10-20).
+This extension has been tested with [FantasyGrounds Unity](https://www.fantasygrounds.com/home/FantasyGroundsUnity.php) 4.3.2 (2022-12-12).
 
 It works with the 3.5E, 4E, 5E, PFRPG, PFRPG2, and SFRPG rulesets.
 
@@ -23,7 +23,9 @@ While a name (such as 'Aura of Protection' in the above example) is not required
 
 Characters with the condition DEAD, DYING, or UNCONSCIOUS will have their auras disabled. In PFRPG this does not function for the "Unconscious" effect at this time.
 
-The bearer of the AURA effect will also receive its benefits.
+If IF/IFT conditions are included *before* the "AURA" effect, they will act to enable/disable parsing of the aura such as for auras that . If IF/IFT confitions are included after the aura, they will be copied to the recipients.
+
+The bearer of the AURA effect will also receive its benefits. If this is not desired, see below.
 
 The following aura types (used for AURA: 15 friend) are allowed:
 
