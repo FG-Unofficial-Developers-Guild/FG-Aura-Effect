@@ -133,7 +133,7 @@ local function onEffectChanged(nodeEffect)
 		if nodeCT then
 			if DB.getValue(nodeEffect, aEffectVarMap['nActive']['sDBField'], 0) ~= 1 then
 				local function checkDeletedAuraEffects()
-					local ctEntries = CombatManager.getSortedCombatantList()
+					local ctEntries = CombatManager.getCombatantNodes()
 					for _, node in pairs(ctEntries) do
 						if node ~= nodeEffect then
 							local function checkAurasEffectingNodeForDelete()
@@ -267,7 +267,7 @@ end
 function updateAuras(sourceNode)
 	if not sourceNode then return false end
 
-	local ctEntries = CombatManager.getSortedCombatantList()
+	local ctEntries = CombatManager.getCombatantNodes()
 	for _, otherNode in pairs(ctEntries) do
 		if otherNode and otherNode ~= sourceNode then
 			local function checkAuraApplicationAndAddOrRemove(node1, node2, auraEffect, nodeInfo)
@@ -332,7 +332,7 @@ function updateAuras(sourceNode)
 							rEffect.sLabel = applyLabel
 							rEffect.sName = applyLabel
 							rEffect.sSource = node1.getPath()
-							rEffect.sNodeEffect = auraEffect.getPath()
+							rEffect.sAuraEffect = auraEffect.getPath()
 							--rEffect.sTarget = .... how to get targeting here?
 							rEffect.sUnits = DB.getValue(auraEffect, aEffectVarMap['sUnit']['sDBField'], '')
 
@@ -526,7 +526,7 @@ function onInit()
 	local function auraOnWindowOpened(window, ...)
 		if onWindowOpened then onWindowOpened(window, ...) end
 		if window.getClass() == 'imagewindow' then
-			local ctEntries = CombatManager.getSortedCombatantList()
+			local ctEntries = CombatManager.getCombatantNodes()
 			for _, nodeCT in pairs(ctEntries) do
 				local tokenMap = CombatManager.getTokenFromCT(nodeCT)
 				local _, winImage = ImageManager.getImageControl(tokenMap)
