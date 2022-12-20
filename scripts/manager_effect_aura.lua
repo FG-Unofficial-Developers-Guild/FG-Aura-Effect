@@ -223,12 +223,45 @@ local function checkFaction(targetActor, nodeEffect, sFactionCheck)
 	return bReturn
 end
 
+local TokenMoveArray = {};
+local function tokenMovedEnough (token)
+	-- cleanup after every 20 tokens received - we are not looking for perfect just trimming down processing time
+	if #TokenMoveArray >= 20 then
+		TokenMoveArray = {};
+	end
+	local imageControl = ImageManager.getImageControl(token, false);
+	if imageControl then
+		local x, y = token.getPosition();
+		for i = 1, #TokenMoveArray, 1 do
+			if token == TokenMoveArray[i].token and imageControl == TokenMoveArray[i].imageControl then
+				-- Determine if moved more than 1/2 the grid unit
+				local nGridSize = imageControl.getGridSize() * 0.5;
+				if (x-TokenMoveArray[i].x)^2 + (y-TokenMoveArray[i].y)^2 < nGridSize*nGridSize then
+					return false;
+				end
+				table.remove(TokenMoveArray, i);
+				break;
+			end
+		end
+		table.insert(TokenMoveArray, {token = token, imageControl = imageControl; x = x; y = y});
+	else
+		return false;
+	end
+	return true;
+end
+
 local onMove = nil
 local function auraOnMove(tokenMap, ...)
 	if onMove then onMove(tokenMap, ...) end
-	if Session.IsHost then
-		-- Debug.chat("onMove aura update", tokenMap)
-		notifyTokenMove(tokenMap)
+	local nodeCT = CombatManager.getCTFromToken(tokenMap);
+	if Session.IsHost and nodeCT then
+		if tokenMovedEnough(tokenMap) then
+			local rActor = ActorManager.resolveActor(nodeCT);
+			if rActor then
+				-- Debug.chat("onMove aura update", tokenMap)
+				notifyTokenMove(tokenMap)
+			end
+		end
 	end
 end
 
