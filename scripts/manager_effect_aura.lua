@@ -54,15 +54,6 @@ local function getEffectString(nodeEffect)
 	return EffectManager.rebuildParsedEffect(aEffectComps):gsub('%s*%(C%)', ''):gsub('%s*%[D: %d+%]', '')
 end
 
-local function isSourceDisabled(nodeChar)
-	local rActor = ActorManager.resolveActor(nodeChar)
-	if ActorHealthManager.isDyingOrDead(rActor) then
-		return
-	elseif ActorHealthManager.getHealthStatus(rActor) == ActorHealthManager.STATUS_UNCONSCIOUS then
-		return
-	end
-end
-
 local function getAurasForNode(nodeCT, searchString, targetNodeCT)
 	local nodeEffects = DB.getChildren(nodeCT, 'effects')
 	if not nodeEffects then return {} end
@@ -300,7 +291,7 @@ function updateAuras(sourceNode)
 					end
 
 					local existingAuraEffect = checkAuraAlreadyEffecting()
-					if (nodeInfo.distanceBetween and nodeInfo.distanceBetween <= nRange) and not isSourceDisabled(node1) then
+					if (nodeInfo.distanceBetween and nodeInfo.distanceBetween <= nRange) then
 						local function addAuraEffect()
 							local sLabel = getEffectString(auraEffect)
 							local applyLabel = string.match(sLabel, auraString .. '.-;%s*(.*)$')
