@@ -203,7 +203,7 @@ local function checkFaction(targetActor, nodeEffect, sFactionCheck)
 		sourceFaction = targetFaction
 	end
 
-	local bReturn
+	local bReturn = false
 	if sFactionCheck:match('friend') then
 		bReturn = sourceFaction == targetFaction
 	elseif sFactionCheck:match('foe') then
