@@ -279,9 +279,9 @@ function updateAuras(sourceNode)
 						for _, nodeEffect in pairs(DB.getChildren(node2, 'effects')) do
 							-- if DB.getValue(nodeEffect, aEffectVarMap["nActive"]["sDBField"], 0) ~= 2 then
 							local sSource = DB.getValue(nodeEffect, aEffectVarMap['sSource']['sDBField'])
-							if sSource == auraEffect.getPath() then
+							if sSource == node1.getPath() then
 								return nodeEffect
-							elseif sSource == node1.getPath() then
+							elseif sSource == auraEffect.getPath() then
 								local sEffect = getEffectString(nodeEffect)
 								sEffect = sEffect:gsub(fromAuraString, '')
 								if string.find(sLabel, sEffect, 0, true) then return nodeEffect end
@@ -307,7 +307,7 @@ function updateAuras(sourceNode)
 							rEffect.nInit = DB.getValue(auraEffect, aEffectVarMap['nInit']['sDBField'], 0)
 							rEffect.sLabel = applyLabel
 							rEffect.sName = applyLabel
-							rEffect.sSource = auraEffect.getPath()
+							rEffect.sSource = node1.getPath()
 							--rEffect.sTarget = .... how to get targeting here?
 							rEffect.sUnits = DB.getValue(auraEffect, aEffectVarMap['sUnit']['sDBField'], '')
 
