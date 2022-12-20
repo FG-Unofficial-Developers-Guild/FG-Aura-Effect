@@ -341,6 +341,7 @@ function updateAuras(sourceNode)
 							rEffect.sLabel = applyLabel
 							rEffect.sName = applyLabel
 							rEffect.sSource = node1.getPath()
+							rEffect.sNodeEffect = auraEffect.getPath()
 							--rEffect.sTarget = .... how to get targeting here?
 							rEffect.sUnits = DB.getValue(auraEffect, aEffectVarMap['sUnit']['sDBField'], '')
 
