@@ -65,30 +65,28 @@ local function getAurasForNode(nodeCT, searchString, targetNodeCT)
 			if sLabelNodeEffect:match(searchString) then
 				local bSkipAura = nil
 				if DetectedEffectManager.parseEffectComp then -- check conditionals if supported
-					local aEffectComps = EffectManager.parseEffect(sLabelNodeEffect);
-					for _,sEffectComp in ipairs(aEffectComps) do
-						local rEffectComp = DetectedEffectManager.parseEffectComp(sEffectComp);
+					local aEffectComps = EffectManager.parseEffect(sLabelNodeEffect)
+					for _, sEffectComp in ipairs(aEffectComps) do
+						local rEffectComp = DetectedEffectManager.parseEffectComp(sEffectComp)
 						local rActor = ActorManager.resolveActor(nodeCT)
 						-- Check conditionals
-						if rEffectComp.type == "IF" then
+						if rEffectComp.type == 'IF' then
 							if not DetectedEffectManager.checkConditional(rActor, nodeEffect, rEffectComp.remainder) then
 								bSkipAura = true
 								break
 							end
-						elseif rEffectComp.type == "IFT" then
+						elseif rEffectComp.type == 'IFT' then
 							local rTarget = ActorManager.resolveActor(targetNodeCT)
 							if rTarget and not DetectedEffectManager.checkConditional(rTarget, nodeEffect, rEffectComp.remainder, rActor) then
 								bSkipAura = true
 								break
 							end
-						elseif rEffectComp.type == "AURA" then
+						elseif rEffectComp.type == 'AURA' then
 							break
 						end
 					end
 				end
-				if not bSkipAura then
-					table.insert(auraEffects, nodeEffect)
-				end
+				if not bSkipAura then table.insert(auraEffects, nodeEffect) end
 			end
 		end
 	end
@@ -223,40 +221,36 @@ local function checkFaction(targetActor, nodeEffect, sFactionCheck)
 	return bReturn
 end
 
-local TokenMoveArray = {};
-local function tokenMovedEnough (token)
+local TokenMoveArray = {}
+local function tokenMovedEnough(token)
 	-- cleanup after every 20 tokens received - we are not looking for perfect just trimming down processing time
-	if #TokenMoveArray >= 20 then
-		TokenMoveArray = {};
-	end
-	local imageControl = ImageManager.getImageControl(token, false);
+	if #TokenMoveArray >= 20 then TokenMoveArray = {} end
+	local imageControl = ImageManager.getImageControl(token, false)
 	if imageControl then
-		local x, y = token.getPosition();
+		local x, y = token.getPosition()
 		for i = 1, #TokenMoveArray, 1 do
 			if token == TokenMoveArray[i].token and imageControl == TokenMoveArray[i].imageControl then
 				-- Determine if moved more than 1/2 the grid unit
-				local nGridSize = imageControl.getGridSize() * 0.5;
-				if (x-TokenMoveArray[i].x)^2 + (y-TokenMoveArray[i].y)^2 < nGridSize*nGridSize then
-					return false;
-				end
-				table.remove(TokenMoveArray, i);
-				break;
+				local nGridSize = imageControl.getGridSize() * 0.5
+				if (x - TokenMoveArray[i].x) ^ 2 + (y - TokenMoveArray[i].y) ^ 2 < nGridSize * nGridSize then return false end
+				table.remove(TokenMoveArray, i)
+				break
 			end
 		end
-		table.insert(TokenMoveArray, {token = token, imageControl = imageControl; x = x; y = y});
+		table.insert(TokenMoveArray, { token = token, imageControl = imageControl, x = x, y = y })
 	else
-		return false;
+		return false
 	end
-	return true;
+	return true
 end
 
 local onMove = nil
 local function auraOnMove(tokenMap, ...)
 	if onMove then onMove(tokenMap, ...) end
-	local nodeCT = CombatManager.getCTFromToken(tokenMap);
+	local nodeCT = CombatManager.getCTFromToken(tokenMap)
 	if Session.IsHost and nodeCT then
 		if tokenMovedEnough(tokenMap) then
-			local rActor = ActorManager.resolveActor(nodeCT);
+			local rActor = ActorManager.resolveActor(nodeCT)
 			if rActor then
 				-- Debug.chat("onMove aura update", tokenMap)
 				notifyTokenMove(tokenMap)
@@ -324,7 +318,7 @@ function updateAuras(sourceNode)
 					end
 
 					local existingAuraEffect = checkAuraAlreadyEffecting()
-					if (nodeInfo.distanceBetween and nodeInfo.distanceBetween <= nRange) then
+					if nodeInfo.distanceBetween and nodeInfo.distanceBetween <= nRange then
 						local function addAuraEffect()
 							local sLabel = getEffectString(auraEffect)
 							local applyLabel = string.match(sLabel, auraString .. '.-;%s*(.*)$')
