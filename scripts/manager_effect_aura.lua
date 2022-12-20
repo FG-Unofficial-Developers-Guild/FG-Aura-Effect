@@ -169,9 +169,6 @@ local function onEffectChanged(nodeEffect)
 	end
 end
 
----	This function is called when effect components are changed.
-local function onStatusChanged(nodeStatus) updateAuras(nodeStatus.getChild('..')) end
-
 ---	This function requests aura processing to be performed on the host FG instance.
 local function notifyTokenMove(tokenMap)
 	if not tokenMap.getContainerNode or not CombatManager then return end
@@ -430,11 +427,9 @@ local function manageHandlers(bRemove)
 	if bRemove then
 		DB.removeHandler(DB.getPath(CombatManager.CT_LIST .. '.*.effects.*'), 'onChildUpdate', onEffectChanged)
 		DB.removeHandler(DB.getPath(CombatManager.CT_LIST .. '.*.effects'), 'onChildDeleted', onEffectChanged)
-		DB.removeHandler(DB.getPath(CombatManager.CT_LIST .. '.*.status'), 'onUpdate', onStatusChanged)
 	else
 		DB.addHandler(DB.getPath(CombatManager.CT_LIST .. '.*.effects.*'), 'onChildUpdate', onEffectChanged)
 		DB.addHandler(DB.getPath(CombatManager.CT_LIST .. '.*.effects'), 'onChildDeleted', onEffectChanged)
-		DB.addHandler(DB.getPath(CombatManager.CT_LIST .. '.*.status'), 'onUpdate', onStatusChanged)
 	end
 end
 
