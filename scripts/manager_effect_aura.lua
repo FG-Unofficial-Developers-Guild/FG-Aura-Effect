@@ -149,7 +149,7 @@ local function onEffectChanged(nodeEffect)
 										if sourceNode then
 											local auraStillExists
 											for _, sourceEffect in ipairs(getAurasForNode(sourceNode.getChild('...'), auraString)) do
-												if getEffectString(sourceEffect):find(targetEffectLabel, 0, true) then
+												if getEffectString(sourceEffect):find(targetEffectLabel:gsub('IFT*:%s*FACTION%(%s*notself%s*%)%s*;*', ''), 0, true) then
 													auraStillExists = true
 													break
 												end
@@ -324,12 +324,12 @@ function updateAuras(sourceNode)
 				if (auraType == nodeInfo.relationship or auraType == 'all') and (nodeInfo.distanceBetween and nodeInfo.distanceBetween <= nRange) then
 					local function addAuraEffect()
 						local sLabel = getEffectString(auraEffect)
-						local applyLabel = string.match(sLabel, auraString .. '.-;%s*(.*)$')
+						local applyLabel = sLabel:match(auraString .. '.-;%s*(.*)$')
 						if not applyLabel then
 							Debug.console(Interface.getString('aura_console_notext'), sLabel, auraString)
 							return false
 						end
-						applyLabel = fromAuraString .. applyLabel
+						applyLabel = fromAuraString .. applyLabel:gsub('IFT*:%s*FACTION%(%s*notself%s*%)%s*;*', '')
 
 						local rEffect = {}
 						rEffect.nDuration = 0
