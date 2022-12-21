@@ -21,8 +21,6 @@ Allies within 10' will receive an effect "FROMAURA; Aura of Protection; SAVE: 5"
 
 While a name (such as 'Aura of Protection' in the above example) is not required it is highly reccomended to help avoid collisions between effects.
 
-Characters with the condition DEAD, DYING, or UNCONSCIOUS will have their auras disabled. In PFRPG this does not function for the "Unconscious" effect at this time.
-
 If IF/IFT conditions are included *before* the "AURA" effect, they will act to enable/disable parsing of the aura such as for auras that occur automatically when some conditions are met. If IF/IFT confitions are included after the aura, they will be copied to the recipients.
 
 The bearer of the AURA effect will also receive its benefits. If this is not desired, see below.
