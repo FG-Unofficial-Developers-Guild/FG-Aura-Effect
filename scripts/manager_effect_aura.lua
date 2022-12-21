@@ -92,11 +92,11 @@ end
 
 local function checkSilentNotification(auraType)
 	local option = OptionsManager.getOption('AURASILENT'):lower()
-	return option == 'all' or option == auraType:lower()
+	return option == 'all' or option == auraType:lower():gsub('[%^%!]', '')
 end
 
 local function getAuraDetails(sEffect)
-	if not sEffect:match(fromAuraString) then return sEffect:match('AURA:%s*(%d+)%s*(%a*);') end
+	if not sEffect:match(fromAuraString) then return sEffect:match('AURA:%s*(%d+)%s*([%^%!]*%a*);') end
 end
 
 local function removeAuraEffect(auraType, nodeEffect)
@@ -201,21 +201,23 @@ end
 
 local function checkFaction(rActor, rSource, sFactionFilter)
 	if not rActor or not sFactionFilter then return false end
+	local bNegate = sFactionFilter:match('[%^%!]') ~= nil
+	sFactionFilter = sFactionFilter:gsub('[%^%!]', '')
+
 	local nodeSource = ActorManager.getCTNode(rActor)
 	local nodeTarget = ActorManager.getCTNode(rSource)
 
 	if not nodeTarget then Debug.console(Interface.getString('aura_console_nosource')) end
 
+	local bReturn = false
 	if sFactionFilter == 'notself' then
-		return nodeTarget == nodeSource
+		bReturn = nodeTarget == nodeSource
 	elseif sFactionFilter == 'all' then
-		return true
+		bReturn = true
 	end
 
-	local sRelationship = getRelationship(nodeTarget, nodeSource)
-
-	local bReturn = sFactionFilter == ActorManager.getFaction(rActor) or sFactionFilter == sRelationship
-	if sFactionFilter:match('^!') then bReturn = not bReturn end
+	bReturn = bReturn or StringManager.contains({ ActorManager.getFaction(rActor), getRelationship(nodeTarget, nodeSource) }, sFactionFilter)
+	if bNegate then bReturn = not bReturn end
 
 	return bReturn
 end
