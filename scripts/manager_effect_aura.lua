@@ -55,18 +55,14 @@ local function getEffectString(nodeEffect)
 end
 
 local function getAurasForNode(nodeCT, searchString, targetNodeCT)
-	local nodeEffects = DB.getChildren(nodeCT, 'effects')
-	if not nodeEffects then return {} end
-
 	local auraEffects = {}
-	for _, nodeEffect in pairs(nodeEffects) do
+	for _, nodeEffect in pairs(DB.getChildren(nodeCT, 'effects')) do
 		if DB.getValue(nodeEffect, aEffectVarMap['nActive']['sDBField'], 0) == 1 then
 			local sLabelNodeEffect = getEffectString(nodeEffect)
 			if sLabelNodeEffect:match(searchString) then
-				local bSkipAura = nil
+				local bSkipAura = false
 				if DetectedEffectManager.parseEffectComp then -- check conditionals if supported
-					local aEffectComps = EffectManager.parseEffect(sLabelNodeEffect)
-					for _, sEffectComp in ipairs(aEffectComps) do
+					for _, sEffectComp in ipairs(EffectManager.parseEffect(sLabelNodeEffect)) do
 						local rEffectComp = DetectedEffectManager.parseEffectComp(sEffectComp)
 						local rActor = ActorManager.resolveActor(nodeCT)
 						-- Check conditionals
@@ -86,7 +82,7 @@ local function getAurasForNode(nodeCT, searchString, targetNodeCT)
 						end
 					end
 				end
-				if not bSkipAura then table.insert(auraEffects, nodeEffect) end
+				if bSkipAura == false then table.insert(auraEffects, nodeEffect) end
 			end
 		end
 	end
@@ -105,7 +101,7 @@ end
 
 local function removeAuraEffect(auraType, nodeEffect)
 	if DB.getValue(nodeEffect, aEffectVarMap['nActive']['sDBField'], 1) ~= 0 then
-		if checkSilentNotification(auraType) == true then
+		if checkSilentNotification(auraType) then
 			local function notifyExpireSilent()
 				local varEffect
 				if type(nodeEffect) == 'databasenode' then
@@ -272,7 +268,7 @@ local function getRelationship(sourceNode, targetNode)
 end
 
 function updateAuras(sourceNode)
-	if not sourceNode then return false end
+	if not sourceNode then return end
 
 	local ctEntries = CombatManager.getCombatantNodes()
 	for _, otherNode in pairs(ctEntries) do
@@ -343,7 +339,7 @@ function updateAuras(sourceNode)
 						rEffect.sUnits = DB.getValue(auraEffect, aEffectVarMap['sUnit']['sDBField'], '')
 
 						-- CHECK IF SILENT IS ON
-						if checkSilentNotification(auraType) == true then
+						if checkSilentNotification(auraType) then
 							local function notifyApplySilent()
 								-- Build OOB message to pass effect to host
 								local msgOOB = {}
@@ -443,10 +439,7 @@ local function manageHandlers(bRemove)
 end
 
 local function expireEffectSilent(nodeEffect)
-	if not nodeEffect then
-		-- Debug.chat(nodeActor, nodeEffect, nExpireComp)
-		return false
-	end
+	if not nodeEffect then return false end
 
 	---	This function removes nodes without triggering recursion
 	local function removeNode()
