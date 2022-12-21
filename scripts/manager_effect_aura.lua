@@ -510,16 +510,19 @@ function onInit()
 	local checkConditional = nil
 	local function customCheckConditional(rActor, nodeEffect, aConditions, rTarget, aIgnore)
 		local bReturn = checkConditional(rActor, nodeEffect, aConditions, rTarget, aIgnore)
-		if aConditions and aConditions.remainder then aConditions = aConditions.remainder end
-		for _, v in ipairs(aConditions) do
-			local sFactionCheck = v:lower():match('^faction%s*%(([^)]+)%)$')
-			if sFactionCheck then
-				if not checkFaction(rActor, nodeEffect, sFactionCheck) then
-					bReturn = false
-					break
+		if bReturn == true then -- skip faction check if conditions already aren't passing
+			if aConditions and aConditions.remainder then aConditions = aConditions.remainder end
+			for _, v in ipairs(aConditions) do
+				local sFactionCheck = v:lower():match('^faction%s*%(([^)]+)%)$')
+				if sFactionCheck then
+					if not checkFaction(rActor, nodeEffect, sFactionCheck) then
+						bReturn = false
+						break
+					end
 				end
 			end
 		end
+
 		return bReturn
 	end
 
