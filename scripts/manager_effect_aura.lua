@@ -138,20 +138,22 @@ local function onEffectChanged(nodeEffect)
 						if node ~= nodeEffect then
 							local function checkAurasEffectingNodeForDelete()
 								for _, targetEffect in ipairs(getAurasForNode(node, fromAuraString, nodeCT)) do
-									local targetEffectLabel = sEffect:gsub(fromAuraString, '')
-									if not targetEffectLabel:find(fromAuraString) then
-										local sSource = DB.getValue(targetEffect, aEffectVarMap['sSource']['sDBField'], '')
-										local sourceNode = DB.findNode(sSource)
-										if sourceNode then
-											local auraStillExists
-											for _, sourceEffect in ipairs(getAurasForNode(sourceNode.getChild('...'), auraString)) do
-												if getEffectString(sourceEffect):find(targetEffectLabel:gsub('IFT*:%s*FACTION%(%s*notself%s*%)%s*;*', ''), 0, true) then
-													auraStillExists = true
-													break
-												end
+									local sourceNode = DB.findNode(DB.getValue(targetEffect, aEffectVarMap['sSource']['sDBField'], ''))
+									if sourceNode then
+										local auraStillExists
+										for _, sourceEffect in ipairs(getAurasForNode(sourceNode.getChild('...'), auraString)) do
+											if
+												getEffectString(sourceEffect):find(
+													sEffect:gsub(fromAuraString, ''):gsub('IFT*:%s*FACTION%(%s*notself%s*%)%s*;*', ''),
+													0,
+													true
+												)
+											then
+												auraStillExists = true
+												break
 											end
-											if not auraStillExists then removeAuraEffect('all', targetEffect) end
 										end
+										if not auraStillExists then removeAuraEffect('all', targetEffect) end
 									end
 								end
 							end
@@ -185,38 +187,35 @@ local function notifyTokenMove(tokenMap)
 	Comm.deliverOOBMessage(msgOOB, '')
 end
 
-local function checkFaction(targetActor, nodeEffect, sFactionCheck)
-	if not targetActor or not sFactionCheck then return false end
-
-	local targetFaction = ActorManager.getFaction(targetActor)
-
-	local sourceActor, sourceFaction
-	local sEffectSource = DB.getValue(nodeEffect, aEffectVarMap['sSource']['sDBField'], '')
-	if sFactionCheck:match('notself') then
-		return sEffectSource ~= ''
-	elseif sEffectSource ~= '' then
-		sourceActor = ActorManager.resolveActor(DB.findNode(sEffectSource))
-		sourceFaction = ActorManager.getFaction(sourceActor)
+local function getRelationship(sourceNode, targetNode)
+	if ActorManager.getFaction(sourceNode) == ActorManager.getFaction(targetNode) then
+		return 'ally'
+	elseif ActorManager.getFaction(sourceNode) == 'friend' and ActorManager.getFaction(targetNode) == 'foe' then
+		return 'enemy'
+	elseif ActorManager.getFaction(sourceNode) == 'foe' and ActorManager.getFaction(targetNode) == 'friend' then
+		return 'enemy'
 	else
-		sourceFaction = targetFaction
+		return ''
+	end
+end
+
+local function checkFaction(rActor, rSource, sFactionFilter)
+	if not rActor or not sFactionFilter then return false end
+	local nodeSource = ActorManager.getCTNode(rActor)
+	local nodeTarget = ActorManager.getCTNode(rSource)
+
+	if not nodeTarget then Debug.console(Interface.getString('aura_console_nosource')) end
+
+	if sFactionFilter == 'notself' then
+		return nodeTarget == nodeSource
+	elseif sFactionFilter == 'all' then
+		return true
 	end
 
-	local bReturn = false
-	if sFactionCheck:match('friend') then
-		bReturn = sourceFaction == targetFaction
-	elseif sFactionCheck:match('foe') then
-		if sourceFaction == 'friend' then
-			bReturn = targetFaction == 'foe'
-		elseif sourceFaction == 'foe' then
-			bReturn = targetFaction == 'friend'
-		end
-	elseif sFactionCheck:match('neutral') then
-		bReturn = targetFaction == 'neutral'
-	elseif sFactionCheck:match('faction') then
-		bReturn = targetFaction == 'faction'
-	end
+	local sRelationship = getRelationship(nodeTarget, nodeSource)
 
-	if sFactionCheck:match('^!') then bReturn = not bReturn end
+	local bReturn = sFactionFilter == ActorManager.getFaction(rActor) or sFactionFilter == sRelationship
+	if sFactionFilter:match('^!') then bReturn = not bReturn end
 
 	return bReturn
 end
@@ -251,19 +250,8 @@ local function auraOnMove(tokenMap, ...)
 	if Session.IsHost and nodeCT then
 		if tokenMovedEnough(tokenMap) then
 			local rActor = ActorManager.resolveActor(nodeCT)
-			if rActor then
-				-- Debug.chat("onMove aura update", tokenMap)
-				notifyTokenMove(tokenMap)
-			end
+			if rActor then notifyTokenMove(tokenMap) end
 		end
-	end
-end
-
-local function getRelationship(sourceNode, targetNode)
-	if DB.getValue(sourceNode, 'friendfoe', '') == DB.getValue(targetNode, 'friendfoe', '') then
-		return 'friend'
-	else
-		return 'foe'
 	end
 end
 
@@ -289,11 +277,8 @@ function updateAuras(sourceNode)
 				if not auraType or auraType == '' then
 					--Debug.console(Interface.getString('aura_console_nofaction'));
 					auraType = 'all'
-				elseif auraType == 'enemy' then
-					auraType = 'foe'
 				end
 
-				if not nodeInfo.relationship then nodeInfo.relationship = getRelationship(node1, node2) end
 				if not nodeInfo.distanceBetween then
 					local sourceToken = CombatManager.getTokenFromCT(node1)
 					local targetToken = CombatManager.getTokenFromCT(node2)
@@ -317,7 +302,10 @@ function updateAuras(sourceNode)
 				end
 
 				local existingAuraEffect = checkAuraAlreadyEffecting()
-				if (auraType == nodeInfo.relationship or auraType == 'all') and (nodeInfo.distanceBetween and nodeInfo.distanceBetween <= nRange) then
+				if
+					(nodeInfo.distanceBetween <= nRange)
+					and checkFaction(ActorManager.resolveActor(otherNode), ActorManager.resolveActor(sourceNode), auraType)
+				then
 					local function addAuraEffect()
 						local sLabel = getEffectString(auraEffect)
 						local applyLabel = sLabel:match(auraString .. '.-;%s*(.*)$')
@@ -513,7 +501,9 @@ function onInit()
 			for _, v in ipairs(aConditions) do
 				local sFactionCheck = v:lower():match('^faction%s*%(([^)]+)%)$')
 				if sFactionCheck then
-					if not checkFaction(rActor, nodeEffect, sFactionCheck) then
+					local nodeCTSource = DB.findNode(DB.getValue(nodeEffect, aEffectVarMap['sSource']['sDBField'], ''))
+					local rSource = ActorManager.resolveActor(nodeCTSource)
+					if not checkFaction(rActor, rSource, sFactionCheck) then
 						bReturn = false
 						break
 					end
