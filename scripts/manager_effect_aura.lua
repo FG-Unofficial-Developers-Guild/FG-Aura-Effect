@@ -92,7 +92,7 @@ end
 
 local function checkSilentNotification(auraType)
 	local option = OptionsManager.getOption('AURASILENT'):lower()
-	return option == 'all' or option == auraType:lower():gsub('enemy', 'foe')
+	return option == 'all' or option == auraType:lower()
 end
 
 local function getAuraDetails(sEffect)
@@ -476,8 +476,9 @@ end
 function onInit()
 	-- register option for silent aura messages
 	OptionsManager.registerOption2('AURASILENT', false, 'option_header_aura', 'option_label_AURASILENT', 'option_entry_cycler', {
-		labels = 'option_val_friend|option_val_foe|option_val_all',
-		values = 'friend|foe|all',
+		labels = 'option_val_aura_ally|option_val_aura_enemy|ct_tooltip_factionempty|'
+			.. 'ct_tooltip_factionfriend|ct_tooltip_factionneutral|ct_tooltip_factionfoe|option_val_aura_all',
+		values = 'ally|enemy|faction|friend|neutral|foe|all',
 		baselabel = 'option_val_off',
 		baseval = 'off',
 		default = 'off',
