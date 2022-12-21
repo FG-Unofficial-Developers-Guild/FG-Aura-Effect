@@ -99,6 +99,10 @@ local function checkSilentNotification(auraType)
 	return option == 'all' or option == auraType:lower():gsub('enemy', 'foe')
 end
 
+local function getAuraDetails(sEffect)
+	if not sEffect:match(fromAuraString) then return sEffect:match('AURA:%s*(%d+)%s*(%a*);') end
+end
+
 local function removeAuraEffect(auraType, nodeEffect)
 	if DB.getValue(nodeEffect, aEffectVarMap['nActive']['sDBField'], 1) ~= 0 then
 		if checkSilentNotification(auraType) == true then
@@ -279,7 +283,7 @@ function updateAuras(sourceNode)
 				local sLabelNodeEffect = getEffectString(auraEffect)
 				if sLabelNodeEffect:match(fromAuraString) then return false end
 
-				local nRange, auraType = string.match(sLabelNodeEffect, 'AURA:%s*(%d+)%s*(%a*);')
+				local nRange, auraType = getAuraDetails(sLabelNodeEffect)
 				if nRange then
 					nRange = math.floor(tonumber(nRange))
 				else
