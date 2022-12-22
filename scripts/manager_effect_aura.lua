@@ -92,11 +92,11 @@ end
 
 local function checkSilentNotification(auraType)
 	local option = OptionsManager.getOption('AURASILENT'):lower()
-	return option == 'all' or option == auraType:lower():gsub('[%^%!]', '')
+	return option == 'all' or option == auraType:lower():gsub('[~%!]', '')
 end
 
 local function getAuraDetails(sEffect)
-	if not sEffect:match(fromAuraString) then return sEffect:match('AURA:%s*(%d+)%s*([%^%!]*%a*);') end
+	if not sEffect:match(fromAuraString) then return sEffect:match('AURA:%s*(%d+)%s*([~%!]*%a*);') end
 end
 
 local function removeAuraEffect(auraType, nodeEffect)
@@ -201,8 +201,8 @@ end
 
 local function checkFaction(rActor, rSource, sFactionFilter)
 	if not rActor or not sFactionFilter then return false end
-	local bNegate = sFactionFilter:match('[%^%!]') ~= nil
-	sFactionFilter = sFactionFilter:gsub('[%^%!]', '')
+	local bNegate = sFactionFilter:match('[~%!]') ~= nil
+	sFactionFilter = sFactionFilter:gsub('[~%!]', '')
 
 	local nodeSource = ActorManager.getCTNode(rActor)
 	local nodeTarget = ActorManager.getCTNode(rSource)
