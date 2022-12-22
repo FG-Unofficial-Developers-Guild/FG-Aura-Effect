@@ -57,8 +57,11 @@ The same faction types as above are available, along with "notself":
 
 You can also use the "!" or "~" operators in a FACTION conditional to reverse the results:
 ```AURA: 10; Save Bonus for All and Attack Bonus Except for Actor With Aura; SAVE: 1; IF: FACTION(notself); ATK: 1```
+
 ```AURA: 10 !ally; Attack Penalty for All Except Allies; ATK: -5```
+
 ```AURA: 10 ally; Attack Bonus for Allies; IF: FACTION(notself); ATK: 2```
+
 ```AURA: 10 all; Speed Bonus for All, Attack Bonus for Blank Factions; SPEED: 20; IF: FACTION(faction); ATK: 2```
 
 ### Option for disabling aura effect chat messages
