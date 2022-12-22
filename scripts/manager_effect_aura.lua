@@ -210,7 +210,7 @@ local function checkFaction(rActor, rSource, sFactionFilter)
 	-- if not nodeTarget then Debug.console(Interface.getString('aura_console_nosource')) end
 
 	local bReturn = false
-	if sFactionFilter == 'notself' then
+	if sFactionFilter == 'notself' or (sFactionFilter == 'self' and bNegate) then
 		bReturn = nodeTarget == nodeSource
 	elseif sFactionFilter == 'all' then
 		bReturn = true
