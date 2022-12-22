@@ -41,6 +41,7 @@ If a resulting FROMAURA is set to "off" in the combat tracker, then the effect w
 
 ### FACTION() conditional check
 To further limit bonuses/penalties/conditions applying to the bearer of the AURA effect, there is also an additional conditional type "FACTION()".
+
 ```AURA: 10 all; Test; IF: FACTION(foe); ATK: -5```
 
 The IF: FACTION(foe) ensures that the penalty to attacks does not impact the bearer of the AURA effect but only their foes.
