@@ -305,7 +305,7 @@ function updateAuras(sourceNode)
 
 				local existingAuraEffect = checkAuraAlreadyEffecting()
 				if
-					(nodeInfo.distanceBetween <= nRange)
+					(nodeInfo.distanceBetween and (nodeInfo.distanceBetween <= nRange))
 					and checkFaction(ActorManager.resolveActor(otherNode), ActorManager.resolveActor(sourceNode), auraType)
 				then
 					local function addAuraEffect()
