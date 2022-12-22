@@ -56,6 +56,7 @@ The same faction types as above are available, along with "notself":
 * notself - continues if the effect bearer does not match the effect source
 
 You can also use the "!" or "~" operators in a FACTION conditional to reverse the results:
+
 ```AURA: 10; Save Bonus for All and Attack Bonus Except for Actor With Aura; SAVE: 1; IF: FACTION(notself); ATK: 1```
 
 ```AURA: 10 !ally; Attack Penalty for All Except Allies; ATK: -5```
