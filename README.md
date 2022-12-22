@@ -25,39 +25,44 @@ If IF/IFT conditions are included *before* the "AURA" effect, they will act to e
 
 The bearer of the AURA effect will also receive its benefits. If this is not desired, see below.
 
-The following aura types (used for AURA: 15 friend) are allowed:
+The following faction types are available:
+* all - applies aura to all. if not specified, all is assumed.
+* friend - applies aura to actors whose faction is "friend"
+* foe - applies aura to actors whose faction is "foe"
+* neutral - applies aura to actors whose faction is "neutral"
+* faction - applies aura to actors whose faction is blank
+* ally - applies aura to actors whose faction matches the effect source's faction
+* enemy - applies aura to actors whose faction is "foe" when the effect source's faction is "friend" (or vice versa)
 
-* friend
-* foe
-* all
+You can also use the "!" or "~" operators to reverse the results such as "!friend", or "~ally".
 
 #### Exceptions
 If a resulting FROMAURA is set to "off" in the combat tracker, then the effect will not be removed based on token movement. This allows you to set the automatic effects of creatures that saved or are immune to "off".
 
 ### FACTION() conditional check
 To further limit bonuses/penalties/conditions applying to the bearer of the AURA effect, there is also an additional conditional type "FACTION()".
-```AURA: 10 foe; Test; IF: FACTION(foe); ATK: -5```
+```AURA: 10 all; Test; IF: FACTION(foe); ATK: -5```
 
 The IF: FACTION(foe) ensures that the penalty to attacks does not impact the bearer of the AURA effect but only their foes.
 
-The following faction types (used for IF: FACTION(friend)) are allowed:
+The same faction types as above are available, along with "notself":
+* all - does not block processing on any actor
+* friend - continues if the effect bearer's faction is "friend"
+* foe - continues if the effect bearer's faction is "foe"
+* neutral - continues if the effect bearer's faction is "neutral"
+* faction - continues if the effect bearer's faction is blank
+* ally - continues if the effect bearer's faction matches the effect source's faction
+* enemy - continues if the effect bearer's faction is "foe" and the effect source's faction is "friend" (or vice versa)
+* notself - continues if the effect bearer does not match the effect source
 
-* notself
-* friend
-* foe
-* neutral
-
-You can also use the "!" operator in a FACTION conditional to reverse the results:
-```AURA: 10 all; Test; IF: FACTION(!foe); ATK: -5```
-
-This will add a 10 foot aura around the person who has this effect.
-
-Anyone within 10' will receive an effect "FROMAURA; Test; IF: FACTION(!foe); ATK: -5".
-
-Although the effect will be visible on all actors within 10', the penalty will only be applied to people who are not specifically foes.
+You can also use the "!" or "~" operators in a FACTION conditional to reverse the results:
+```AURA: 10; Save Bonus for All and Attack Bonus Except for Actor With Aura; SAVE: 1; IF: FACTION(notself); ATK: 1```
+```AURA: 10 !ally; Attack Penalty for All Except Allies; ATK: -5```
+```AURA: 10 ally; Attack Bonus for Allies; IF: FACTION(notself); ATK: 2```
+```AURA: 10 all; Speed Bonus for All, Attack Bonus for Blank Factions; SPEED: 20; IF: FACTION(faction); ATK: 2```
 
 ### Option for disabling aura effect chat messages
-"Silence Notifications for Aura Types" can be used to hide aura apply/removal chat messages.
+"Silence Notifications for Aura Types" can be used to hide aura apply/removal chat messages for a particular faction, relationship, or all.
 
 # Effect Sharing Threads
 5E: https://www.fantasygrounds.com/forums/showthread.php?69965-5E-Aura-Effects-Coding
