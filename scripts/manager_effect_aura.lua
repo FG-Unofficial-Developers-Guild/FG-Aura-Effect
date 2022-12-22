@@ -207,7 +207,7 @@ local function checkFaction(rActor, rSource, sFactionFilter)
 	local nodeSource = ActorManager.getCTNode(rActor)
 	local nodeTarget = ActorManager.getCTNode(rSource)
 
-	if not nodeTarget then Debug.console(Interface.getString('aura_console_nosource')) end
+	-- if not nodeTarget then Debug.console(Interface.getString('aura_console_nosource')) end
 
 	local bReturn = false
 	if sFactionFilter == 'notself' then
