@@ -387,6 +387,61 @@ function updateAuras(sourceNode)
 	end
 end
 
+---	This function creates and removes handlers on the effects list
+local function manageHandlers(bRemove)
+	if bRemove then
+		DB.removeHandler(DB.getPath(CombatManager.CT_LIST .. '.*.effects.*'), 'onChildUpdate', onEffectChanged)
+		DB.removeHandler(DB.getPath(CombatManager.CT_LIST .. '.*.effects'), 'onChildDeleted', onEffectChanged)
+		DB.removeHandler(DB.getPath(CombatManager.CT_LIST .. '.*.status'), 'onUpdate', onStatusChanged)
+		DB.removeHandler(DB.getPath(CombatManager.CT_LIST .. '.*.friendfoe'), 'onUpdate', onStatusChanged)
+	else
+		DB.addHandler(DB.getPath(CombatManager.CT_LIST .. '.*.effects.*'), 'onChildUpdate', onEffectChanged)
+		DB.addHandler(DB.getPath(CombatManager.CT_LIST .. '.*.effects'), 'onChildDeleted', onEffectChanged)
+		DB.addHandler(DB.getPath(CombatManager.CT_LIST .. '.*.status'), 'onUpdate', onStatusChanged)
+		DB.addHandler(DB.getPath(CombatManager.CT_LIST .. '.*.friendfoe'), 'onUpdate', onStatusChanged)
+	end
+end
+
+local checkConditional = nil
+local function customCheckConditional(rActor, nodeEffect, aConditions, rTarget, aIgnore)
+	local bReturn = checkConditional(rActor, nodeEffect, aConditions, rTarget, aIgnore)
+	if bReturn == true then -- skip faction check if conditions already aren't passing
+		if aConditions and aConditions.remainder then aConditions = aConditions.remainder end
+		for _, v in ipairs(aConditions) do
+			local sFactionCheck = v:lower():match('^faction%s*%(([^)]+)%)$')
+			if sFactionCheck then
+				local nodeCTSource = DB.findNode(DB.getValue(nodeEffect, aEffectVarMap['sSource']['sDBField'], ''))
+				local rSource = ActorManager.resolveActor(nodeCTSource)
+				if not checkFaction(rActor, rSource, sFactionCheck) then
+					bReturn = false
+					break
+				end
+			end
+		end
+	end
+
+	return bReturn
+end
+
+local onWindowOpened = nil
+local function auraOnWindowOpened(window, ...)
+	if onWindowOpened then onWindowOpened(window, ...) end
+	if window.getClass() == 'imagewindow' then
+		local ctEntries = CombatManager.getCombatantNodes()
+		for _, nodeCT in pairs(ctEntries) do
+			local tokenMap = CombatManager.getTokenFromCT(nodeCT)
+			local _, winImage = ImageManager.getImageControl(tokenMap)
+			if tokenMap and winImage == window then notifyTokenMove(tokenMap) end
+		end
+	end
+end
+
+local handleStandardCombatAddPlacement = nil
+local function auraHandleStandardCombatAddPlacement(tCustom, ...)
+	if handleStandardCombatAddPlacement then handleStandardCombatAddPlacement(tCustom, ...) end
+	updateAuras(tCustom.nodeCT)
+end
+
 function handleTokenMovement(msgOOB) updateAuras(DB.findNode(msgOOB.sCTNode)) end
 
 function handleApplyEffectSilent(msgOOB)
@@ -411,21 +466,6 @@ function handleApplyEffectSilent(msgOOB)
 
 	-- Apply the effect
 	EffectManager.addEffect(msgOOB.user, msgOOB.identity, nodeCTEntry, rEffect, false)
-end
-
----	This function creates and removes handlers on the effects list
-local function manageHandlers(bRemove)
-	if bRemove then
-		DB.removeHandler(DB.getPath(CombatManager.CT_LIST .. '.*.effects.*'), 'onChildUpdate', onEffectChanged)
-		DB.removeHandler(DB.getPath(CombatManager.CT_LIST .. '.*.effects'), 'onChildDeleted', onEffectChanged)
-		DB.removeHandler(DB.getPath(CombatManager.CT_LIST .. '.*.status'), 'onUpdate', onStatusChanged)
-		DB.removeHandler(DB.getPath(CombatManager.CT_LIST .. '.*.friendfoe'), 'onUpdate', onStatusChanged)
-	else
-		DB.addHandler(DB.getPath(CombatManager.CT_LIST .. '.*.effects.*'), 'onChildUpdate', onEffectChanged)
-		DB.addHandler(DB.getPath(CombatManager.CT_LIST .. '.*.effects'), 'onChildDeleted', onEffectChanged)
-		DB.addHandler(DB.getPath(CombatManager.CT_LIST .. '.*.status'), 'onUpdate', onStatusChanged)
-		DB.addHandler(DB.getPath(CombatManager.CT_LIST .. '.*.friendfoe'), 'onUpdate', onStatusChanged)
-	end
 end
 
 local function expireEffectSilent(nodeEffect)
@@ -495,43 +535,13 @@ function onInit()
 		DetectedEffectManager = EffectManager4E
 	end
 
-	local checkConditional = nil
-	local function customCheckConditional(rActor, nodeEffect, aConditions, rTarget, aIgnore)
-		local bReturn = checkConditional(rActor, nodeEffect, aConditions, rTarget, aIgnore)
-		if bReturn == true then -- skip faction check if conditions already aren't passing
-			if aConditions and aConditions.remainder then aConditions = aConditions.remainder end
-			for _, v in ipairs(aConditions) do
-				local sFactionCheck = v:lower():match('^faction%s*%(([^)]+)%)$')
-				if sFactionCheck then
-					local nodeCTSource = DB.findNode(DB.getValue(nodeEffect, aEffectVarMap['sSource']['sDBField'], ''))
-					local rSource = ActorManager.resolveActor(nodeCTSource)
-					if not checkFaction(rActor, rSource, sFactionCheck) then
-						bReturn = false
-						break
-					end
-				end
-			end
-		end
-
-		return bReturn
-	end
+	-- create proxy function to recalculate auras when new windows are opened
+	handleStandardCombatAddPlacement = CombatRecordManager.handleStandardCombatAddPlacement
+	CombatRecordManager.handleStandardCombatAddPlacement = auraHandleStandardCombatAddPlacement
 
 	-- create proxy function to add FACTION conditional
 	checkConditional = DetectedEffectManager.checkConditional
 	DetectedEffectManager.checkConditional = customCheckConditional
-
-	local onWindowOpened = nil
-	local function auraOnWindowOpened(window, ...)
-		if onWindowOpened then onWindowOpened(window, ...) end
-		if window.getClass() == 'imagewindow' then
-			local ctEntries = CombatManager.getCombatantNodes()
-			for _, nodeCT in pairs(ctEntries) do
-				local tokenMap = CombatManager.getTokenFromCT(nodeCT)
-				local _, winImage = ImageManager.getImageControl(tokenMap)
-				if tokenMap and winImage == window then notifyTokenMove(tokenMap) end
-			end
-		end
-	end
 
 	-- create proxy function to recalculate auras when new windows are opened
 	onWindowOpened = Interface.onWindowOpened
