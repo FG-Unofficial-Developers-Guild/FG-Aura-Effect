@@ -133,42 +133,38 @@ local function removeAuraEffect(auraType, nodeEffect)
 	end
 end
 
-local function checkDeletedAuraEffects(nodeEffect, nodeCT, sEffect)
-	local ctEntries = CombatManager.getCombatantNodes()
-	for _, node in pairs(ctEntries) do
-		if node == nodeEffect then return end
-		local function checkAurasEffectingNodeForDelete()
-			for _, targetEffect in ipairs(getAurasForNode(node, fromAuraString, nodeCT)) do
-				local sourceNode = DB.findNode(DB.getValue(targetEffect, aEffectVarMap['sSource']['sDBField'], ''))
-				if not sourceNode then return end
-				local auraStillExists = false
-				for _, sourceEffect in ipairs(getAurasForNode(sourceNode.getChild('...'), auraString)) do
-					local sEffectTrim = sEffect:gsub(fromAuraString, '')
-					if getEffectString(sourceEffect):find(sEffectTrim:gsub('IFT*:%s*FACTION%(%s*notself%s*%)%s*;*', ''), 0, true) then
-						auraStillExists = true
-						break
-					end
-				end
-				if auraStillExists == false then removeAuraEffect('all', targetEffect) end
+local function checkAurasEffectingNodeForDelete(nodeCT, nodeAuraSource, sEffect)
+	for _, targetEffect in ipairs(getAurasForNode(nodeCT, fromAuraString, nodeAuraSource)) do
+		local sourceNode = DB.findNode(DB.getValue(targetEffect, aEffectVarMap['sSource']['sDBField'], ''))
+		if not sourceNode then return end
+		local auraStillExists = false
+		for _, sourceEffect in ipairs(getAurasForNode(sourceNode.getChild('...'), auraString)) do
+			local sEffectTrim = sEffect:gsub(fromAuraString, '')
+			if getEffectString(sourceEffect):find(sEffectTrim:gsub('IFT*:%s*FACTION%(%s*notself%s*%)%s*;*', ''), 0, true) then
+				auraStillExists = true
+				break
 			end
 		end
+		if auraStillExists == false then removeAuraEffect('all', targetEffect) end
+	end
+end
 
-		checkAurasEffectingNodeForDelete()
+local function checkDeletedAuraEffects(nodeAuraSource, sEffect)
+	for _, nodeCT in pairs(CombatManager.getCombatantNodes()) do
+		checkAurasEffectingNodeForDelete(nodeCT, nodeAuraSource, sEffect)
 	end
 end
 
 ---	This function is called when effects are removed or effect components are changed.
 local function onEffectChanged(nodeEffect)
 	local sEffect = getEffectString(nodeEffect)
-	if sEffect == '' then return end
-	if not sEffect:match(fromAuraString) then -- if changed effect is not a FROMAURA effect
-		local nodeCT = nodeEffect.getChild('...')
-		if not nodeCT then return end
-		if DB.getValue(nodeEffect, aEffectVarMap['nActive']['sDBField'], 0) ~= 1 then
-			checkDeletedAuraEffects(nodeEffect, nodeCT, sEffect)
-		else
-			updateAuras(nodeCT)
-		end
+	if sEffect == '' or sEffect:match(fromAuraString) then return end -- if changed effect is empty or a FROMAURA effect
+
+	local nodeAuraSource = nodeEffect.getChild('...')
+	if DB.getValue(nodeEffect, aEffectVarMap['nActive']['sDBField'], 0) ~= 1 then
+		checkDeletedAuraEffects(nodeAuraSource, sEffect)
+	else
+		updateAuras(nodeAuraSource)
 	end
 end
 
@@ -229,32 +225,25 @@ local function tokenMovedEnough(token)
 	-- cleanup after every 20 tokens received - we are not looking for perfect just trimming down processing time
 	if #TokenMoveArray >= 20 then TokenMoveArray = {} end
 	local imageControl = ImageManager.getImageControl(token, false)
-	if imageControl then
-		local x, y = token.getPosition()
-		for i = 1, #TokenMoveArray, 1 do
-			if token == TokenMoveArray[i].token and imageControl == TokenMoveArray[i].imageControl then
-				-- Determine if moved more than 1/2 the grid unit
-				local nGridSize = imageControl.getGridSize() * 0.5
-				if (x - TokenMoveArray[i].x) ^ 2 + (y - TokenMoveArray[i].y) ^ 2 < nGridSize * nGridSize then return false end
-				table.remove(TokenMoveArray, i)
-				break
-			end
+	if not imageControl then return false end
+
+	local x, y = token.getPosition()
+	for i = 1, #TokenMoveArray, 1 do
+		if token == TokenMoveArray[i].token and imageControl == TokenMoveArray[i].imageControl then
+			-- Determine if moved more than 1/2 the grid unit
+			local nGridSize = imageControl.getGridSize() * 0.5
+			if (x - TokenMoveArray[i].x) ^ 2 + (y - TokenMoveArray[i].y) ^ 2 < nGridSize * nGridSize then return false end
+			table.remove(TokenMoveArray, i)
+			break
 		end
-		table.insert(TokenMoveArray, { token = token, imageControl = imageControl, x = x, y = y })
-	else
-		return false
 	end
+	table.insert(TokenMoveArray, { token = token, imageControl = imageControl, x = x, y = y })
 	return true
 end
 
 local function auraOnMove(tokenMap)
-	local nodeCT = CombatManager.getCTFromToken(tokenMap)
-	if Session.IsHost and nodeCT then
-		if tokenMovedEnough(tokenMap) then
-			local rActor = ActorManager.resolveActor(nodeCT)
-			if rActor then notifyTokenMove(tokenMap) end
-		end
-	end
+	if not Session.IsHost or not ActorManager.resolveActor(CombatManager.getCTFromToken(tokenMap)) then return end
+	if tokenMovedEnough(tokenMap) then notifyTokenMove(tokenMap) end
 end
 
 -- luacheck: globals notifyApplySilent
@@ -389,9 +378,8 @@ function updateAuras(sourceNode)
 		if bDebug then Debug.console('No imageCtrSource for ' .. DB.getValue(sourceNode, 'name', '')) end
 		return
 	end
-	local ctEntries = CombatManager.getCombatantNodes()
-	for _, otherNode in pairs(ctEntries) do
-		if otherNode and otherNode ~= sourceNode then
+	for _, otherNode in pairs(CombatManager.getCombatantNodes()) do
+		if sourceNode ~= otherNode then
 			local bSameImage = true
 			if bDebug then Debug.console('Comparing ' .. DB.getValue(sourceNode, 'name', '') .. ' and ' .. DB.getValue(otherNode, 'name', '')) end
 			local tokenOther = CombatManager.getTokenFromCT(otherNode)
@@ -436,7 +424,7 @@ local function manageHandlers(bRemove)
 	end
 end
 
-local checkConditional = nil
+local checkConditional
 local function customCheckConditional(rActor, nodeEffect, aConditions, rTarget, aIgnore)
 	local bReturn = checkConditional(rActor, nodeEffect, aConditions, rTarget, aIgnore)
 
@@ -467,12 +455,11 @@ local function customCheckConditional(rActor, nodeEffect, aConditions, rTarget, 
 	return bReturn
 end
 
-local onWindowOpened = nil
+local onWindowOpened
 local function auraOnWindowOpened(window, ...)
 	if onWindowOpened then onWindowOpened(window, ...) end
 	if window.getClass() == 'imagewindow' then
-		local ctEntries = CombatManager.getCombatantNodes()
-		for _, nodeCT in pairs(ctEntries) do
+		for _, nodeCT in pairs(CombatManager.getCombatantNodes()) do
 			local tokenMap = CombatManager.getTokenFromCT(nodeCT)
 			local _, winImage = ImageManager.getImageControl(tokenMap)
 			if tokenMap and winImage == window then notifyTokenMove(tokenMap) end
@@ -480,7 +467,7 @@ local function auraOnWindowOpened(window, ...)
 	end
 end
 
-local handleStandardCombatAddPlacement = nil
+local handleStandardCombatAddPlacement
 local function auraHandleStandardCombatAddPlacement(tCustom, ...)
 	if handleStandardCombatAddPlacement then handleStandardCombatAddPlacement(tCustom, ...) end
 	updateAuras(tCustom.nodeCT)
