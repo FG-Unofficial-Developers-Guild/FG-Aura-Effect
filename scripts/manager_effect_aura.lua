@@ -451,7 +451,9 @@ local function customCheckConditional(rActor, nodeEffect, aConditions, rTarget, 
 			-- remove IF:FACTION(notself) from FROMAURA effects (this should only be needed temporarily to upgrade existing users)
 			if sEffect:match(fromAuraString) and sEffect:match('IFT*:%s*FACTION%(%s*notself%s*%)%s*;*') then
 				local sEffectTrim = sEffect:gsub('IFT*:%s*FACTION%(%s*notself%s*%)%s*;*', '')
+				manageHandlers(true)
 				DB.setValue(nodeEffect, aEffectVarMap['sName']['sDBField'], aEffectVarMap['sName']['sDBType'], sEffectTrim)
+				manageHandlers(false)
 			end
 
 			local rSource = ActorManager.resolveActor(DB.findNode(DB.getValue(nodeEffect, aEffectVarMap['sSource']['sDBField'], '')))
