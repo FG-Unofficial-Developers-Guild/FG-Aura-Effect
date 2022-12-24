@@ -255,9 +255,7 @@ local function tokenMovedEnough(token)
 	return true
 end
 
-local onMove = nil
 local function auraOnMove(tokenMap, ...)
-	if onMove then onMove(tokenMap, ...) end
 	local nodeCT = CombatManager.getCTFromToken(tokenMap)
 	if Session.IsHost and nodeCT then
 		if tokenMovedEnough(tokenMap) then
@@ -592,8 +590,7 @@ function onInit()
 	Interface.onWindowOpened = auraOnWindowOpened
 
 	-- create the proxy function to trigger aura calculation on token movement.
-	onMove = Token.onMove
-	Token.onMove = auraOnMove
+	Token.addEventHandler("onMove", auraOnMove)
 
 	-- all handlers should be created on GM machine
 	if Session.IsHost then manageHandlers(false) end
