@@ -99,25 +99,26 @@ local function getAuraDetails(sEffect)
 	if not sEffect:match(fromAuraString) then return sEffect:match('AURA:%s*(%d+)%s*([~%!]*%a*);') end
 end
 
+-- luacheck: globals notifyExpireSilent
+function notifyExpireSilent(nodeEffect)
+	local varEffect
+	if type(nodeEffect) == 'databasenode' then
+		varEffect = nodeEffect.getPath()
+	elseif type(nodeEffect) ~= 'string' then
+		return false
+	end
+
+	local msgOOB = {}
+	msgOOB.type = OOB_MSGTYPE_AURAEXPIRESILENT
+	msgOOB.sEffectNode = varEffect
+
+	Comm.deliverOOBMessage(msgOOB, '')
+end
+
 local function removeAuraEffect(auraType, nodeEffect)
 	if DB.getValue(nodeEffect, aEffectVarMap['nActive']['sDBField'], 1) ~= 0 then
 		if checkSilentNotification(auraType) then
-			local function notifyExpireSilent()
-				local varEffect
-				if type(nodeEffect) == 'databasenode' then
-					varEffect = nodeEffect.getPath()
-				elseif type(nodeEffect) ~= 'string' then
-					return false
-				end
-
-				local msgOOB = {}
-				msgOOB.type = OOB_MSGTYPE_AURAEXPIRESILENT
-				msgOOB.sEffectNode = varEffect
-
-				Comm.deliverOOBMessage(msgOOB, '')
-			end
-
-			notifyExpireSilent()
+			notifyExpireSilent(nodeEffect)
 		else
 			EffectManager.notifyExpire(nodeEffect, nil, false)
 		end
@@ -258,6 +259,119 @@ local function auraOnMove(tokenMap, ...)
 	end
 end
 
+-- luacheck: globals notifyApplySilent
+function notifyApplySilent(rEffect, node2)
+	-- Build OOB message to pass effect to host
+	local msgOOB = {}
+	msgOOB.type = OOB_MSGTYPE_AURAAPPLYSILENT
+	for k, _ in pairs(rEffect) do
+		if aEffectVarMap[k] then
+			if aEffectVarMap[k].sDBType == 'number' then
+				msgOOB[k] = rEffect[k] or aEffectVarMap[k].vDBDefault or 0
+			else
+				msgOOB[k] = rEffect[k] or aEffectVarMap[k].vDBDefault or ''
+			end
+		end
+	end
+	if Session.IsHost then
+		msgOOB.user = ''
+	else
+		msgOOB.user = User.getUsername()
+	end
+	msgOOB.identity = User.getIdentityLabel()
+
+	-- Send one message for each target
+	if type(node2.getPath()) == 'table' then
+		for _, v in pairs(node2.getPath()) do
+			msgOOB.sTargetNode = v
+			Comm.deliverOOBMessage(msgOOB, '')
+		end
+	else
+		msgOOB.sTargetNode = node2.getPath()
+		Comm.deliverOOBMessage(msgOOB, '')
+	end
+end
+
+local function addAuraEffect(auraEffect, node1, node2, auraType)
+	local sLabel = getEffectString(auraEffect)
+	local applyLabel = sLabel:match(auraString .. '.-;%s*(.*)$')
+	if not applyLabel then
+		Debug.console(Interface.getString('aura_console_notext'), sLabel, auraString)
+		return false
+	end
+	applyLabel = fromAuraString .. applyLabel:gsub('IFT*:%s*FACTION%(%s*notself%s*%)%s*;*', '')
+
+	local rEffect = {}
+	rEffect.nDuration = 0
+	rEffect.nGMOnly = DB.getValue(auraEffect, aEffectVarMap['nGMOnly']['sDBField'], 0)
+	rEffect.nInit = DB.getValue(auraEffect, aEffectVarMap['nInit']['sDBField'], 0)
+	rEffect.sLabel = applyLabel
+	rEffect.sName = applyLabel
+	rEffect.sSource = node1.getPath()
+	rEffect.sAuraEffect = auraEffect.getPath()
+	--rEffect.sTarget = .... how to get targeting here?
+	rEffect.sUnits = DB.getValue(auraEffect, aEffectVarMap['sUnit']['sDBField'], '')
+
+	-- CHECK IF SILENT IS ON
+	if checkSilentNotification(auraType) then
+		notifyApplySilent(rEffect, node2)
+	else
+		EffectManager.notifyApply(rEffect, node2.getPath())
+	end
+end
+
+local function checkAuraApplicationAndAddOrRemove(node1, node2, auraEffect, nodeInfo)
+	if not auraEffect then return false end
+
+	local sLabelNodeEffect = getEffectString(auraEffect)
+	if sLabelNodeEffect:match(fromAuraString) then return false end
+
+	local nRange, auraType = getAuraDetails(sLabelNodeEffect)
+	if nRange then
+		nRange = math.floor(tonumber(nRange))
+	else
+		Debug.console(Interface.getString('aura_console_norange'))
+		return false
+	end
+	if not auraType or auraType == '' then
+		--Debug.console(Interface.getString('aura_console_nofaction'));
+		auraType = 'all'
+	end
+
+	if not nodeInfo.distanceBetween then
+		local sourceToken = CombatManager.getTokenFromCT(node1)
+		local targetToken = CombatManager.getTokenFromCT(node2)
+		if sourceToken and targetToken then nodeInfo.distanceBetween = Token.getDistanceBetween(sourceToken, targetToken) end
+	end
+
+	local function checkAuraAlreadyEffecting()
+		local sLabel = getEffectString(auraEffect)
+		for _, nodeEffect in pairs(DB.getChildren(node2, 'effects')) do
+			-- if DB.getValue(nodeEffect, aEffectVarMap["nActive"]["sDBField"], 0) ~= 2 then
+			local sSource = DB.getValue(nodeEffect, aEffectVarMap['sSource']['sDBField'])
+			if sSource == node1.getPath() then
+				return nodeEffect
+			elseif sSource == auraEffect.getPath() then
+				local sEffect = getEffectString(nodeEffect)
+				sEffect = sEffect:gsub(fromAuraString, '')
+				if string.find(sLabel, sEffect, 0, true) then return nodeEffect end
+			end
+			-- end
+		end
+	end
+
+	local existingAuraEffect = checkAuraAlreadyEffecting()
+	if
+		(nodeInfo.distanceBetween and (nodeInfo.distanceBetween <= nRange))
+		and checkFaction(ActorManager.resolveActor(node1), ActorManager.resolveActor(node2), auraType)
+	then
+
+		if not existingAuraEffect then addAuraEffect(auraEffect, node1, node2, auraType) end
+	elseif existingAuraEffect then
+		removeAuraEffect(auraType, existingAuraEffect)
+	end
+end
+
 function updateAuras(sourceNode)
 	if not sourceNode then return end
 	local tokenSource = CombatManager.getTokenFromCT(sourceNode)
@@ -276,116 +390,6 @@ function updateAuras(sourceNode)
 				end
 			else
 				bSameImage = false
-			end
-			local function checkAuraApplicationAndAddOrRemove(node1, node2, auraEffect, nodeInfo)
-				if not auraEffect then return false end
-
-				local sLabelNodeEffect = getEffectString(auraEffect)
-				if sLabelNodeEffect:match(fromAuraString) then return false end
-
-				local nRange, auraType = getAuraDetails(sLabelNodeEffect)
-				if nRange then
-					nRange = math.floor(tonumber(nRange))
-				else
-					Debug.console(Interface.getString('aura_console_norange'))
-					return false
-				end
-				if not auraType or auraType == '' then
-					--Debug.console(Interface.getString('aura_console_nofaction'));
-					auraType = 'all'
-				end
-
-				if not nodeInfo.distanceBetween then
-					local sourceToken = CombatManager.getTokenFromCT(node1)
-					local targetToken = CombatManager.getTokenFromCT(node2)
-					if sourceToken and targetToken then nodeInfo.distanceBetween = Token.getDistanceBetween(sourceToken, targetToken) end
-				end
-
-				local function checkAuraAlreadyEffecting()
-					local sLabel = getEffectString(auraEffect)
-					for _, nodeEffect in pairs(DB.getChildren(node2, 'effects')) do
-						-- if DB.getValue(nodeEffect, aEffectVarMap["nActive"]["sDBField"], 0) ~= 2 then
-						local sSource = DB.getValue(nodeEffect, aEffectVarMap['sSource']['sDBField'])
-						if sSource == node1.getPath() then
-							return nodeEffect
-						elseif sSource == auraEffect.getPath() then
-							local sEffect = getEffectString(nodeEffect)
-							sEffect = sEffect:gsub(fromAuraString, '')
-							if string.find(sLabel, sEffect, 0, true) then return nodeEffect end
-						end
-						-- end
-					end
-				end
-
-				local existingAuraEffect = checkAuraAlreadyEffecting()
-				if
-					(nodeInfo.distanceBetween and (nodeInfo.distanceBetween <= nRange))
-					and checkFaction(ActorManager.resolveActor(otherNode), ActorManager.resolveActor(sourceNode), auraType)
-				then
-					local function addAuraEffect()
-						local sLabel = getEffectString(auraEffect)
-						local applyLabel = sLabel:match(auraString .. '.-;%s*(.*)$')
-						if not applyLabel then
-							Debug.console(Interface.getString('aura_console_notext'), sLabel, auraString)
-							return false
-						end
-						applyLabel = fromAuraString .. applyLabel:gsub('IFT*:%s*FACTION%(%s*notself%s*%)%s*;*', '')
-
-						local rEffect = {}
-						rEffect.nDuration = 0
-						rEffect.nGMOnly = DB.getValue(auraEffect, aEffectVarMap['nGMOnly']['sDBField'], 0)
-						rEffect.nInit = DB.getValue(auraEffect, aEffectVarMap['nInit']['sDBField'], 0)
-						rEffect.sLabel = applyLabel
-						rEffect.sName = applyLabel
-						rEffect.sSource = node1.getPath()
-						rEffect.sAuraEffect = auraEffect.getPath()
-						--rEffect.sTarget = .... how to get targeting here?
-						rEffect.sUnits = DB.getValue(auraEffect, aEffectVarMap['sUnit']['sDBField'], '')
-
-						-- CHECK IF SILENT IS ON
-						if checkSilentNotification(auraType) then
-							local function notifyApplySilent()
-								-- Build OOB message to pass effect to host
-								local msgOOB = {}
-								msgOOB.type = OOB_MSGTYPE_AURAAPPLYSILENT
-								for k, _ in pairs(rEffect) do
-									if aEffectVarMap[k] then
-										if aEffectVarMap[k].sDBType == 'number' then
-											msgOOB[k] = rEffect[k] or aEffectVarMap[k].vDBDefault or 0
-										else
-											msgOOB[k] = rEffect[k] or aEffectVarMap[k].vDBDefault or ''
-										end
-									end
-								end
-								if Session.IsHost then
-									msgOOB.user = ''
-								else
-									msgOOB.user = User.getUsername()
-								end
-								msgOOB.identity = User.getIdentityLabel()
-
-								-- Send one message for each target
-								if type(node2.getPath()) == 'table' then
-									for _, v in pairs(node2.getPath()) do
-										msgOOB.sTargetNode = v
-										Comm.deliverOOBMessage(msgOOB, '')
-									end
-								else
-									msgOOB.sTargetNode = node2.getPath()
-									Comm.deliverOOBMessage(msgOOB, '')
-								end
-							end
-
-							notifyApplySilent(rEffect)
-						else
-							EffectManager.notifyApply(rEffect, node2.getPath())
-						end
-					end
-
-					if not existingAuraEffect then addAuraEffect() end
-				elseif existingAuraEffect then
-					removeAuraEffect(auraType, existingAuraEffect)
-				end
 			end
 
 			if bSameImage then
