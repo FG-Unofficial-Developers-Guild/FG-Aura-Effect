@@ -255,7 +255,7 @@ local function tokenMovedEnough(token)
 	return true
 end
 
-local function auraOnMove(tokenMap, ...)
+local function auraOnMove(tokenMap)
 	local nodeCT = CombatManager.getCTFromToken(tokenMap)
 	if Session.IsHost and nodeCT then
 		if tokenMovedEnough(tokenMap) then
