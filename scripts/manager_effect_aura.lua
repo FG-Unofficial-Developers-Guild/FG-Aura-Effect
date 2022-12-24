@@ -140,7 +140,7 @@ local function onEffectChanged(nodeEffect)
 								for _, targetEffect in ipairs(getAurasForNode(node, fromAuraString, nodeCT)) do
 									local sourceNode = DB.findNode(DB.getValue(targetEffect, aEffectVarMap['sSource']['sDBField'], ''))
 									if sourceNode then
-										local auraStillExists
+										local auraStillExists = false
 										for _, sourceEffect in ipairs(getAurasForNode(sourceNode.getChild('...'), auraString)) do
 											if
 												getEffectString(sourceEffect):find(
@@ -153,7 +153,7 @@ local function onEffectChanged(nodeEffect)
 												break
 											end
 										end
-										if not auraStillExists then removeAuraEffect('all', targetEffect) end
+										if auraStillExists == false then removeAuraEffect('all', targetEffect) end
 									end
 								end
 							end
@@ -260,10 +260,23 @@ end
 
 function updateAuras(sourceNode)
 	if not sourceNode then return end
-
+	local tokenSource = CombatManager.getTokenFromCT(sourceNode)
+	if not tokenSource then return end
+	local imageCtrSource = ImageManager.getImageControl(tokenSource, false)
+	if not imageCtrSource then return end
 	local ctEntries = CombatManager.getCombatantNodes()
 	for _, otherNode in pairs(ctEntries) do
 		if otherNode and otherNode ~= sourceNode then
+			local bSameImage = true
+			local tokenOther = CombatManager.getTokenFromCT(otherNode)
+			if tokenOther then
+				local imageCtrOther = ImageManager.getImageControl(tokenOther, false)
+				if not imageCtrOther or imageCtrSource ~= imageCtrOther then
+					bSameImage = false
+				end
+			else
+				bSameImage = false
+			end
 			local function checkAuraApplicationAndAddOrRemove(node1, node2, auraEffect, nodeInfo)
 				if not auraEffect then return false end
 
@@ -375,14 +388,16 @@ function updateAuras(sourceNode)
 				end
 			end
 
-			local nodeInfo = {}
-			-- Check if the moved token has auras to apply/remove
-			for _, auraEffect in pairs(getAurasForNode(sourceNode, auraString, otherNode)) do
-				checkAuraApplicationAndAddOrRemove(sourceNode, otherNode, auraEffect, nodeInfo)
-			end
-			-- Check if the moved token is subject to other's auras
-			for _, auraEffect in pairs(getAurasForNode(otherNode, auraString, sourceNode)) do
-				checkAuraApplicationAndAddOrRemove(otherNode, sourceNode, auraEffect, nodeInfo)
+			if bSameImage then
+				local nodeInfo = {}
+				-- Check if the moved token has auras to apply/remove
+				for _, auraEffect in pairs(getAurasForNode(sourceNode, auraString, otherNode)) do
+					checkAuraApplicationAndAddOrRemove(sourceNode, otherNode, auraEffect, nodeInfo)
+				end
+				-- Check if the moved token is subject to other's auras
+				for _, auraEffect in pairs(getAurasForNode(otherNode, auraString, sourceNode)) do
+					checkAuraApplicationAndAddOrRemove(otherNode, sourceNode, auraEffect, nodeInfo)
+				end
 			end
 		end
 	end
