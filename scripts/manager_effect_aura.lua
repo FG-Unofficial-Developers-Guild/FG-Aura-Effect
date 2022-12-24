@@ -218,7 +218,6 @@ local function checkFaction(rActor, rSource, sFactionFilter)
 		bReturn = true
 	end
 
-	Debug.chat()
 	bReturn = bReturn or StringManager.contains({ ActorManager.getFaction(rActor), getRelationship(nodeTarget, nodeSource) }, sFactionFilter)
 	if bNegate then bReturn = not bReturn end
 
