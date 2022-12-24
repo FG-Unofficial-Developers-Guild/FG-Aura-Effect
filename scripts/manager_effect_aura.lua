@@ -96,7 +96,7 @@ local function checkSilentNotification(auraType)
 end
 
 local function getAuraDetails(sEffect)
-	if not sEffect:match(fromAuraString) then return sEffect:match('AURA:%s*(%d+)%s*([~%!]*%a*);') end
+	if not sEffect:match(fromAuraString) then return sEffect:match('AURA:%s*([%d%.]*)%s*([~%!]*%a*);') end
 end
 
 -- luacheck: globals notifyExpireSilent
@@ -328,7 +328,7 @@ local function checkAuraApplicationAndAddOrRemove(node1, node2, auraEffect, node
 
 	local nRange, auraType = getAuraDetails(sLabelNodeEffect)
 	if nRange then
-		nRange = math.floor(tonumber(nRange))
+		nRange = tonumber(nRange)
 	else
 		Debug.console(Interface.getString('aura_console_norange'))
 		return false
