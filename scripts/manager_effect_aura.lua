@@ -11,6 +11,8 @@ OOB_MSGTYPE_AURAEXPIRESILENT = 'expireeffsilent'
 local fromAuraString = 'FROMAURA;'
 local auraString = 'AURA: %d+'
 
+local bDebug = false
+
 local aEffectVarMap = {
 	['nActive'] = { sDBType = 'number', sDBField = 'isactive' },
 	['nDuration'] = { sDBType = 'number', sDBField = 'duration', vDBDefault = 1, sDisplay = '[D: %d]' },
@@ -82,7 +84,13 @@ local function getAurasForNode(nodeCT, searchString, targetNodeCT)
 						end
 					end
 				end
-				if bSkipAura == false then table.insert(auraEffects, nodeEffect) end
+				if bSkipAura == false then
+					table.insert(auraEffects, nodeEffect)
+				elseif bDebug then
+					Debug.console(
+						'Skipping aura for ' .. DB.getValue(nodeCT, 'name', '') .. ' which targets ' .. DB.getValue(targetNodeCT, 'name', '')
+					)
+				end
 			end
 		end
 	end
@@ -308,9 +316,10 @@ local function addAuraEffect(auraEffect, node1, node2, auraType)
 	rEffect.sLabel = applyLabel
 	rEffect.sName = applyLabel
 	rEffect.sSource = node1.getPath()
-	rEffect.sAuraEffect = auraEffect.getPath()
-	--rEffect.sTarget = .... how to get targeting here?
 	rEffect.sUnits = DB.getValue(auraEffect, aEffectVarMap['sUnit']['sDBField'], '')
+	if bDebug then
+		Debug.console('Apply FROMAURA effect on ' .. DB.getValue(node2, 'name', '') .. ' due to AURA on ' .. DB.getValue(node1, 'name', ''))
+	end
 
 	-- CHECK IF SILENT IS ON
 	if checkSilentNotification(auraType) then
@@ -334,7 +343,7 @@ local function checkAuraApplicationAndAddOrRemove(node1, node2, auraEffect, node
 		return false
 	end
 	if not auraType or auraType == '' then
-		--Debug.console(Interface.getString('aura_console_nofaction'));
+		if bDebug then Debug.console(Interface.getString('aura_console_nofaction')) end
 		auraType = 'all'
 	end
 
@@ -350,11 +359,15 @@ local function checkAuraApplicationAndAddOrRemove(node1, node2, auraEffect, node
 			-- if DB.getValue(nodeEffect, aEffectVarMap["nActive"]["sDBField"], 0) ~= 2 then
 			local sSource = DB.getValue(nodeEffect, aEffectVarMap['sSource']['sDBField'])
 			if sSource == node1.getPath() then
+				if bDebug then Debug.console('Effect already on ' .. DB.getValue(node2, 'name', '')) end
 				return nodeEffect
 			elseif sSource == auraEffect.getPath() then
 				local sEffect = getEffectString(nodeEffect)
 				sEffect = sEffect:gsub(fromAuraString, '')
-				if string.find(sLabel, sEffect, 0, true) then return nodeEffect end
+				if string.find(sLabel, sEffect, 0, true) then
+					if bDebug then Debug.console('Effect already on ' .. DB.getValue(node2, 'name', '')) end
+					return nodeEffect
+				end
 			end
 			-- end
 		end
@@ -365,9 +378,11 @@ local function checkAuraApplicationAndAddOrRemove(node1, node2, auraEffect, node
 		(nodeInfo.distanceBetween and (nodeInfo.distanceBetween <= nRange))
 		and checkFaction(ActorManager.resolveActor(node2), ActorManager.resolveActor(node1), auraType)
 	then
-
 		if not existingAuraEffect then addAuraEffect(auraEffect, node1, node2, auraType) end
 	elseif existingAuraEffect then
+		if bDebug then
+			Debug.console('Remove FROMAURA effect on ' .. DB.getValue(node2, 'name', '') .. ' due to AURA on ' .. DB.getValue(node1, 'name', ''))
+		end
 		removeAuraEffect(auraType, existingAuraEffect)
 	end
 end
@@ -375,20 +390,29 @@ end
 function updateAuras(sourceNode)
 	if not sourceNode then return end
 	local tokenSource = CombatManager.getTokenFromCT(sourceNode)
-	if not tokenSource then return end
+	if not tokenSource then
+		if bDebug then Debug.console('No tokenSource for ' .. DB.getValue(sourceNode, 'name', '')) end
+		return
+	end
 	local imageCtrSource = ImageManager.getImageControl(tokenSource, false)
-	if not imageCtrSource then return end
+	if not imageCtrSource then
+		if bDebug then Debug.console('No imageCtrSource for ' .. DB.getValue(sourceNode, 'name', '')) end
+		return
+	end
 	local ctEntries = CombatManager.getCombatantNodes()
 	for _, otherNode in pairs(ctEntries) do
 		if otherNode and otherNode ~= sourceNode then
 			local bSameImage = true
+			if bDebug then Debug.console('Comparing ' .. DB.getValue(sourceNode, 'name', '') .. ' and ' .. DB.getValue(otherNode, 'name', '')) end
 			local tokenOther = CombatManager.getTokenFromCT(otherNode)
 			if tokenOther then
 				local imageCtrOther = ImageManager.getImageControl(tokenOther, false)
 				if not imageCtrOther or imageCtrSource ~= imageCtrOther then
+					if bDebug then Debug.console('No imageCtrOther for ' .. DB.getValue(otherNode, 'name', '')) end
 					bSameImage = false
 				end
 			else
+				if bDebug then Debug.console('No tokenOther for ' .. DB.getValue(otherNode, 'name', '')) end
 				bSameImage = false
 			end
 
