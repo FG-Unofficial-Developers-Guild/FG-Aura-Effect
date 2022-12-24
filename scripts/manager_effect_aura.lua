@@ -27,7 +27,7 @@ local aEffectVarMap = {
 local DetectedEffectManager = nil
 
 local function getEffectString(nodeEffect)
-	local sLabel = DB.getValue(nodeEffect, 'label', '')
+	local sLabel = DB.getValue(nodeEffect, aEffectVarMap['sName']['sDBField'], '')
 
 	local aEffectComps = EffectManager.parseEffect(sLabel)
 
@@ -439,16 +439,25 @@ end
 local checkConditional = nil
 local function customCheckConditional(rActor, nodeEffect, aConditions, rTarget, aIgnore)
 	local bReturn = checkConditional(rActor, nodeEffect, aConditions, rTarget, aIgnore)
-	if bReturn == true then -- skip faction check if conditions already aren't passing
-		if aConditions and aConditions.remainder then aConditions = aConditions.remainder end
-		for _, v in ipairs(aConditions) do
-			local sFactionCheck = v:lower():match('^faction%s*%(([^)]+)%)$')
-			if sFactionCheck then
-				local rSource = ActorManager.resolveActor(DB.findNode(DB.getValue(nodeEffect, aEffectVarMap['sSource']['sDBField'], '')))
-				if not checkFaction(rActor, rSource, sFactionCheck) then
-					bReturn = false
-					break
-				end
+
+	-- skip faction check if conditions already aren't passing
+	if bReturn == false then return bReturn end
+
+	if aConditions and aConditions.remainder then aConditions = aConditions.remainder end
+	for _, v in ipairs(aConditions) do
+		local sFactionCheck = v:lower():match('^faction%s*%(([^)]+)%)$')
+		if sFactionCheck then
+			local sEffect = DB.getValue(nodeEffect, aEffectVarMap['sName']['sDBField'], '')
+			-- remove IF:FACTION(notself) from FROMAURA effects (this should only be needed temporarily to upgrade existing users)
+			if sEffect:match(fromAuraString) and sEffect:match('IFT*:%s*FACTION%(%s*notself%s*%)%s*;*') then
+				local sEffectTrim = sEffect:gsub('IFT*:%s*FACTION%(%s*notself%s*%)%s*;*', '')
+				DB.setValue(nodeEffect, aEffectVarMap['sName']['sDBField'], aEffectVarMap['sName']['sDBType'], sEffectTrim)
+			end
+
+			local rSource = ActorManager.resolveActor(DB.findNode(DB.getValue(nodeEffect, aEffectVarMap['sSource']['sDBField'], '')))
+			if not checkFaction(rActor, rSource, sFactionCheck) then
+				bReturn = false
+				break
 			end
 		end
 	end
