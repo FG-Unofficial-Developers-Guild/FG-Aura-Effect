@@ -133,49 +133,41 @@ local function removeAuraEffect(auraType, nodeEffect)
 	end
 end
 
+local function checkDeletedAuraEffects(nodeEffect, nodeCT, sEffect)
+	local ctEntries = CombatManager.getCombatantNodes()
+	for _, node in pairs(ctEntries) do
+		if node == nodeEffect then return end
+		local function checkAurasEffectingNodeForDelete()
+			for _, targetEffect in ipairs(getAurasForNode(node, fromAuraString, nodeCT)) do
+				local sourceNode = DB.findNode(DB.getValue(targetEffect, aEffectVarMap['sSource']['sDBField'], ''))
+				if not sourceNode then return end
+				local auraStillExists = false
+				for _, sourceEffect in ipairs(getAurasForNode(sourceNode.getChild('...'), auraString)) do
+					local sEffectTrim = sEffect:gsub(fromAuraString, '')
+					if getEffectString(sourceEffect):find(sEffectTrim:gsub('IFT*:%s*FACTION%(%s*notself%s*%)%s*;*', ''), 0, true) then
+						auraStillExists = true
+						break
+					end
+				end
+				if auraStillExists == false then removeAuraEffect('all', targetEffect) end
+			end
+		end
+
+		checkAurasEffectingNodeForDelete()
+	end
+end
+
 ---	This function is called when effects are removed or effect components are changed.
 local function onEffectChanged(nodeEffect)
 	local sEffect = getEffectString(nodeEffect)
 	if sEffect == '' then return end
-	if not getEffectString(nodeEffect):match(fromAuraString) then
+	if not sEffect:match(fromAuraString) then -- if changed effect is not a FROMAURA effect
 		local nodeCT = nodeEffect.getChild('...')
-		if nodeCT then
-			if DB.getValue(nodeEffect, aEffectVarMap['nActive']['sDBField'], 0) ~= 1 then
-				local function checkDeletedAuraEffects()
-					local ctEntries = CombatManager.getCombatantNodes()
-					for _, node in pairs(ctEntries) do
-						if node ~= nodeEffect then
-							local function checkAurasEffectingNodeForDelete()
-								for _, targetEffect in ipairs(getAurasForNode(node, fromAuraString, nodeCT)) do
-									local sourceNode = DB.findNode(DB.getValue(targetEffect, aEffectVarMap['sSource']['sDBField'], ''))
-									if sourceNode then
-										local auraStillExists = false
-										for _, sourceEffect in ipairs(getAurasForNode(sourceNode.getChild('...'), auraString)) do
-											if
-												getEffectString(sourceEffect):find(
-													sEffect:gsub(fromAuraString, ''):gsub('IFT*:%s*FACTION%(%s*notself%s*%)%s*;*', ''),
-													0,
-													true
-												)
-											then
-												auraStillExists = true
-												break
-											end
-										end
-										if auraStillExists == false then removeAuraEffect('all', targetEffect) end
-									end
-								end
-							end
-
-							checkAurasEffectingNodeForDelete()
-						end
-					end
-				end
-
-				checkDeletedAuraEffects()
-			else
-				updateAuras(nodeCT)
-			end
+		if not nodeCT then return end
+		if DB.getValue(nodeEffect, aEffectVarMap['nActive']['sDBField'], 0) ~= 1 then
+			checkDeletedAuraEffects(nodeEffect, nodeCT, sEffect)
+		else
+			updateAuras(nodeCT)
 		end
 	end
 end
@@ -452,8 +444,7 @@ local function customCheckConditional(rActor, nodeEffect, aConditions, rTarget, 
 		for _, v in ipairs(aConditions) do
 			local sFactionCheck = v:lower():match('^faction%s*%(([^)]+)%)$')
 			if sFactionCheck then
-				local nodeCTSource = DB.findNode(DB.getValue(nodeEffect, aEffectVarMap['sSource']['sDBField'], ''))
-				local rSource = ActorManager.resolveActor(nodeCTSource)
+				local rSource = ActorManager.resolveActor(DB.findNode(DB.getValue(nodeEffect, aEffectVarMap['sSource']['sDBField'], '')))
 				if not checkFaction(rActor, rSource, sFactionCheck) then
 					bReturn = false
 					break
@@ -590,7 +581,7 @@ function onInit()
 	Interface.onWindowOpened = auraOnWindowOpened
 
 	-- create the proxy function to trigger aura calculation on token movement.
-	Token.addEventHandler("onMove", auraOnMove)
+	Token.addEventHandler('onMove', auraOnMove)
 
 	-- all handlers should be created on GM machine
 	if Session.IsHost then manageHandlers(false) end
