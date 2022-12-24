@@ -218,6 +218,7 @@ local function checkFaction(rActor, rSource, sFactionFilter)
 		bReturn = true
 	end
 
+	Debug.chat()
 	bReturn = bReturn or StringManager.contains({ ActorManager.getFaction(rActor), getRelationship(nodeTarget, nodeSource) }, sFactionFilter)
 	if bNegate then bReturn = not bReturn end
 
@@ -363,7 +364,7 @@ local function checkAuraApplicationAndAddOrRemove(node1, node2, auraEffect, node
 	local existingAuraEffect = checkAuraAlreadyEffecting()
 	if
 		(nodeInfo.distanceBetween and (nodeInfo.distanceBetween <= nRange))
-		and checkFaction(ActorManager.resolveActor(node1), ActorManager.resolveActor(node2), auraType)
+		and checkFaction(ActorManager.resolveActor(node2), ActorManager.resolveActor(node1), auraType)
 	then
 
 		if not existingAuraEffect then addAuraEffect(auraEffect, node1, node2, auraType) end
