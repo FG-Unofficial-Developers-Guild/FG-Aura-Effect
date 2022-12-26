@@ -123,13 +123,16 @@ function notifyExpireSilent(nodeEffect)
 	Comm.deliverOOBMessage(msgOOB, '')
 end
 
-local function removeAuraEffect(auraType, nodeEffect)
-	if DB.getValue(nodeEffect, aEffectVarMap['nActive']['sDBField'], 1) ~= 0 then
-		if checkSilentNotification(auraType) then
-			notifyExpireSilent(nodeEffect)
-		else
-			EffectManager.notifyExpire(nodeEffect, nil, false)
-		end
+local function removeAuraEffect(nodeEffect, auraType)
+	if not nodeEffect or type(nodeEffect) ~= 'databasenode' then return end
+
+	-- don't remove effects if they're set to off
+	if DB.getValue(nodeEffect, aEffectVarMap['nActive']['sDBField'], 1) == 0 then return end
+
+	if checkSilentNotification(auraType) then
+		notifyExpireSilent(nodeEffect)
+	else
+		EffectManager.notifyExpire(nodeEffect, nil, false)
 	end
 end
 
@@ -145,7 +148,7 @@ local function checkAurasEffectingNodeForDelete(nodeCT, nodeAuraSource, sEffect)
 				break
 			end
 		end
-		if auraStillExists == false then removeAuraEffect('all', targetEffect) end
+		if auraStillExists == false then removeAuraEffect(targetEffect, 'all') end
 	end
 end
 
@@ -279,7 +282,7 @@ function notifyApplySilent(rEffect, node2)
 	end
 end
 
-local function addAuraEffect(auraEffect, node1, node2, auraType)
+local function addAuraEffect(auraEffect, auraSource, auraTarget, auraType)
 	local sLabel = getEffectString(auraEffect)
 	local applyLabel = sLabel:match(auraString .. '.-;%s*(.*)$')
 	if not applyLabel then
@@ -294,17 +297,37 @@ local function addAuraEffect(auraEffect, node1, node2, auraType)
 	rEffect.nInit = DB.getValue(auraEffect, aEffectVarMap['nInit']['sDBField'], 0)
 	rEffect.sLabel = applyLabel
 	rEffect.sName = applyLabel
-	rEffect.sSource = node1.getPath()
+	rEffect.sSource = auraSource.getPath()
 	rEffect.sUnits = DB.getValue(auraEffect, aEffectVarMap['sUnit']['sDBField'], '')
 	if bDebug then
-		Debug.console('Apply FROMAURA effect on ' .. DB.getValue(node2, 'name', '') .. ' due to AURA on ' .. DB.getValue(node1, 'name', ''))
+		Debug.console('Apply FROMAURA effect on ' .. DB.getValue(auraTarget, 'name', '') .. ' due to AURA on ' .. DB.getValue(auraSource, 'name', ''))
 	end
 
 	-- CHECK IF SILENT IS ON
 	if checkSilentNotification(auraType) then
-		notifyApplySilent(rEffect, node2)
+		notifyApplySilent(rEffect, auraTarget)
 	else
-		EffectManager.notifyApply(rEffect, node2.getPath())
+		EffectManager.notifyApply(rEffect, auraTarget.getPath())
+	end
+end
+
+local function checkAuraAlreadyEffecting(auraEffect, node1, node2)
+	-- local sLabel = getEffectString(auraEffect)
+	for _, nodeEffect in pairs(DB.getChildren(node2, 'effects')) do
+		-- if DB.getValue(nodeEffect, aEffectVarMap["nActive"]["sDBField"], 0) ~= 2 then
+		local sSource = DB.getValue(nodeEffect, aEffectVarMap['sSource']['sDBField'])
+		if sSource == node1.getPath() then
+			if bDebug then Debug.console('Effect already on ' .. DB.getValue(node2, 'name', '')) end
+			return nodeEffect
+		elseif sSource == auraEffect.getPath() then
+			-- local sEffect = getEffectString(nodeEffect)
+			-- sEffect = sEffect:gsub(fromAuraString, '')
+			-- if string.find(sLabel, sEffect, 0, true) then
+			if bDebug then Debug.console('Effect already on ' .. DB.getValue(node2, 'name', '')) end
+			return nodeEffect
+			-- end
+		end
+		-- end
 	end
 end
 
@@ -332,27 +355,7 @@ local function checkAuraApplicationAndAddOrRemove(node1, node2, auraEffect, node
 		if sourceToken and targetToken then nodeInfo.distanceBetween = Token.getDistanceBetween(sourceToken, targetToken) end
 	end
 
-	local function checkAuraAlreadyEffecting()
-		local sLabel = getEffectString(auraEffect)
-		for _, nodeEffect in pairs(DB.getChildren(node2, 'effects')) do
-			-- if DB.getValue(nodeEffect, aEffectVarMap["nActive"]["sDBField"], 0) ~= 2 then
-			local sSource = DB.getValue(nodeEffect, aEffectVarMap['sSource']['sDBField'])
-			if sSource == node1.getPath() then
-				if bDebug then Debug.console('Effect already on ' .. DB.getValue(node2, 'name', '')) end
-				return nodeEffect
-			elseif sSource == auraEffect.getPath() then
-				local sEffect = getEffectString(nodeEffect)
-				sEffect = sEffect:gsub(fromAuraString, '')
-				if string.find(sLabel, sEffect, 0, true) then
-					if bDebug then Debug.console('Effect already on ' .. DB.getValue(node2, 'name', '')) end
-					return nodeEffect
-				end
-			end
-			-- end
-		end
-	end
-
-	local existingAuraEffect = checkAuraAlreadyEffecting()
+	local existingAuraEffect = checkAuraAlreadyEffecting(auraEffect, node1, node2)
 	if
 		(nodeInfo.distanceBetween and (nodeInfo.distanceBetween <= nRange))
 		and checkFaction(ActorManager.resolveActor(node2), ActorManager.resolveActor(node1), auraType)
@@ -362,7 +365,7 @@ local function checkAuraApplicationAndAddOrRemove(node1, node2, auraEffect, node
 		if bDebug then
 			Debug.console('Remove FROMAURA effect on ' .. DB.getValue(node2, 'name', '') .. ' due to AURA on ' .. DB.getValue(node1, 'name', ''))
 		end
-		removeAuraEffect(auraType, existingAuraEffect)
+		removeAuraEffect(existingAuraEffect, auraType)
 	end
 end
 
