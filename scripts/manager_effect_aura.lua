@@ -136,25 +136,21 @@ local function removeAuraEffect(nodeEffect, auraType)
 	end
 end
 
-local function checkAurasEffectingNodeForDelete(nodeCT, nodeAuraSource, sEffect)
-	for _, targetEffect in ipairs(getAurasForNode(nodeCT, fromAuraString, nodeAuraSource)) do
-		local sourceNode = DB.findNode(DB.getValue(targetEffect, aEffectVarMap['sSource']['sDBField'], ''))
-		if not sourceNode then return end
-		local auraStillExists = false
-		for _, sourceEffect in ipairs(getAurasForNode(sourceNode.getChild('...'), auraString)) do
-			local sEffectTrim = sEffect:gsub(fromAuraString, '')
-			if getEffectString(sourceEffect):find(sEffectTrim:gsub('IFT*:%s*FACTION%(%s*notself%s*%)%s*;*', ''), 0, true) then
-				auraStillExists = true
-				break
-			end
-		end
-		if auraStillExists == false then removeAuraEffect(targetEffect, 'all') end
-	end
-end
-
 local function checkDeletedAuraEffects(nodeAuraSource, sEffect)
 	for _, nodeCT in pairs(CombatManager.getCombatantNodes()) do
-		checkAurasEffectingNodeForDelete(nodeCT, nodeAuraSource, sEffect)
+		for _, targetEffect in ipairs(getAurasForNode(nodeCT, fromAuraString, nodeAuraSource)) do
+			local sourceNode = DB.findNode(DB.getValue(targetEffect, aEffectVarMap['sSource']['sDBField'], ''))
+			if not sourceNode then return end
+			local auraStillExists = false
+			for _, sourceEffect in ipairs(getAurasForNode(sourceNode.getChild('...'), auraString)) do
+				local sEffectTrim = sEffect:gsub(fromAuraString, '')
+				if getEffectString(sourceEffect):find(sEffectTrim:gsub('IFT*:%s*FACTION%(%s*notself%s*%)%s*;*', ''), 0, true) then
+					auraStillExists = true
+					break
+				end
+			end
+			if auraStillExists == false then removeAuraEffect(targetEffect, 'all') end
+		end
 	end
 end
 
