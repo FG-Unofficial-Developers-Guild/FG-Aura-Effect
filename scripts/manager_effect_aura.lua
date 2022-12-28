@@ -454,6 +454,16 @@ local function customCheckConditional(rActor, nodeEffect, aConditions, rTarget, 
 	return bReturn
 end
 
+local notifyExpire
+local function auranotifyExpire(varEffect, nMatch, bImmediate, ...)
+	local sApply = DB.getValue(varEffect, 'apply', '')
+	if DB.getValue(varEffect, 'apply', ''):match('^' .. fromAuraString) and (sApply == 'action' or sApply == 'roll') then
+		DB.setValue(varEffect, 'isactive', 'number', 0)
+	else
+		if notifyExpire then notifyExpire(varEffect, nMatch, bImmediate, ...) end
+	end
+end
+
 local onWindowOpened
 local function auraOnWindowOpened(window, ...)
 	if onWindowOpened then onWindowOpened(window, ...) end
@@ -564,6 +574,10 @@ function onInit()
 	elseif EffectManager4E then
 		DetectedEffectManager = EffectManager4E
 	end
+
+	-- create proxy function to change action/roll/single behavior for FROMAURA effects
+	notifyExpire = EffectManager.notifyExpire
+	EffectManager.notifyExpire = auranotifyExpire
 
 	-- create proxy function to recalculate auras when new windows are opened
 	handleStandardCombatAddPlacement = CombatRecordManager.handleStandardCombatAddPlacement
