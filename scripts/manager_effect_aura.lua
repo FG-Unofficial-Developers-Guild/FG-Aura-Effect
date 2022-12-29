@@ -22,6 +22,7 @@ local aEffectVarMap = {
 	['sSource'] = { sDBType = 'string', sDBField = 'source_name', bClearOnUntargetedDrop = true },
 	['sTarget'] = { sDBType = 'string', bClearOnUntargetedDrop = true },
 	['sUnit'] = { sDBType = 'string', sDBField = 'unit' },
+	['sAuraSource'] = { sDBType = 'string', sDBField = 'source_aura' },
 }
 
 local DetectedEffectManager = nil
@@ -290,7 +291,7 @@ local function addAuraEffect(auraEffect, auraSource, auraTarget, auraType)
 	local rEffect = {}
 	rEffect.nDuration = 0
 	rEffect.nGMOnly = DB.getValue(auraEffect, aEffectVarMap['nGMOnly']['sDBField'], 0)
-	rEffect.nInit = DB.getValue(auraEffect, aEffectVarMap['nInit']['sDBField'], 0)
+	--rEffect.nInit = DB.getValue(auraEffect, aEffectVarMap['nInit']['sDBField'], 0)
 	rEffect.sLabel = applyLabel
 	rEffect.sName = applyLabel
 	rEffect.sSource = auraSource.getPath()
@@ -305,25 +306,24 @@ local function addAuraEffect(auraEffect, auraSource, auraTarget, auraType)
 	else
 		EffectManager.notifyApply(rEffect, auraTarget.getPath())
 	end
+
+	for _, nodeTargetEffect in pairs(DB.getChildren(auraTarget, 'effects')) do
+		local sTargetEffectSource = DB.getValue(nodeTargetEffect, aEffectVarMap['sSource']['sDBField'], '')
+		local sTargetEffectLabel = DB.getValue(nodeTargetEffect, aEffectVarMap['sName']['sDBField'], '')
+		if sTargetEffectSource == auraSource.getPath() and sTargetEffectLabel == applyLabel then
+			DB.setValue(nodeTargetEffect, aEffectVarMap['sAuraSource']['sDBField'], aEffectVarMap['sAuraSource']['sDBType'], auraEffect.getPath())
+		end
+	end
 end
 
-local function checkAuraAlreadyEffecting(auraEffect, node1, node2)
-	-- local sLabel = getEffectString(auraEffect)
-	for _, nodeEffect in pairs(DB.getChildren(node2, 'effects')) do
-		-- if DB.getValue(nodeEffect, aEffectVarMap["nActive"]["sDBField"], 0) ~= 2 then
-		local sSource = DB.getValue(nodeEffect, aEffectVarMap['sSource']['sDBField'])
-		if sSource == node1.getPath() then
-			if bDebug then Debug.console('Effect already on ' .. DB.getValue(node2, 'name', '')) end
-			return nodeEffect
-		elseif sSource == auraEffect.getPath() then
-			-- local sEffect = getEffectString(nodeEffect)
-			-- sEffect = sEffect:gsub(fromAuraString, '')
-			-- if string.find(sLabel, sEffect, 0, true) then
-			if bDebug then Debug.console('Effect already on ' .. DB.getValue(node2, 'name', '')) end
-			return nodeEffect
-			-- end
+local function checkAuraAlreadyEffecting(auraEffect, nodeSource, nodeTarget)
+	for _, nodeTargetEffect in pairs(DB.getChildren(nodeTarget, 'effects')) do
+		local sTargetEffectSource = DB.getValue(nodeTargetEffect, aEffectVarMap['sSource']['sDBField'], '')
+		local sAuraSource = DB.getValue(nodeTargetEffect, aEffectVarMap['sAuraSource']['sDBField'], '')
+		if sTargetEffectSource == nodeSource.getPath() and sAuraSource == auraEffect.getPath() then
+			if bDebug then Debug.console('Effect already on ' .. DB.getValue(nodeTarget, 'name', '')) end
+			return nodeTargetEffect
 		end
-		-- end
 	end
 end
 
