@@ -563,6 +563,7 @@ function onInit()
 		DetectedEffectManager = EffectManager5E
 	elseif EffectManager4E then
 		DetectedEffectManager = EffectManager4E
+	end
 
 	-- create proxy function to recalculate auras when new windows are opened
 	handleStandardCombatAddPlacement = CombatRecordManager.handleStandardCombatAddPlacement
