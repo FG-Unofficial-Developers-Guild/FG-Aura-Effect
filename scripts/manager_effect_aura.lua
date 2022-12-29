@@ -310,10 +310,7 @@ local function addAuraEffect(auraEffect, sourceNode, targetNode, auraType)
 	end
 
 	for _, nodeTargetEffect in pairs(DB.getChildren(targetNode, 'effects')) do
-		if
-			sourceNode.getPath() == DB.getValue(nodeTargetEffect, 'source_name', '')
-			and not DB.getValue(nodeTargetEffect, 'source_aura')
-		then
+		if sourceNode.getPath() == DB.getValue(nodeTargetEffect, 'source_name', '') and not DB.getValue(nodeTargetEffect, 'source_aura') then
 			DB.setValue(nodeTargetEffect, 'source_aura', 'string', auraEffect.getPath())
 		end
 	end
@@ -321,10 +318,7 @@ end
 
 local function checkAuraAlreadyEffecting(auraPath, sourcePath, nodeTarget)
 	for _, nodeTargetEffect in pairs(DB.getChildren(nodeTarget, 'effects')) do
-		if
-			sourcePath == DB.getValue(nodeTargetEffect, 'source_name', '')
-			and auraPath == DB.getValue(nodeTargetEffect, 'source_aura', '')
-		then
+		if sourcePath == DB.getValue(nodeTargetEffect, 'source_name', '') and auraPath == DB.getValue(nodeTargetEffect, 'source_aura', '') then
 			if bDebug then Debug.console('Effect already on ' .. DB.getValue(nodeTarget, 'name', '')) end
 			return nodeTargetEffect
 		end
@@ -363,7 +357,9 @@ local function checkAuraApplicationAndAddOrRemove(nodeSource, nodeTarget, auraEf
 		if not existingAuraEffect then addAuraEffect(auraEffect, nodeSource, nodeTarget, auraType) end
 	elseif existingAuraEffect then
 		if bDebug then
-			Debug.console('Remove FROMAURA effect on ' .. DB.getValue(nodeTarget, 'name', '') .. ' due to AURA on ' .. DB.getValue(nodeSource, 'name', ''))
+			Debug.console(
+				'Remove FROMAURA effect on ' .. DB.getValue(nodeTarget, 'name', '') .. ' due to AURA on ' .. DB.getValue(nodeSource, 'name', '')
+			)
 		end
 		removeAuraEffect(existingAuraEffect, auraType)
 	end
