@@ -2,7 +2,7 @@
 
 <root version="3.0" >
 	<properties>
-		<name>Feature: TEST Aura Effects</name>
+		<name>Feature: Aura Effects</name>
 		<version>1.23</version>
 		<author>Kent McCullough</author>
 		<description>Adds and removes effects based on proximity.</description>
