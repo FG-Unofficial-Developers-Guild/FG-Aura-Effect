@@ -241,9 +241,31 @@ local function tokenMovedEnough(token)
 	return true
 end
 
+local onDragEnd
+-- Token callback when token stops dragging on it.
+local function auraOnDragEnd(tokenCT)
+	if onDragEnd then onDragEnd(tokenCT) end
+	if OptionsManager.isOption('NO_MOVE_DURING_DRAG', 'on') then
+		-- TokenOnMove is disabled we only process this for token move.
+		--Debug.console("Processing move for " .. DB.getValue(nodeCT, "name", ""));
+		notifyTokenMove(tokenCT)
+	end
+end
+
 local function auraOnMove(tokenMap)
 	if not Session.IsHost or not ActorManager.resolveActor(CombatManager.getCTFromToken(tokenMap)) then return end
-	if tokenMovedEnough(tokenMap) then notifyTokenMove(tokenMap) end
+	-- a token locked movement will have nil for the getDragData
+	local bLockedMovement = not Input.getDragData()
+	-- if this is being processed by TokenOnEndDrag but is a token locked movement then it will not be triggered.
+	-- A token locked movement's last point will almost certainly not have more than a decimal point
+	-- for saftey we check for 2 - only way we can tell its the last point
+	if bLockedMovement and OptionsManager.isOption('NO_MOVE_DURING_DRAG', 'on') then
+		local x, y = tokenMap.getPosition()
+		if x == math.floor(x * 100) / 100 and y == math.floor(y * 100) / 100 then auraOnDragEnd(tokenMap) end
+	elseif OptionsManager.isOption('NO_MOVE_DURING_DRAG', 'off') then
+		-- only process if the TokenOnEndDrag is not processing the last point
+		if tokenMovedEnough(tokenMap) then notifyTokenMove(tokenMap) end
+	end
 end
 
 -- luacheck: globals notifyApplySilent
@@ -544,6 +566,15 @@ function onInit()
 		default = 'off',
 	})
 
+	OptionsManager.registerOption2(
+		'NO_MOVE_DURING_DRAG',
+		false,
+		'option_header_aura',
+		'option_no_move_during_drag',
+		'option_entry_cycler',
+		{ labels = 'option_val_on', values = 'on', baselabel = 'option_val_off', baseval = 'off', default = 'off' }
+	)
+
 	-- register OOB message handlers to allow player movement
 	OOBManager.registerOOBMsgHandler(OOB_MSGTYPE_AURATOKENMOVE, handleTokenMovement)
 	OOBManager.registerOOBMsgHandler(OOB_MSGTYPE_AURAAPPLYSILENT, handleApplyEffectSilent)
@@ -579,6 +610,10 @@ function onInit()
 
 	-- create the proxy function to trigger aura calculation on token movement.
 	Token.addEventHandler('onMove', auraOnMove)
+
+	-- if option NO_MOVE_DURING_DRAG will need this to process last point of non token locked movement
+	onDragEnd = Token.onDragEnd
+	Token.onDragEnd = auraOnDragEnd
 
 	-- all handlers should be created on GM machine
 	if Session.IsHost then manageHandlers(false) end
