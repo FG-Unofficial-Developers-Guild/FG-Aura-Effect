@@ -566,7 +566,7 @@ function onInit()
 		default = 'off',
 	})
 
-	OptionsManager.registerOption2('NO_MOVE_DURING_DRAG', false, 'option_header_aura', 'option_no_move_during_drag', 'option_entry_cycler',{
+	OptionsManager.registerOption2('NO_MOVE_DURING_DRAG', false, 'option_header_aura', 'option_label_AURANMDD', 'option_entry_cycler',{
 		labels = 'option_val_on',
 		values = 'on',
 		baselabel = 'option_val_off',
