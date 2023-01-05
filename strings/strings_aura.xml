@@ -6,7 +6,7 @@
 	<!-- Options -->
 	<string name="option_header_aura">Auras (GM)</string>
 	<string name="option_label_AURASILENT">Silence Notifications for Aura Types</string>
-	<string name="option_label_AURANMDD">Do not process move when dragging token</string>
+	<string name="option_label_AURANMDD">Don't Calculate Auras While Moving</string>
 	<string name="option_val_aura_all">Faction: All</string>
 	<string name="option_val_aura_ally">Relation: Ally</string>
 	<string name="option_val_aura_enemy">Relation: Enemy</string>
