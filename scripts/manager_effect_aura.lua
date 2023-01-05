@@ -254,18 +254,16 @@ end
 
 local function auraOnMove(tokenMap)
 	if not Session.IsHost or not ActorManager.resolveActor(CombatManager.getCTFromToken(tokenMap)) then return end
-	-- a token locked movement will have nil for the getDragData
+	-- Locked movement results in getDragData being nil
 	local bLockedMovement = not Input.getDragData()
-	-- if this is being processed by TokenOnEndDrag but is a token locked movement then it will not be triggered.
-	-- A token locked movement's last point will almost certainly not have more than a decimal point
-	-- for saftey we check for 2 - only way we can tell its the last point
+	-- As locked tokens don't snap to a grid the same way that unlocked tokens do, we can check for decimal places in token coordinates.
+	-- There are limitations of this approach, but it's the best we have right now.
 	if bLockedMovement and OptionsManager.isOption('AURANMDD', 'on') then
 		local x, y = tokenMap.getPosition()
 		if x == math.floor(x * 100) / 100 and y == math.floor(y * 100) / 100 then auraOnDragEnd(tokenMap) end
-	elseif OptionsManager.isOption('AURANMDD', 'off') then
-		-- only process if the TokenOnEndDrag is not processing the last point
-		if tokenMovedEnough(tokenMap) then notifyTokenMove(tokenMap) end
+		return
 	end
+	if tokenMovedEnough(tokenMap) then notifyTokenMove(tokenMap) end
 end
 
 -- luacheck: globals notifyApplySilent
