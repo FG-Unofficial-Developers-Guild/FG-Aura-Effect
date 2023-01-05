@@ -112,7 +112,7 @@ end
 function notifyExpireSilent(nodeEffect)
 	local varEffect
 	if type(nodeEffect) == 'databasenode' then
-		varEffect = nodeEffect.getPath()
+		varEffect = DB.getPath(nodeEffect)
 	elseif type(nodeEffect) ~= 'string' then
 		return false
 	end
@@ -143,7 +143,7 @@ local function checkDeletedAuraEffects(nodeAuraSource, sEffect)
 			local sourceNode = DB.findNode(DB.getValue(targetEffect, 'source_name', ''))
 			if not sourceNode then return end
 			local auraStillExists = false
-			for _, sourceEffect in ipairs(getAurasForNode(sourceNode.getChild('...'), auraString)) do
+			for _, sourceEffect in ipairs(getAurasForNode(DB.getChild(sourceNode, '...'), auraString)) do
 				local sEffectTrim = sEffect:gsub(fromAuraString, '')
 				if getEffectString(sourceEffect):find(sEffectTrim:gsub('IFT*:%s*FACTION%(%s*notself%s*%)%s*;*', ''), 0, true) then
 					auraStillExists = true
@@ -160,7 +160,7 @@ local function onEffectChanged(nodeEffect)
 	local sEffect = getEffectString(nodeEffect)
 	if sEffect == '' or sEffect:match(fromAuraString) then return end -- if changed effect is empty or a FROMAURA effect
 
-	local nodeAuraSource = nodeEffect.getChild('...')
+	local nodeAuraSource = DB.getChild(nodeEffect, '...')
 	if DB.getValue(nodeEffect, 'isactive', 0) ~= 1 then
 		checkDeletedAuraEffects(nodeAuraSource, sEffect)
 	else
@@ -169,7 +169,7 @@ local function onEffectChanged(nodeEffect)
 end
 
 ---	This function is called when effect components are changed.
-local function onStatusChanged(nodeStatus) updateAuras(nodeStatus.getChild('..')) end
+local function onStatusChanged(nodeStatus) updateAuras(DB.getChild(nodeStatus, '..')) end
 
 -- luacheck: globals notifyTokenMove
 ---	This function requests aura processing to be performed on the host FG instance.
@@ -180,7 +180,7 @@ function notifyTokenMove(tokenMap)
 
 	local msgOOB = {}
 	msgOOB.type = OOB_MSGTYPE_AURATOKENMOVE
-	msgOOB.sCTNode = nodeCT.getPath()
+	msgOOB.sCTNode = DB.getPath(nodeCT)
 
 	Comm.deliverOOBMessage(msgOOB, '')
 end
@@ -290,13 +290,13 @@ function notifyApplySilent(rEffect, node2)
 	msgOOB.identity = User.getIdentityLabel()
 
 	-- Send one message for each target
-	if type(node2.getPath()) == 'table' then
-		for _, v in pairs(node2.getPath()) do
+	if type(DB.getPath(node2)) == 'table' then
+		for _, v in pairs(DB.getPath(node2)) do
 			msgOOB.sTargetNode = v
 			Comm.deliverOOBMessage(msgOOB, '')
 		end
 	else
-		msgOOB.sTargetNode = node2.getPath()
+		msgOOB.sTargetNode = DB.getPath(node2)
 		Comm.deliverOOBMessage(msgOOB, '')
 	end
 end
@@ -316,9 +316,9 @@ local function addAuraEffect(auraEffect, sourceNode, targetNode, auraType)
 	rEffect.nInit = DB.getValue(auraEffect, 'init', 0)
 	rEffect.sLabel = applyLabel
 	rEffect.sName = applyLabel
-	rEffect.sSource = sourceNode.getPath()
+	rEffect.sSource = DB.getPath(sourceNode)
 	rEffect.sUnits = DB.getValue(auraEffect, 'unit', '')
-	--rEffect.sAuraSource = auraEffect.getPath()
+	--rEffect.sAuraSource = DB.getPath(auraEffect)
 
 	if bDebug then
 		Debug.console('Apply FROMAURA effect on ' .. DB.getValue(targetNode, 'name', '') .. ' due to AURA on ' .. DB.getValue(sourceNode, 'name', ''))
@@ -328,12 +328,12 @@ local function addAuraEffect(auraEffect, sourceNode, targetNode, auraType)
 	if checkSilentNotification(auraType) then
 		notifyApplySilent(rEffect, targetNode)
 	else
-		EffectManager.notifyApply(rEffect, targetNode.getPath())
+		EffectManager.notifyApply(rEffect, DB.getPath(targetNode))
 	end
 
 	for _, nodeTargetEffect in pairs(DB.getChildren(targetNode, 'effects')) do
-		if sourceNode.getPath() == DB.getValue(nodeTargetEffect, 'source_name', '') and not DB.getValue(nodeTargetEffect, 'source_aura') then
-			DB.setValue(nodeTargetEffect, 'source_aura', 'string', auraEffect.getPath())
+		if DB.getPath(sourceNode) == DB.getValue(nodeTargetEffect, 'source_name', '') and not DB.getValue(nodeTargetEffect, 'source_aura') then
+			DB.setValue(nodeTargetEffect, 'source_aura', 'string', DB.getPath(auraEffect))
 		end
 	end
 end
@@ -371,7 +371,7 @@ local function checkAuraApplicationAndAddOrRemove(nodeSource, nodeTarget, auraEf
 		if sourceToken and targetToken then nodeInfo.distanceBetween = Token.getDistanceBetween(sourceToken, targetToken) end
 	end
 
-	local existingAuraEffect = checkAuraAlreadyEffecting(auraEffect.getPath(), nodeSource.getPath(), nodeTarget)
+	local existingAuraEffect = checkAuraAlreadyEffecting(DB.getPath(auraEffect), DB.getPath(nodeSource), nodeTarget)
 	if
 		(nodeInfo.distanceBetween and (nodeInfo.distanceBetween <= nRange))
 		and checkFaction(ActorManager.resolveActor(nodeTarget), ActorManager.resolveActor(nodeSource), auraType)
@@ -541,7 +541,7 @@ function handleExpireEffectSilent(msgOOB)
 		-- ChatManager.SystemMessage(Interface.getString("ct_error_effectdeletefail") .. " (" .. msgOOB.sEffectNode .. ")");
 		return
 	end
-	local nodeActor = nodeEffect.getChild('...')
+	local nodeActor = DB.getChild(nodeEffect, '...')
 	if not nodeActor then
 		ChatManager.SystemMessage(Interface.getString('ct_error_effectmissingactor') .. ' (' .. msgOOB.sEffectNode .. ')')
 		return
