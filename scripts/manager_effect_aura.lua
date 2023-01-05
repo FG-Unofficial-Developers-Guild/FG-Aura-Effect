@@ -269,7 +269,7 @@ local function auraOnMove(tokenMap)
 end
 
 -- luacheck: globals notifyApplySilent
-function notifyApplySilent(rEffect, node2)
+function notifyApplySilent(rEffect, nodeEffect)
 	-- Build OOB message to pass effect to host
 	local msgOOB = {}
 	msgOOB.type = OOB_MSGTYPE_AURAAPPLYSILENT
@@ -290,13 +290,13 @@ function notifyApplySilent(rEffect, node2)
 	msgOOB.identity = User.getIdentityLabel()
 
 	-- Send one message for each target
-	if type(DB.getPath(node2)) == 'table' then
-		for _, v in pairs(DB.getPath(node2)) do
+	if type(DB.getPath(nodeEffect)) == 'table' then
+		for _, v in pairs(DB.getPath(nodeEffect)) do
 			msgOOB.sTargetNode = v
 			Comm.deliverOOBMessage(msgOOB, '')
 		end
 	else
-		msgOOB.sTargetNode = DB.getPath(node2)
+		msgOOB.sTargetNode = DB.getPath(nodeEffect)
 		Comm.deliverOOBMessage(msgOOB, '')
 	end
 end
