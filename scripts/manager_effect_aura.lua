@@ -199,8 +199,12 @@ end
 
 local function checkFaction(rActor, rSource, sFactionFilter)
 	if not rActor or not sFactionFilter then return false end
+
 	local bNegate = sFactionFilter:match('[~%!]') ~= nil
-	sFactionFilter = sFactionFilter:gsub('[~%!]', '')
+	if bNegate then
+		sFactionFilter = sFactionFilter:gsub('[~%!]', '')
+	end
+	sFactionFilter = sFactionFilter:lower()
 
 	local nodeSource = ActorManager.getCTNode(rActor)
 	local nodeTarget = ActorManager.getCTNode(rSource)
