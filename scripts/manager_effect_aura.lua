@@ -362,6 +362,7 @@ local function checkAuraApplicationAndAddOrRemove(nodeSource, nodeTarget, auraEf
 		if bDebug then Debug.console(Interface.getString('aura_console_nofaction')) end
 		auraType = 'all'
 	end
+	auraType = auraType:lower() -- case-insensetive matching of aura type
 
 	if not nodeInfo.distanceBetween then
 		local sourceToken = CombatManager.getTokenFromCT(nodeSource)
