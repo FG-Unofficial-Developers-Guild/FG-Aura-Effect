@@ -1,6 +1,6 @@
 MIT License
 
-Copyright (c) 2022 Wil Thieme
+Copyright (c) 2023 Wil Thieme
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -20,5 +20,5 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-"Fantasy Grounds" is a trademark of SmiteWorks USA LLC and is Copyright 2004-2022 SmiteWorks USA LLC.
-The CoreRPG ruleset, all other official SmiteWorks rulesets, and all files included therein are copyright 2004-2022, Smiteworks USA LLC.
+"Fantasy Grounds" is a trademark of SmiteWorks USA LLC and is Copyright 2004-2023 SmiteWorks USA LLC.
+The CoreRPG ruleset, all other official SmiteWorks rulesets, and all files included therein are copyright 2004-2023, Smiteworks USA LLC.
