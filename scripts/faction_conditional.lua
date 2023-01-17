@@ -25,7 +25,7 @@ function getRelationship(rActor, rTarget)
 end
 
 function checkFaction(rActor, rTarget, sFactionFilter)
-	if bDebug then Debug.chat('checkFaction', rActor, rTarget, sFactionFilter) end
+	if bDebug then Debug.chat('checkFaction:args', rActor, rTarget, sFactionFilter) end
 	if not rActor or not rTarget or not sFactionFilter then return false end
 
 	local bNegate = sFactionFilter:match('[~%!]') ~= nil
@@ -41,6 +41,7 @@ function checkFaction(rActor, rTarget, sFactionFilter)
 	bReturn = bReturn or StringManager.contains({ ActorManager.getFaction(rActor), getRelationship(rActor, rTarget) }, sFactionFilter:lower())
 	if bNegate then bReturn = not bReturn end
 
+	if bDebug then Debug.chat('checkFaction:results', bNegate, 'return value including negation:', bReturn) end
 	return bReturn
 end
 
