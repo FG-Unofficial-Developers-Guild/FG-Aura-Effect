@@ -10,24 +10,10 @@ bDebug = false
 
 OOB_MSGTYPE_AURATOKENMOVE = 'aurasontokenmove'
 
-local fromAuraString = 'FROMAURA;'
-local auraString = 'AURA: %d+'
-local auraDetailSearchString = 'AURA:%s*([%d%.]*)%s*([~%!]*%a*);'
-
-local function getAuraDetails(sEffect)
-	if string.find(sEffect, fromAuraString) or not string.match(sEffect, auraString) then
-		return 0 -- only run on auras
-	end
-	local nRange, auraType = string.match(sEffect, auraDetailSearchString)
-	nRange = tonumber(nRange or 0)
-	if not auraType then auraType = 'all' end
-	return nRange, auraType
-end
-
 -- Trigger AURA effect calculation on supplied effect node.
 function updateAurasForEffect(nodeEffect)
 	local sEffect = DB.getValue(nodeEffect, 'label', '')
-	local nRange, auraType = getAuraDetails(sEffect)
+	local nRange, auraType = AuraEffect.getAuraDetails(sEffect)
 	if nRange == 0 then return end
 	local nodeSource = DB.getChild(nodeEffect, '...')
 	local tokenSource = CombatManager.getTokenFromCT(nodeSource)
@@ -98,21 +84,19 @@ end
 local function onEffectChanged(nodeLabel)
 	local nodeEffect = DB.getParent(nodeLabel)
 	local sEffect = DB.getValue(nodeEffect, 'label', '')
-	if sEffect == '' or string.find(sEffect, fromAuraString) or string.find(sEffect, auraString) then return end
+	if sEffect == '' or string.find(sEffect, AuraEffect.fromAuraString) or string.find(sEffect, AuraEffect.auraString) then return end
 	updateAurasForActor(DB.getChild(nodeEffect, '...'))
 end
 
 ---	Remove fromaura effects just before source aura is removed
 local function onEffectToBeRemoved(nodeEffect)
 	local sEffect = DB.getValue(nodeEffect, 'label', '')
-	if string.find(sEffect, fromAuraString) then return end
-	if string.find(sEffect, auraString) then AuraEffect.removeAllFromAuras(nodeEffect) end
+	if string.find(sEffect, AuraEffect.fromAuraString) then return end
+	if string.find(sEffect, AuraEffect.auraString) then AuraEffect.removeAllFromAuras(nodeEffect) end
 end
 
 ---	Recalculate auras after effects are removed to ensure conditionals before aura are respected
-local function onEffectRemoved(nodeEffects)
-	updateAurasForActor(DB.getParent(nodeEffects))
-end
+local function onEffectRemoved(nodeEffects) updateAurasForActor(DB.getParent(nodeEffects)) end
 
 function onInit()
 	-- register OOB message handlers to allow player movement

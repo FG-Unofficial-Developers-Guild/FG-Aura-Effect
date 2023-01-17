@@ -2,14 +2,26 @@
 --	Please see the LICENSE.md file included with this distribution for attribution and copyright information.
 --
 
--- luacheck: globals bDebug updateAura addAura removeAura removeAllFromAuras isAuraApplicable AuraFactionConditional
+-- luacheck: globals bDebug updateAura addAura removeAura removeAllFromAuras isAuraApplicable
+-- luacheck: globals fromAuraString auraString auraDetailSearchString getAuraDetails
 
 bDebug = false
 
 OOB_MSGTYPE_AURATOKENMOVE = 'aurasontokenmove'
 
-local fromAuraString = 'FROMAURA;'
-local auraString = 'AURA: %d+'
+fromAuraString = 'FROMAURA;'
+auraString = 'AURA: %d+'
+auraDetailSearchString = 'AURA:%s*([%d%.]*)%s*([~%!]*%a*);'
+
+function getAuraDetails(sEffect)
+	if string.find(sEffect, fromAuraString) or not string.match(sEffect, auraString) then
+		return 0 -- only run on auras
+	end
+	local nRange, auraType = string.match(sEffect, auraDetailSearchString)
+	nRange = tonumber(nRange or 0)
+	if not auraType then auraType = 'all' end
+	return nRange, auraType
+end
 
 -- Sets up FROMAURA rEffect based on supplied AURA nodeEffect.
 local function buildFromAura(nodeEffect)
