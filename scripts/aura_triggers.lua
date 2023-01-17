@@ -47,7 +47,22 @@ function updateAurasForActor(nodeCT, windowFilter, effectFilter)
 	end
 end
 
-function handleTokenMovement(msgOOB) updateAurasForActor(DB.findNode(msgOOB.sCTNode)) end
+-- Calls updateAurasForActor on each CT node whose token is on the same image supplied as 'window'
+function updateAurasForMap(window)
+	if not window or not StringManager.contains({ 'imagewindow', 'imagepanelwindow' }, window.getClass()) then return end
+	for _, nodeCT in pairs(CombatManager.getCombatantNodes()) do
+		local _, winImage = ImageManager.getImageControl(CombatManager.getTokenFromCT(nodeCT))
+		if winImage and winImage == window then updateAurasForActor(nodeCT, winImage) end
+	end
+end
+
+function handleTokenMovement(msgOOB)
+	local nodeCT = DB.findNode(msgOOB.sCTNode)
+	local token = CombatManager.getTokenFromCT(nodeCT)
+	local _, winImage = ImageManager.getImageControl(token)
+	Debug.chat(nodeCT, token, winImage)
+	updateAurasForMap(winImage)
+end
 
 ---	This function requests aura processing to be performed on the host FG instance.
 function notifyTokenMove(token)
@@ -64,15 +79,6 @@ end
 local function onMove(token)
 	if not CombatManager.getCTFromToken(token) then return end
 	notifyTokenMove(token)
-end
-
--- Calls updateAurasForActor on each CT node whose token is on the same image supplied as 'window'
-function updateAurasForMap(window)
-	if not window or window.getClass() ~= 'imagewindow' then return end
-	for _, nodeCT in pairs(CombatManager.getCombatantNodes()) do
-		local _, winImage = ImageManager.getImageControl(CombatManager.getTokenFromCT(nodeCT))
-		if winImage and winImage == window then updateAurasForActor(nodeCT, winImage) end
-	end
 end
 
 -- Recalculate auras when opening images
