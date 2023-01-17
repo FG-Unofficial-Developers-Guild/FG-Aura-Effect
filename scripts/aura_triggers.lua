@@ -60,13 +60,14 @@ end
 
 -- Trigger AURA effect calculation on all effects in a supplied CT node.
 -- If supplied with windowFilter instance, abort if actor's map doesn't match
-function updateAurasForActor(nodeCT, windowFilter)
+-- If supplied with effectFilter node, skip that effect
+function updateAurasForActor(nodeCT, windowFilter, effectFilter)
 	if windowFilter then -- if windowFilter is provided, save winImage to filterImage
 		local _, winImage, _ = ImageManager.getImageControl(CombatManager.getTokenFromCT(nodeCT))
 		if windowFilter and winImage ~= windowFilter then return end -- if filterImage is set and doesn't match, abort
 	end
 	for _, nodeEffect in pairs(DB.getChildren(nodeCT, 'effects')) do
-		updateAurasForEffect(nodeEffect)
+		if not effectFilter or nodeEffect ~= effectFilter then updateAurasForEffect(nodeEffect) end
 	end
 end
 
@@ -109,22 +110,28 @@ end
 local handleStandardCombatAddPlacement_old
 local function handleStandardCombatAddPlacement_new(tCustom, ...)
 	if handleStandardCombatAddPlacement_old then handleStandardCombatAddPlacement_old(tCustom, ...) end
-	updateAurasForActor(tCustom.nodeCT)
+	local _, winImage = ImageManager.getImageControl(CombatManager.getTokenFromCT(tCustom.nodeCT))
+	updateAurasForActor(tCustom.nodeCT, winImage)
 end
 
----	Recalculate auras when effect text is changed.
+---	Recalculate auras when effect text is changed to facilitate conditionals before aura effects
 local function onEffectChanged(nodeLabel)
-	local sEffect = DB.getValue(DB.getParent(nodeLabel), 'label', '')
-	if not string.find(sEffect, fromAuraString) then
-		updateAurasForActor(DB.getChild(nodeLabel, '....'))
-	end
+	local nodeEffect = DB.getParent(nodeLabel)
+	local sEffect = DB.getValue(nodeEffect, 'label', '')
+	if sEffect == '' or string.find(sEffect, fromAuraString) or string.find(sEffect, auraString) then return end
+	local nodeCT = DB.getChild(nodeEffect, '...')
+	local _, winImage = ImageManager.getImageControl(CombatManager.getTokenFromCT(nodeCT))
+	updateAurasForActor(nodeCT, winImage)
 end
 
----	Recalculate auras when effects are removed to improve triggering for conditions before aura effect
+---	Remove fromaura effects when parent aura is removed
 local function onEffectRemoved(nodeEffect)
 	local sEffect = DB.getValue(nodeEffect, 'label', '')
-	if not string.find(sEffect, fromAuraString) and string.find(sEffect, auraString) then AuraEffect.removeAllFromAuras(nodeEffect) end
-	updateAurasForActor(DB.getChild(nodeEffect, '...'))
+	if sEffect == '' or string.find(sEffect, fromAuraString) then return end
+	if string.find(sEffect, auraString) then AuraEffect.removeAllFromAuras(nodeEffect) end
+	local nodeCT = DB.getChild(nodeEffect, '...')
+	local _, winImage = ImageManager.getImageControl(CombatManager.getTokenFromCT(nodeCT))
+	updateAurasForActor(nodeCT, winImage, nodeEffect)
 end
 
 function onInit()
