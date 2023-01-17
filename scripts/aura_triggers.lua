@@ -113,10 +113,19 @@ local function handleStandardCombatAddPlacement_new(tCustom, ...)
 end
 
 ---	Recalculate auras when effect text is changed.
-local function onEffectChanged(nodeLabel) updateAurasForActor(DB.getChild(nodeLabel, '....')) end
+local function onEffectChanged(nodeLabel)
+	local sEffect = DB.getValue(DB.getParent(nodeLabel), 'label', '')
+	if not string.find(sEffect, fromAuraString) then
+		updateAurasForActor(DB.getChild(nodeLabel, '....'))
+	end
+end
 
----	Recalculate auras when effects are removed.
-local function onEffectRemoved(nodeEffect) updateAurasForActor(DB.getChild(nodeEffect, '...')) end
+---	Recalculate auras when effects are removed to improve triggering for conditions before aura effect
+local function onEffectRemoved(nodeEffect)
+	local sEffect = DB.getValue(nodeEffect, 'label', '')
+	if not string.find(sEffect, fromAuraString) and string.find(sEffect, auraString) then AuraEffect.removeAllFromAuras(nodeEffect) end
+	updateAurasForActor(DB.getChild(nodeEffect, '...'))
+end
 
 function onInit()
 	-- register OOB message handlers to allow player movement
