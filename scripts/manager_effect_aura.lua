@@ -102,9 +102,39 @@ local function getTokensBeyondDistance(tokenSource, nRange)
 	return tFarTokens
 end
 
+local function checkConditionalBeforeAura(nodeEffect, nodeCT, targetNodeCT)
+	if AuraFactionConditional.DetectedEffectManager.parseEffectComp then -- check conditionals if supported
+		for _, sEffectComp in ipairs(EffectManager.parseEffect(DB.getValue(nodeEffect, 'label', ''))) do
+			local rEffectComp = AuraFactionConditional.DetectedEffectManager.parseEffectComp(sEffectComp)
+			local rActor = ActorManager.resolveActor(nodeCT)
+			-- Check conditionals
+			if rEffectComp.type == 'IF' then
+				if not AuraFactionConditional.DetectedEffectManager.checkConditional(rActor, nodeEffect, rEffectComp.remainder) then return false end
+			elseif rEffectComp.type == 'IFT' then
+				local rTarget = ActorManager.resolveActor(targetNodeCT)
+				if
+					rTarget and not AuraFactionConditional.DetectedEffectManager.checkConditional(rTarget, nodeEffect, rEffectComp.remainder, rActor)
+				then
+					return false
+				end
+			elseif rEffectComp.type == 'AURA' then
+				break
+			end
+		end
+	end
+	return true
+end
+
+-- Should auras in range be added to this target?
 function isAuraApplicable(nodeEffect, rSource, token, auraType)
 	local rTarget = ActorManager.resolveActor(CombatManager.getCTFromToken(token))
-	if DB.getValue(nodeEffect, 'isactive', 0) == 1 and AuraFactionConditional.checkFaction(rSource, rTarget, auraType) then return true end
+	if
+		checkConditionalBeforeAura(nodeEffect, ActorManager.getCTNode(rSource), ActorManager.getCTNode(rTarget))
+		and DB.getValue(nodeEffect, 'isactive', 0) == 1
+		and AuraFactionConditional.checkFaction(rSource, rTarget, auraType)
+	then
+		return true
+	end
 	return false
 end
 

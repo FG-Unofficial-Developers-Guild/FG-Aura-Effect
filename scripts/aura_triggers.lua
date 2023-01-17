@@ -14,29 +14,6 @@ local fromAuraString = 'FROMAURA;'
 local auraString = 'AURA: %d+'
 local auraDetailSearchString = 'AURA:%s*([%d%.]*)%s*([~%!]*%a*);'
 
-local function checkConditionalBeforeAura(nodeEffect, nodeCT, targetNodeCT)
-	if AuraFactionConditional.DetectedEffectManager.parseEffectComp then -- check conditionals if supported
-		for _, sEffectComp in ipairs(EffectManager.parseEffect(DB.getValue(nodeEffect, 'label', ''))) do
-			local rEffectComp = AuraFactionConditional.DetectedEffectManager.parseEffectComp(sEffectComp)
-			local rActor = ActorManager.resolveActor(nodeCT)
-			-- Check conditionals
-			if rEffectComp.type == 'IF' then
-				if not AuraFactionConditional.DetectedEffectManager.checkConditional(rActor, nodeEffect, rEffectComp.remainder) then return false end
-			elseif rEffectComp.type == 'IFT' then
-				local rTarget = ActorManager.resolveActor(targetNodeCT)
-				if
-					rTarget and not AuraFactionConditional.DetectedEffectManager.checkConditional(rTarget, nodeEffect, rEffectComp.remainder, rActor)
-				then
-					return false
-				end
-			elseif rEffectComp.type == 'AURA' then
-				break
-			end
-		end
-	end
-	return true
-end
-
 local function getAuraDetails(sEffect)
 	if string.find(sEffect, fromAuraString) or not string.match(sEffect, auraString) then
 		return 0 -- only run on auras
@@ -54,7 +31,6 @@ function updateAurasForEffect(nodeEffect)
 	if nRange == 0 then return end
 	local nodeSource = DB.getChild(nodeEffect, '...')
 	local tokenSource = CombatManager.getTokenFromCT(nodeSource)
-	if not checkConditionalBeforeAura(nodeEffect, nodeSource) then return end -- allows for IF/IFT before AURA effects
 	AuraEffect.updateAura(tokenSource, nodeEffect, nRange, auraType)
 end
 
