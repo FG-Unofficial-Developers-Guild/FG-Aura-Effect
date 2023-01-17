@@ -12,7 +12,7 @@
                 <defaultlabel>all</defaultlabel>
                 <defaultvalue>all</defaultvalue>
                 <labels>ally|not ally|enemy|not enemy|friend|not friend|foe|not foe</labels>
-                <labels>ally|!ally|enemy|!enemy|friend|!friend|foe|!foe</labels>
+                <values>ally|!ally|enemy|!enemy|friend|!friend|foe|!foe</values>
             </parameters>
         </cycler_eb_valueholder>
     </template>
@@ -23,7 +23,7 @@
                 <defaultlabel>notself</defaultlabel>
                 <defaultvalue>!self</defaultvalue>
                 <labels>ally|not ally|enemy|not enemy|friend|not friend|foe|not foe</labels>
-                <labels>ally|!ally|enemy|!enemy|friend|!friend|foe|!foe</labels>
+                <values>ally|!ally|enemy|!enemy|friend|!friend|foe|!foe</values>
             </parameters>
         </cycler_eb_valueholder>
     </template>
