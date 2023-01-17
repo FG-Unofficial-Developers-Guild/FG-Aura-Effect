@@ -59,6 +59,7 @@ function addAura(nodeEffect, nodeTarget)
 end
 
 -- Search all effects on target to find matching auras to remove.
+-- Skip "off/skip" effects to allow for immunity workaround.
 function removeAura(nodeEffect, nodeTarget)
 	if not nodeEffect or not nodeTarget then return end
 	for _, nodeTargetEffect in pairs(DB.getChildren(nodeTarget, 'effects')) do
