@@ -2,7 +2,7 @@
 --	Please see the LICENSE.md file included with this distribution for attribution and copyright information.
 --
 
--- luacheck: globals bDebug updateAura isAuraApplicable AuraFactionConditional
+-- luacheck: globals bDebug updateAura addAura removeAura removeAllFromAuras isAuraApplicable AuraFactionConditional
 
 bDebug = false
 
@@ -43,16 +43,14 @@ end
 -- Check effect nodes of nodeSource to see if they are children of nodeEffect
 local function hasFromAura(nodeEffect, nodeSource)
 	for _, nodeTargetEffect in pairs(DB.getChildren(DB.getPath(nodeSource) .. '.effects')) do
-		if DB.getValue(nodeTargetEffect, 'source_aura', '') == DB.getPath(nodeEffect) then
-			return true
-		end
+		if DB.getValue(nodeTargetEffect, 'source_aura', '') == DB.getPath(nodeEffect) then return true end
 	end
 	return false
 end
 
 -- Add AURA in nodeEffect to targetToken actor if not already present.
 -- Then call saveAuraSource to keep track of the FROMAURA effect
-local function addAura(nodeEffect, nodeTarget)
+function addAura(nodeEffect, nodeTarget)
 	local nodeSource = DB.getChild(nodeEffect, '...')
 	if not nodeSource or not nodeTarget then return end
 	if hasFromAura(nodeEffect, nodeTarget) then return end
@@ -61,10 +59,10 @@ local function addAura(nodeEffect, nodeTarget)
 end
 
 -- Search all effects on target to find matching auras to remove.
-local function removeAura(nodeEffect, nodeTarget)
+function removeAura(nodeEffect, nodeTarget)
 	if not nodeEffect or not nodeTarget then return end
 	for _, nodeTargetEffect in pairs(DB.getChildren(nodeTarget, 'effects')) do
-		if DB.getValue(nodeTargetEffect, 'source_aura', '') == DB.getPath(nodeEffect) then
+		if DB.getValue(nodeTargetEffect, 'isactive', 0) == 1 and DB.getValue(nodeTargetEffect, 'source_aura', '') == DB.getPath(nodeEffect) then
 			EffectManager.notifyExpire(nodeTargetEffect)
 			break
 		end
@@ -93,9 +91,7 @@ end
 
 function isAuraApplicable(nodeEffect, rSource, token, auraType)
 	local rTarget = ActorManager.resolveActor(CombatManager.getCTFromToken(token))
-	if DB.getValue(nodeEffect, 'isactive', 0) == 1 and AuraFactionConditional.checkFaction(rSource, rTarget, auraType) then
-		return true
-	end
+	if DB.getValue(nodeEffect, 'isactive', 0) == 1 and AuraFactionConditional.checkFaction(rSource, rTarget, auraType) then return true end
 	return false
 end
 

@@ -21,12 +21,12 @@ local function checkConditionalBeforeAura(nodeEffect, nodeCT, targetNodeCT)
 			local rActor = ActorManager.resolveActor(nodeCT)
 			-- Check conditionals
 			if rEffectComp.type == 'IF' then
-				if not AuraFactionConditional.DetectedEffectManager.checkConditional(rActor, nodeEffect, rEffectComp.remainder) then
-					return false
-				end
+				if not AuraFactionConditional.DetectedEffectManager.checkConditional(rActor, nodeEffect, rEffectComp.remainder) then return false end
 			elseif rEffectComp.type == 'IFT' then
 				local rTarget = ActorManager.resolveActor(targetNodeCT)
-				if rTarget and not AuraFactionConditional.DetectedEffectManager.checkConditional(rTarget, nodeEffect, rEffectComp.remainder, rActor) then
+				if
+					rTarget and not AuraFactionConditional.DetectedEffectManager.checkConditional(rTarget, nodeEffect, rEffectComp.remainder, rActor)
+				then
 					return false
 				end
 			elseif rEffectComp.type == 'AURA' then
