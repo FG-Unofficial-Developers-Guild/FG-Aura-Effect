@@ -60,7 +60,6 @@ function handleTokenMovement(msgOOB)
 	local nodeCT = DB.findNode(msgOOB.sCTNode)
 	local token = CombatManager.getTokenFromCT(nodeCT)
 	local _, winImage = ImageManager.getImageControl(token)
-	Debug.chat(nodeCT, token, winImage)
 	updateAurasForMap(winImage)
 end
 
