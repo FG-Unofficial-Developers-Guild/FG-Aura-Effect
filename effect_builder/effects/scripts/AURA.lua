@@ -2,6 +2,6 @@
 
 function createEffectString()
 	local effectString = parentcontrol.window.effect.getStringValue() .. ': ' .. number_value.getStringValue()
-	if not effect_faction.isEmpty() then effectString = effectString .. ' ' .. effect_faction.getValue() end
+	if not effect_faction.isEmpty() then effectString = effectString .. ' ' .. effect_faction.getStringValue() end
 	return effectString
 end
