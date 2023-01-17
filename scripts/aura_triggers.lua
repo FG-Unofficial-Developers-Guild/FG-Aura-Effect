@@ -86,8 +86,7 @@ end
 local handleStandardCombatAddPlacement_old
 local function handleStandardCombatAddPlacement_new(tCustom, ...)
 	if handleStandardCombatAddPlacement_old then handleStandardCombatAddPlacement_old(tCustom, ...) end
-	local _, winImage = ImageManager.getImageControl(CombatManager.getTokenFromCT(tCustom.nodeCT))
-	updateAurasForActor(tCustom.nodeCT, winImage)
+	updateAurasForActor(tCustom.nodeCT)
 end
 
 ---	Recalculate auras when effect text is changed to facilitate conditionals before aura effects
@@ -95,19 +94,19 @@ local function onEffectChanged(nodeLabel)
 	local nodeEffect = DB.getParent(nodeLabel)
 	local sEffect = DB.getValue(nodeEffect, 'label', '')
 	if sEffect == '' or string.find(sEffect, fromAuraString) or string.find(sEffect, auraString) then return end
-	local nodeCT = DB.getChild(nodeEffect, '...')
-	local _, winImage = ImageManager.getImageControl(CombatManager.getTokenFromCT(nodeCT))
-	updateAurasForActor(nodeCT, winImage)
+	updateAurasForActor(DB.getChild(nodeEffect, '...'))
 end
 
----	Remove fromaura effects when parent aura is removed
-local function onEffectRemoved(nodeEffect)
+---	Remove fromaura effects just before source aura is removed
+local function onEffectToBeRemoved(nodeEffect)
 	local sEffect = DB.getValue(nodeEffect, 'label', '')
-	if sEffect == '' or string.find(sEffect, fromAuraString) then return end
+	if string.find(sEffect, fromAuraString) then return end
 	if string.find(sEffect, auraString) then AuraEffect.removeAllFromAuras(nodeEffect) end
-	local nodeCT = DB.getChild(nodeEffect, '...')
-	local _, winImage = ImageManager.getImageControl(CombatManager.getTokenFromCT(nodeCT))
-	updateAurasForActor(nodeCT, winImage, nodeEffect)
+end
+
+---	Recalculate auras after effects are removed to ensure conditionals before aura are respected
+local function onEffectRemoved(nodeEffects)
+	updateAurasForActor(DB.getParent(nodeEffects))
 end
 
 function onInit()
@@ -129,6 +128,7 @@ function onInit()
 	if Session.IsHost then
 		DB.addHandler(DB.getPath(CombatManager.CT_LIST .. '.*.effects.*.label'), 'onUpdate', onEffectChanged)
 		DB.addHandler(DB.getPath(CombatManager.CT_LIST .. '.*.effects.*.isactive'), 'onUpdate', onEffectChanged)
-		DB.addHandler(DB.getPath(CombatManager.CT_LIST .. '.*.effects.*'), 'onDelete', onEffectRemoved)
+		DB.addHandler(DB.getPath(CombatManager.CT_LIST .. '.*.effects.*'), 'onDelete', onEffectToBeRemoved)
+		DB.addHandler(DB.getPath(CombatManager.CT_LIST .. '.*.effects'), 'onChildDeleted', onEffectRemoved)
 	end
 end
