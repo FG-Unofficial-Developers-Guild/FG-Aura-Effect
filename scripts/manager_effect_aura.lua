@@ -15,7 +15,7 @@ auraDetailSearchString = 'AURA:%s*([%d%.]*)%s*([~%!]*%a*);'
 
 function getAuraDetails(sEffect)
 	if string.find(sEffect, fromAuraString) or not string.match(sEffect, auraString) then
-		return 0 -- only run on auras
+		return 0, nil -- only run on auras
 	end
 	local nRange, auraType = string.match(sEffect, auraDetailSearchString)
 	nRange = tonumber(nRange or 0)
@@ -64,10 +64,11 @@ end
 -- Add AURA in nodeEffect to targetToken actor if not already present.
 -- Then call saveAuraSource to keep track of the FROMAURA effect
 function addAura(nodeEffect, nodeTarget)
+	local _, auraType = AuraEffect.getAuraDetails(DB.getValue(nodeEffect, 'label', ''))
 	local nodeSource = DB.getChild(nodeEffect, '...')
 	if not nodeSource or not nodeTarget then return end
 	if hasFromAura(nodeEffect, nodeTarget) then return end
-	EffectManager.notifyApply(buildFromAura(nodeEffect), DB.getPath(nodeTarget))
+	AuraEffectSilencer.notifyApply(buildFromAura(nodeEffect), DB.getPath(nodeTarget), auraType)
 	saveAuraSource(nodeEffect, nodeSource, nodeTarget)
 end
 
@@ -75,9 +76,11 @@ end
 -- Skip "off/skip" effects to allow for immunity workaround.
 function removeAura(nodeEffect, nodeTarget)
 	if not nodeEffect or not nodeTarget then return end
+	local _, auraType = AuraEffect.getAuraDetails(DB.getValue(nodeEffect, 'label', ''))
+	if not auraType then return end
 	for _, nodeTargetEffect in pairs(DB.getChildren(nodeTarget, 'effects')) do
 		if DB.getValue(nodeTargetEffect, 'isactive', 0) == 1 and DB.getValue(nodeTargetEffect, 'source_aura', '') == DB.getPath(nodeEffect) then
-			EffectManager.notifyExpire(nodeTargetEffect)
+			AuraEffectSilencer.notifyExpire(nodeTargetEffect, nil, nil, auraType)
 			break
 		end
 	end

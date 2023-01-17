@@ -32,6 +32,7 @@
 	<base>
 		<script name="AuraEffect" file="scripts/manager_effect_aura.lua" />
 		<script name="AuraEffectTriggers" file="scripts/aura_triggers.lua" />
+		<script name="AuraEffectSilencer" file="scripts/silent_auras.lua" />
 		<script name="AuraFactionConditional" file="scripts/faction_conditional.lua" />
 
 		<icon name="aura_icon" file="graphics/aura_icon.png" />
