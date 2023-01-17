@@ -69,6 +69,19 @@ function removeAura(nodeEffect, nodeTarget)
 	end
 end
 
+-- Search all effects on target to find matching auras to remove.
+function removeAllFromAuras(nodeEffect)
+	local sEffect = DB.getValue(nodeEffect, 'label', '')
+	if not string.find(sEffect, auraString) then return end
+	local tokenSource = CombatManager.getTokenFromCT(DB.getChild(nodeEffect, '...'))
+	local _, winSource = ImageManager.getImageControl(tokenSource)
+	for _, nodeCT in pairs(CombatManager.getCombatantNodes()) do
+		local tokenTarget = CombatManager.getTokenFromCT(nodeCT)
+		local _, winTarget = ImageManager.getImageControl(tokenTarget)
+		if winSource == winTarget then AuraEffect.removeAura(nodeEffect, nodeCT) end
+	end
+end
+
 -- Gets a table of tokens, keyed to their id number, that are further from tokenSource than the distance nRange.
 local function getTokensBeyondDistance(tokenSource, nRange)
 	local imageControl = ImageManager.getImageControl(tokenSource)
