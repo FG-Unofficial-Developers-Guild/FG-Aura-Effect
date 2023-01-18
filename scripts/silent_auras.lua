@@ -128,9 +128,9 @@ end
 function onInit()
 	-- register option for silent aura messages
 	OptionsManager.registerOption2('AURASILENT', false, 'option_header_aura', 'option_label_AURASILENT', 'option_entry_cycler', {
-		labels = 'option_val_aura_ally|option_val_aura_enemy|ct_tooltip_factionempty|'
-			.. 'ct_tooltip_factionfriend|ct_tooltip_factionneutral|ct_tooltip_factionfoe|option_val_aura_all',
-		values = 'ally|enemy|faction|friend|neutral|foe|all',
+		labels = 'option_val_aura_all|option_val_aura_ally|option_val_aura_enemy|ct_tooltip_factionempty|'
+			.. 'ct_tooltip_factionfriend|ct_tooltip_factionneutral|ct_tooltip_factionfoe',
+		values = 'all|ally|enemy|faction|friend|neutral|foe',
 		baselabel = 'option_val_off',
 		baseval = 'off',
 		default = 'off',
