@@ -62,7 +62,6 @@ function notifyTokenMove(token)
 end
 
 local function onMove(token)
-	if not CombatManager.getCTFromToken(token) then return end
 	notifyTokenMove(token)
 end
 
