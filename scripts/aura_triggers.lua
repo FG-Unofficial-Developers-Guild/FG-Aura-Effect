@@ -13,11 +13,11 @@ OOB_MSGTYPE_AURATOKENMOVE = 'aurasontokenmove'
 -- Trigger AURA effect calculation on supplied effect node.
 function updateAurasForEffect(nodeEffect)
 	local sEffect = DB.getValue(nodeEffect, 'label', '')
-	local nRange, auraType = AuraEffect.getAuraDetails(sEffect)
+	local nRange = AuraEffect.getAuraRange(sEffect)
 	if nRange == 0 then return end
 	local nodeSource = DB.getChild(nodeEffect, '...')
 	local tokenSource = CombatManager.getTokenFromCT(nodeSource)
-	AuraEffect.updateAura(tokenSource, nodeEffect, nRange, auraType)
+	AuraEffect.updateAura(tokenSource, nodeEffect, nRange)
 end
 
 -- Trigger AURA effect calculation on all effects in a supplied CT node.

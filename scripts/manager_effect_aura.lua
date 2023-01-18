@@ -3,7 +3,7 @@
 --
 
 -- luacheck: globals bDebug updateAura addAura removeAura removeAllFromAuras isAuraApplicable
--- luacheck: globals fromAuraString auraString auraDetailSearchString getAuraDetails
+-- luacheck: globals fromAuraString auraString getAuraDetails getAuraFaction getAuraRange
 
 bDebug = false
 
@@ -11,16 +11,22 @@ OOB_MSGTYPE_AURATOKENMOVE = 'aurasontokenmove'
 
 fromAuraString = 'FROMAURA;'
 auraString = 'AURA: %d+'
-auraDetailSearchString = 'AURA:%s*([%d%.]*)%s*([~%!]*%a*);'
+
+function getAuraFaction(sEffect)
+	local auraFaction = string.match(sEffect, 'AURA:%s*[%d%.]*%s*([~%!]*%a*);')
+	if not auraFaction or auraFaction == '' then auraFaction = 'all' end
+	return auraFaction
+end
+
+function getAuraRange(sEffect)
+	local nRange = string.match(sEffect, 'AURA:%s*([%d%.]*)%s*[~%!]*%a*;')
+	nRange = tonumber(nRange or 0)
+	return nRange
+end
 
 function getAuraDetails(sEffect)
-	if string.find(sEffect, fromAuraString) or not string.match(sEffect, auraString) then
-		return 0, nil -- only run on auras
-	end
-	local nRange, auraType = string.match(sEffect, auraDetailSearchString)
-	nRange = tonumber(nRange or 0)
-	if not auraType or auraType == '' then auraType = 'all' end
-	return nRange, auraType
+	if not sEffect then return 0, 'all' end
+	return getAuraRange(sEffect), getAuraFaction(sEffect)
 end
 
 -- Sets up FROMAURA rEffect based on supplied AURA nodeEffect.
@@ -42,11 +48,13 @@ end
 -- Search for FROMAURA effects on nodeTarget where aura source matches nodeSource and source_aura is not set
 -- If found, set source_aura to nodeEffect. this could be bad for users of older versions.
 local function saveAuraSource(nodeEffect, nodeSource, nodeTarget)
+	local sSourcePath = DB.getPath(nodeSource)
+	local sEffectPath = DB.getPath(nodeEffect)
 	for _, nodeTargetEffect in pairs(DB.getChildren(nodeTarget, 'effects')) do
 		local sEffect = DB.getValue(nodeTargetEffect, 'label', '')
-		if string.find(sEffect, fromAuraString) and DB.getPath(nodeSource) == DB.getValue(nodeTargetEffect, 'source_name', '') then
+		if string.find(sEffect, fromAuraString) and DB.getValue(nodeTargetEffect, 'source_name', '') == sSourcePath then
 			if not DB.getValue(nodeTargetEffect, 'source_aura') then
-				DB.setValue(nodeTargetEffect, 'source_aura', 'string', DB.getPath(nodeEffect))
+				DB.setValue(nodeTargetEffect, 'source_aura', 'string', sEffectPath)
 			end
 			break
 		end
@@ -55,8 +63,9 @@ end
 
 -- Check effect nodes of nodeSource to see if they are children of nodeEffect
 local function hasFromAura(nodeEffect, nodeSource)
+	local sEffectPath = DB.getPath(nodeEffect)
 	for _, nodeTargetEffect in pairs(DB.getChildren(DB.getPath(nodeSource) .. '.effects')) do
-		if DB.getValue(nodeTargetEffect, 'source_aura', '') == DB.getPath(nodeEffect) then return true end
+		if DB.getValue(nodeTargetEffect, 'source_aura', '') == sEffectPath then return true end
 	end
 	return false
 end
@@ -64,7 +73,7 @@ end
 -- Add AURA in nodeEffect to targetToken actor if not already present.
 -- Then call saveAuraSource to keep track of the FROMAURA effect
 function addAura(nodeEffect, nodeTarget)
-	local _, auraType = AuraEffect.getAuraDetails(DB.getValue(nodeEffect, 'label', ''))
+	local auraType = getAuraFaction(DB.getValue(nodeEffect, 'label', ''))
 	local nodeSource = DB.getChild(nodeEffect, '...')
 	if not nodeSource or not nodeTarget then return end
 	if hasFromAura(nodeEffect, nodeTarget) then return end
@@ -76,10 +85,10 @@ end
 -- Skip "off/skip" effects to allow for immunity workaround.
 function removeAura(nodeEffect, nodeTarget)
 	if not nodeEffect or not nodeTarget then return end
-	local _, auraType = AuraEffect.getAuraDetails(DB.getValue(nodeEffect, 'label', ''))
-	if not auraType then return end
+	local auraType = getAuraFaction(DB.getValue(nodeEffect, 'label', ''))
+	local sEffectPath = DB.getPath(nodeEffect)
 	for _, nodeTargetEffect in pairs(DB.getChildren(nodeTarget, 'effects')) do
-		if DB.getValue(nodeTargetEffect, 'isactive', 0) == 1 and DB.getValue(nodeTargetEffect, 'source_aura', '') == DB.getPath(nodeEffect) then
+		if DB.getValue(nodeTargetEffect, 'isactive', 0) == 1 and DB.getValue(nodeTargetEffect, 'source_aura', '') == sEffectPath then
 			AuraEffectSilencer.notifyExpire(nodeTargetEffect, nil, nil, auraType)
 			break
 		end
@@ -90,12 +99,13 @@ end
 function removeAllFromAuras(nodeEffect)
 	local sEffect = DB.getValue(nodeEffect, 'label', '')
 	if not string.find(sEffect, auraString) then return end
-	local tokenSource = CombatManager.getTokenFromCT(DB.getChild(nodeEffect, '...'))
-	local _, winSource = ImageManager.getImageControl(tokenSource)
+	local nodeSource = DB.getChild(nodeEffect, '...')
+	local _, winSource = ImageManager.getImageControl(CombatManager.getTokenFromCT(nodeSource))
 	for _, nodeCT in pairs(CombatManager.getCombatantNodes()) do
-		local tokenTarget = CombatManager.getTokenFromCT(nodeCT)
-		local _, winTarget = ImageManager.getImageControl(tokenTarget)
-		if winSource == winTarget then AuraEffect.removeAura(nodeEffect, nodeCT) end
+		if nodeCT ~= nodeSource then -- don't check for FROMAURAs on parent of nodeEffect
+			local _, winTarget = ImageManager.getImageControl(CombatManager.getTokenFromCT(nodeCT))
+			if winTarget == winSource then AuraEffect.removeAura(nodeEffect, nodeCT) end
+		end
 	end
 end
 
@@ -123,19 +133,20 @@ local function checkConditionalBeforeAura(nodeEffect, nodeCT, targetNodeCT)
 	if AuraFactionConditional.DetectedEffectManager.parseEffectComp then -- check conditionals if supported
 		for _, sEffectComp in ipairs(EffectManager.parseEffect(DB.getValue(nodeEffect, 'label', ''))) do
 			local rEffectComp = AuraFactionConditional.DetectedEffectManager.parseEffectComp(sEffectComp)
-			local rActor = ActorManager.resolveActor(nodeCT)
 			-- Check conditionals
-			if rEffectComp.type == 'IF' then
+			if rEffectComp.type == 'AURA' then
+				return true
+			elseif rEffectComp.type == 'IF' then
+				local rActor = ActorManager.resolveActor(nodeCT) -- these are in here for performance reasons
 				if not AuraFactionConditional.DetectedEffectManager.checkConditional(rActor, nodeEffect, rEffectComp.remainder) then return false end
 			elseif rEffectComp.type == 'IFT' then
-				local rTarget = ActorManager.resolveActor(targetNodeCT)
+				local rActor = ActorManager.resolveActor(nodeCT) -- these are in here for performance reasons
+				local rTarget = ActorManager.resolveActor(targetNodeCT) -- these are in here for performance reasons
 				if
 					rTarget and not AuraFactionConditional.DetectedEffectManager.checkConditional(rTarget, nodeEffect, rEffectComp.remainder, rActor)
 				then
 					return false
 				end
-			elseif rEffectComp.type == 'AURA' then
-				break
 			end
 		end
 	end
@@ -157,7 +168,8 @@ end
 
 -- Compile sets of tokens on same map as source that should/should not have aura applied.
 -- Trigger adding/removing auras as applicable.
-function updateAura(tokenSource, nodeEffect, nRange, auraType)
+function updateAura(tokenSource, nodeEffect, nRange)
+	local sAuraFaction = getAuraFaction(DB.getValue(nodeEffect, 'label', ''))
 	local imageControl = ImageManager.getImageControl(tokenSource)
 	if not imageControl then return end -- only process if effect parent is on an opened map
 	local tAdd, tRemove = {}, {}
@@ -166,7 +178,7 @@ function updateAura(tokenSource, nodeEffect, nRange, auraType)
 	local rSource = ActorManager.resolveActor(DB.getChild(nodeEffect, '...'))
 	for _, token in pairs(imageControl.getTokensWithinDistance(tokenSource, nRange)) do
 		local nodeCT = CombatManager.getCTFromToken(token)
-		if isAuraApplicable(nodeEffect, rSource, token, auraType) then
+		if isAuraApplicable(nodeEffect, rSource, token, sAuraFaction) then
 			tAdd[token.getId()] = { nodeEffect, nodeCT }
 		else
 			tRemove[token.getId()] = { nodeEffect, nodeCT }
