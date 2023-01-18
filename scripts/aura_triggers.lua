@@ -43,8 +43,7 @@ function updateAurasForMap(window)
 end
 
 function handleTokenMovement(msgOOB)
-	local nodeCT = DB.findNode(msgOOB.sCTNode)
-	local token = CombatManager.getTokenFromCT(nodeCT)
+	local token = CombatManager.getTokenFromCT(DB.findNode(msgOOB.sCTNode))
 	local _, winImage = ImageManager.getImageControl(token)
 	updateAurasForMap(winImage)
 end
