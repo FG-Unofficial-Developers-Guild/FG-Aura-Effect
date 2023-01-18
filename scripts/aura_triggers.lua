@@ -43,17 +43,19 @@ function updateAurasForMap(window)
 end
 
 function handleTokenMovement(msgOOB)
-	updateAurasForMap(Interface.findWindow("imagewindow", DB.getPath(DB.getParent(msgOOB.sContainerNode))))
+	local token = CombatManager.getTokenFromCT(DB.findNode(msgOOB.sCTNode))
+	local _, winImage = ImageManager.getImageControl(token)
+	updateAurasForMap(winImage)
 end
 
 ---	This function requests aura processing to be performed on the host FG instance.
 function notifyTokenMove(token)
-	if not token.getContainerNode or not token.getId then return end
+	local nodeCT = CombatManager.getCTFromToken(token)
+	if not nodeCT then return end
 
 	local msgOOB = {}
 	msgOOB.type = OOB_MSGTYPE_AURATOKENMOVE
-	msgOOB.sContainerNode = DB.getPath(token.getContainerNode())
-	msgOOB.nID = token.getId()
+	msgOOB.sCTNode = DB.getPath(nodeCT)
 
 	Comm.deliverOOBMessage(msgOOB, '')
 end
