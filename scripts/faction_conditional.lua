@@ -54,7 +54,7 @@ local function checkConditional_new(rActor, nodeEffect, aConditions, rTarget, aI
 	if bReturn == false then return bReturn end
 
 	if aConditions and aConditions.remainder then aConditions = aConditions.remainder end
-	local rAuraSource = ActorManager.resolveActor(DB.findNode(DB.getValue(nodeEffect, 'source_name', '')))
+	local rAuraSource = ActorManager.resolveActor(DB.getValue(nodeEffect, 'source_name', ''))
 	for _, v in ipairs(aConditions) do
 		local sFactionCheck = v:lower():match('^faction%s*%(([^)]+)%)$')
 		if sFactionCheck then

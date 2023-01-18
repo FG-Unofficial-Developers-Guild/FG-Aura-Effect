@@ -4,7 +4,6 @@
 
 -- luacheck: globals bDebug handleTokenMovement notifyTokenMove
 -- luacheck: globals updateAurasForMap updateAurasForActor updateAurasForEffect
--- luacheck: globals AuraFactionConditional AuraEffect.updateAura
 
 bDebug = false
 
@@ -29,13 +28,14 @@ function updateAurasForActor(nodeCT, windowFilter, effectFilter)
 		if windowFilter and winImage ~= windowFilter then return end -- if filterImage is set and doesn't match, abort
 	end
 	for _, nodeEffect in pairs(DB.getChildren(nodeCT, 'effects')) do
-		if not effectFilter or nodeEffect ~= effectFilter then updateAurasForEffect(nodeEffect) end
+		local bFilterSkip = effectFilter and nodeEffect ~= effectFilter
+		if not bFilterSkip then updateAurasForEffect(nodeEffect) end
 	end
 end
 
 -- Calls updateAurasForActor on each CT node whose token is on the same image supplied as 'window'
 function updateAurasForMap(window)
-	if not window or not StringManager.contains({ 'imagewindow', 'imagepanelwindow' }, window.getClass()) then return end
+	if not window or not StringManager.contains({ 'imagepanelwindow', 'imagewindow' }, window.getClass()) then return end
 	for _, nodeCT in pairs(CombatManager.getCombatantNodes()) do
 		local _, winImage = ImageManager.getImageControl(CombatManager.getTokenFromCT(nodeCT))
 		if winImage == window then updateAurasForActor(nodeCT, winImage) end
@@ -43,17 +43,19 @@ function updateAurasForMap(window)
 end
 
 function handleTokenMovement(msgOOB)
-	updateAurasForMap(Interface.findWindow("imagewindow", DB.getPath(DB.getParent(msgOOB.sContainerNode))))
+	local token = CombatManager.getTokenFromCT(msgOOB.sCTNode)
+	local _, winImage = ImageManager.getImageControl(token)
+	updateAurasForMap(winImage)
 end
 
 ---	This function requests aura processing to be performed on the host FG instance.
 function notifyTokenMove(token)
-	if not token.getContainerNode or not token.getId then return end
+	local nodeCT = CombatManager.getCTFromToken(token)
+	if not nodeCT then return end
 
 	local msgOOB = {}
 	msgOOB.type = OOB_MSGTYPE_AURATOKENMOVE
-	msgOOB.sContainerNode = DB.getPath(token.getContainerNode())
-	msgOOB.nID = token.getId()
+	msgOOB.sCTNode = DB.getPath(nodeCT)
 
 	Comm.deliverOOBMessage(msgOOB, '')
 end
@@ -80,7 +82,7 @@ end
 local function onEffectChanged(nodeLabel)
 	local nodeEffect = DB.getParent(nodeLabel)
 	local sEffect = DB.getValue(nodeEffect, 'label', '')
-	if sEffect == '' or string.find(sEffect, AuraEffect.fromAuraString) or string.find(sEffect, AuraEffect.auraString) then return end
+	if sEffect == '' or string.match(sEffect, 'AURA[:;]') then return end -- don't recalculate when changing aura or fromaura
 	updateAurasForActor(DB.getChild(nodeEffect, '...'))
 end
 
