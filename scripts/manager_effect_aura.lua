@@ -19,7 +19,7 @@ function getAuraDetails(sEffect)
 	end
 	local nRange, auraType = string.match(sEffect, auraDetailSearchString)
 	nRange = tonumber(nRange or 0)
-	if not auraType then auraType = 'all' end
+	if not auraType or auraType == '' then auraType = 'all' end
 	return nRange, auraType
 end
 
