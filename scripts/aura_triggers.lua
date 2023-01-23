@@ -11,6 +11,7 @@ OOB_MSGTYPE_AURATOKENMOVE = 'aurasontokenmove'
 
 -- Trigger AURA effect calculation on supplied effect node.
 function updateAurasForEffect(nodeEffect)
+	if type(nodeEffect) ~= 'databasenode' then return end -- sometimes userdata shows up here when used with BCE
 	local sEffect = DB.getValue(nodeEffect, 'label', '')
 	local nRange = AuraEffect.getAuraRange(sEffect)
 	if nRange == 0 then return end
