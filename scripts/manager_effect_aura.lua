@@ -12,18 +12,22 @@ OOB_MSGTYPE_AURATOKENMOVE = 'aurasontokenmove'
 fromAuraString = 'FROMAURA;'
 auraString = 'AURA: %d+'
 
+-- Checks AURA effect string to get faction
+-- If not found, returns 'all'
 function getAuraFaction(sEffect)
 	local auraFaction = string.match(sEffect, 'AURA:%s*[%d%.]*%s*([~%!]*%a*);')
 	if not auraFaction or auraFaction == '' then auraFaction = 'all' end
 	return auraFaction
 end
 
+-- Checks AURA effect string to get range
+-- If not found, returns 0
 function getAuraRange(sEffect)
-	local nRange = string.match(sEffect, 'AURA:%s*([%d%.]*)%s*[~%!]*%a*;')
-	nRange = tonumber(nRange or 0)
-	return nRange
+	local nRange = string.match(sEffect, 'AURA:%s*([%d%.]*).-;')
+	return tonumber(nRange or 0)
 end
 
+-- Checks AURA effect string to get range and faction
 function getAuraDetails(sEffect)
 	if not sEffect then return 0, 'all' end
 	return getAuraRange(sEffect), getAuraFaction(sEffect)
@@ -45,17 +49,22 @@ local function buildFromAura(nodeEffect)
 	return rEffect
 end
 
+-- Checks provided effect node to see whether it's a fromaura matching the actor at the provided string
+-- It does this without using source_aura as it's used in the pipeline that sets source_aura
+local function isAuraMatchToSaveSource(nodeTargetEffect, sSourcePath)
+	local bReturn = DB.getValue(nodeTargetEffect, 'source_name', '') == sSourcePath
+	bReturn = bReturn or string.find(DB.getValue(nodeTargetEffect, 'label', ''), fromAuraString) ~= nil
+	return bReturn
+end
+
 -- Search for FROMAURA effects on nodeTarget where aura source matches nodeSource and source_aura is not set
 -- If found, set source_aura to nodeEffect. this could be bad for users of older versions.
 local function saveAuraSource(nodeEffect, nodeSource, nodeTarget)
 	local sSourcePath = DB.getPath(nodeSource)
 	local sEffectPath = DB.getPath(nodeEffect)
 	for _, nodeTargetEffect in pairs(DB.getChildren(nodeTarget, 'effects')) do
-		local sEffect = DB.getValue(nodeTargetEffect, 'label', '')
-		if string.find(sEffect, fromAuraString) and DB.getValue(nodeTargetEffect, 'source_name', '') == sSourcePath then
-			if not DB.getValue(nodeTargetEffect, 'source_aura') then
-				DB.setValue(nodeTargetEffect, 'source_aura', 'string', sEffectPath)
-			end
+		if isAuraMatchToSaveSource(nodeTargetEffect, sSourcePath) then
+			if not DB.getValue(nodeTargetEffect, 'source_aura') then DB.setValue(nodeTargetEffect, 'source_aura', 'string', sEffectPath) end
 			break
 		end
 	end

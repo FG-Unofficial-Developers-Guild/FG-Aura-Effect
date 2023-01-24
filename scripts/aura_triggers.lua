@@ -12,11 +12,10 @@ OOB_MSGTYPE_AURATOKENMOVE = 'aurasontokenmove'
 -- Trigger AURA effect calculation on supplied effect node.
 function updateAurasForEffect(nodeEffect)
 	if type(nodeEffect) ~= 'databasenode' then return end -- sometimes userdata shows up here when used with BCE
-	local sEffect = DB.getValue(nodeEffect, 'label', '')
-	local nRange = AuraEffect.getAuraRange(sEffect)
+	local nRange = AuraEffect.getAuraRange(DB.getValue(nodeEffect, 'label', ''))
 	if nRange == 0 then return end
-	local nodeSource = DB.getChild(nodeEffect, '...')
-	local tokenSource = CombatManager.getTokenFromCT(nodeSource)
+	local nodeEffectParent = DB.getChild(nodeEffect, '...') -- 0 means no valid aura found
+	local tokenSource = CombatManager.getTokenFromCT(nodeEffectParent)
 	AuraEffect.updateAura(tokenSource, nodeEffect, nRange)
 end
 
@@ -61,9 +60,7 @@ function notifyTokenMove(token)
 	Comm.deliverOOBMessage(msgOOB, '')
 end
 
-local function onMove(token)
-	notifyTokenMove(token)
-end
+local function onMove(token) notifyTokenMove(token) end
 
 -- Recalculate auras when opening images
 local onWindowOpened_old
