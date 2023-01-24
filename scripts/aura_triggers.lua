@@ -27,7 +27,7 @@ function updateAurasForActor(nodeCT, windowFilter, effectFilter)
 		local _, winImage, _ = ImageManager.getImageControl(CombatManager.getTokenFromCT(nodeCT))
 		if windowFilter and winImage ~= windowFilter then return end -- if filterImage is set and doesn't match, abort
 	end
-	for _, nodeEffect in pairs(DB.getChildren(nodeCT, 'effects')) do
+	for _, nodeEffect in ipairs(DB.getChildList(nodeCT, 'effects')) do
 		local bFilterSkip = effectFilter and nodeEffect ~= effectFilter
 		if not bFilterSkip then updateAurasForEffect(nodeEffect) end
 	end
