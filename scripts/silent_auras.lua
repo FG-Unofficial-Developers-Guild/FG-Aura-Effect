@@ -114,7 +114,7 @@ end
 
 function notifyExpire(varEffect, nMatch, bImmediate, auraType)
 	if type(varEffect) == 'databasenode' then
-		varEffect = varEffect.getPath()
+		varEffect = DB.getPath(varEffect)
 	elseif type(varEffect) ~= 'string' then
 		return
 	end
