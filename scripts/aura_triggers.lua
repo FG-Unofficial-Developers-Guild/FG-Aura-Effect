@@ -36,15 +36,14 @@ end
 -- Calls updateAurasForActor on each CT node whose token is on the same image supplied as 'window'
 function updateAurasForMap(window)
 	if not window or not StringManager.contains({ 'imagepanelwindow', 'imagewindow' }, window.getClass()) then return end
-	for _, nodeCT in pairs(CombatManager.getCombatantNodes()) do
+	for _, nodeCT in ipairs(DB.getChildList(CombatManager.CT_LIST)) do
 		local _, winImage = ImageManager.getImageControl(CombatManager.getTokenFromCT(nodeCT))
 		if winImage == window then updateAurasForActor(nodeCT, winImage) end
 	end
 end
 
 function handleTokenMovement(msgOOB)
-	local token = CombatManager.getTokenFromCT(msgOOB.sCTNode)
-	local _, winImage = ImageManager.getImageControl(token)
+	local _, winImage = ImageManager.getImageControl(CombatManager.getTokenFromCT(msgOOB.sCTNode))
 	updateAurasForMap(winImage)
 end
 
@@ -88,7 +87,8 @@ end
 local function onEffectToBeRemoved(nodeEffect)
 	local sEffect = DB.getValue(nodeEffect, 'label', '')
 	if string.find(sEffect, AuraEffect.fromAuraString) then return end
-	if string.find(sEffect, AuraEffect.auraString) then AuraEffect.removeAllFromAuras(nodeEffect) end
+	if not string.find(sEffect, AuraEffect.auraString) then return end
+	AuraEffect.removeAllFromAuras(nodeEffect)
 end
 
 ---	Recalculate auras after effects are removed to ensure conditionals before aura are respected
@@ -110,10 +110,9 @@ function onInit()
 	Token.addEventHandler('onMove', onMove)
 
 	-- all handlers should be created on GM machine
-	if Session.IsHost then
-		DB.addHandler(DB.getPath(CombatManager.CT_LIST .. '.*.effects.*.label'), 'onUpdate', onEffectChanged)
-		DB.addHandler(DB.getPath(CombatManager.CT_LIST .. '.*.effects.*.isactive'), 'onUpdate', onEffectChanged)
-		DB.addHandler(DB.getPath(CombatManager.CT_LIST .. '.*.effects.*'), 'onDelete', onEffectToBeRemoved)
-		DB.addHandler(DB.getPath(CombatManager.CT_LIST .. '.*.effects'), 'onChildDeleted', onEffectRemoved)
-	end
+	if not Session.IsHost then return end
+	DB.addHandler(DB.getPath(CombatManager.CT_LIST .. '.*.effects.*.label'), 'onUpdate', onEffectChanged)
+	DB.addHandler(DB.getPath(CombatManager.CT_LIST .. '.*.effects.*.isactive'), 'onUpdate', onEffectChanged)
+	DB.addHandler(DB.getPath(CombatManager.CT_LIST .. '.*.effects.*'), 'onDelete', onEffectToBeRemoved)
+	DB.addHandler(DB.getPath(CombatManager.CT_LIST .. '.*.effects'), 'onChildDeleted', onEffectRemoved)
 end
