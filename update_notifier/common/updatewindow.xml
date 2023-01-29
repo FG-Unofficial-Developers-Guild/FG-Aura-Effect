@@ -77,7 +77,7 @@
                         Interface.openWindow('url', sURL)
                     end
                     if uniquename and uniquename[1] then
-                        window.getDatabaseNode().createChild(uniquename[1])
+                        DB.createChild(window.getDatabaseNode(), uniquename[1])
                     end
                     window.close()
                 end
