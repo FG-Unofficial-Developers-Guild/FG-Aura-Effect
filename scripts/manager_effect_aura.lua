@@ -43,7 +43,7 @@ local function buildFromAura(nodeEffect)
 	rEffect.nGMOnly = DB.getValue(nodeEffect, 'isgmonly', 0)
 	rEffect.nInit = DB.getValue(nodeEffect, 'init', 0)
 	rEffect.sName = fromAuraString .. applyLabel:gsub('IFT*:%s*FACTION%(%s*notself%s*%)%s*;*', '')
-	rEffect.sSource = DB.getPath(DB.getChild(nodeEffect, '...'))
+	rEffect.sSource = DB.getPath(nodeEffect, '...')
 	rEffect.sAuraNode = DB.getPath(nodeEffect)
 	rEffect.sUnits = DB.getValue(nodeEffect, 'unit', '')
 	return rEffect
@@ -73,7 +73,7 @@ end
 -- Check effect nodes of nodeSource to see if they are children of nodeEffect
 local function hasFromAura(nodeEffect, nodeSource)
 	local sEffectPath = DB.getPath(nodeEffect)
-	for _, nodeTargetEffect in ipairs(DB.getChildList(DB.getPath(nodeSource) .. '.effects')) do
+	for _, nodeTargetEffect in ipairs(DB.getChildList(nodeSource, 'effects')) do
 		if DB.getValue(nodeTargetEffect, 'source_aura', '') == sEffectPath then return true end
 	end
 	return false
