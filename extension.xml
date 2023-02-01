@@ -41,8 +41,5 @@
 
 		<!-- Effect Builder -->
 		<includefile source="effect_builder/editor_loader.xml" />
-
-		<!-- Update Notifier -->
-		<includefile source="update_notifier/update_notifier.xml" />
 	</base>
 </root>
