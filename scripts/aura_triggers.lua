@@ -43,9 +43,17 @@ function updateAurasForMap(window)
 	end
 end
 
+local sTime = ''
 function handleTokenMovement(msgOOB)
+	local time1 = nil
+	if bDebugPerformance then time1 = os.clock() end
 	local _, winImage = ImageManager.getImageControl(CombatManager.getTokenFromCT(msgOOB.sCTNode))
 	updateAurasForMap(winImage)
+	if bDebugPerformance then
+		local time2 = os.clock()
+		sTime = sTime .. tostring(time2 - time1) .. ','
+		Debug.console(sTime)
+	end
 end
 
 ---	This function requests aura processing to be performed on the host FG instance.
@@ -60,19 +68,7 @@ function notifyTokenMove(token)
 	Comm.deliverOOBMessage(msgOOB, '')
 end
 
-local sTime = ''
-local function onMove(token)
-	local time1 = nil
-	if bDebugPerformance then
-		time1 = os.clock()
-	end
-	notifyTokenMove(token)
-	if bDebugPerformance then
-		local time2 = os.clock()
-		sTime = sTime .. tostring(time2 - time1) .. ','
-		Debug.console(sTime)
-	end
-end
+local function onMove(token) notifyTokenMove(token) end
 
 -- Recalculate auras when opening images
 local onWindowOpened_old
