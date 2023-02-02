@@ -138,6 +138,7 @@ local function getTokensBeyondDistance(tokenSource, nRange)
 	return tFarTokens
 end
 
+-- Check for IF/IFT conditionals blocking aura effect
 local function checkConditionalBeforeAura(nodeEffect, nodeCT, targetNodeCT)
 	if AuraFactionConditional.DetectedEffectManager.parseEffectComp then -- check conditionals if supported
 		for _, sEffectComp in ipairs(EffectManager.parseEffect(DB.getValue(nodeEffect, 'label', ''))) do
@@ -166,9 +167,10 @@ end
 function isAuraApplicable(nodeEffect, rSource, token, auraType)
 	local rTarget = ActorManager.resolveActor(CombatManager.getCTFromToken(token))
 	if
-		checkConditionalBeforeAura(nodeEffect, ActorManager.getCTNode(rSource), ActorManager.getCTNode(rTarget))
+		rTarget ~= rSource
 		and DB.getValue(nodeEffect, 'isactive', 0) == 1
-		and AuraFactionConditional.checkFaction(rSource, rTarget, auraType)
+		and checkConditionalBeforeAura(nodeEffect, ActorManager.getCTNode(rSource), ActorManager.getCTNode(rTarget))
+		and AuraFactionConditional.checkFaction(rTarget, rSource, auraType)
 	then
 		return true
 	end

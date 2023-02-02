@@ -26,7 +26,7 @@ end
 
 function checkFaction(rActor, rTarget, sFactionFilter)
 	if bDebug then Debug.chat('checkFaction:args', rActor, rTarget, sFactionFilter) end
-	if not rActor or not rTarget or not sFactionFilter then return false end
+	if not rActor or not sFactionFilter then return false end
 
 	local bNegate = sFactionFilter:match('[~%!]') ~= nil
 	if bNegate then sFactionFilter = sFactionFilter:gsub('[~%!]', '') end
@@ -39,15 +39,15 @@ function checkFaction(rActor, rTarget, sFactionFilter)
 	end
 
 	bReturn = bReturn or StringManager.contains({ ActorManager.getFaction(rActor), getRelationship(rActor, rTarget) }, sFactionFilter:lower())
+	if bDebug then Debug.chat('checkFaction:results', bReturn, 'negation:', bNegate) end
 	if bNegate then bReturn = not bReturn end
 
-	if bDebug then Debug.chat('checkFaction:results', bNegate, 'return value including negation:', bReturn) end
 	return bReturn
 end
 
 local checkConditional_old
 local function checkConditional_new(rActor, nodeEffect, aConditions, rTarget, aIgnore, ...)
-	if bDebug then Debug.chat('checkConditional_new', rActor, nodeEffect, aConditions, rTarget, aIgnore, ...) end
+	if bDebug then Debug.chat('checkConditional_new:args', rActor, nodeEffect, aConditions, rTarget, aIgnore, ...) end
 	local bReturn = checkConditional_old(rActor, nodeEffect, aConditions, rTarget, aIgnore, ...)
 
 	-- skip faction check if conditions already aren't passing
