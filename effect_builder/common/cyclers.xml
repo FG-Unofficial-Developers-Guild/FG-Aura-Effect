@@ -11,8 +11,8 @@
             <parameters mergerule="replace">
                 <defaultlabel>all</defaultlabel>
                 <defaultvalue>all</defaultvalue>
-                <labels>friend|foe</labels>
-                <values>friend|foe</values>
+                <labels>ally|not ally|enemy|not enemy|friend|not friend|foe|not foe</labels>
+                <values>ally|!ally|enemy|!enemy|friend|!friend|foe|!foe</values>
             </parameters>
         </cycler_eb_valueholder>
     </template>
@@ -21,9 +21,9 @@
         <cycler_eb_valueholder name="aura_faction_conditional">
             <parameters mergerule="replace">
                 <defaultlabel>notself</defaultlabel>
-                <defaultvalue>notself</defaultvalue>
-                <labels>friend|not friend|foe|not foe|neutral|not neutral</labels>
-                <values>friend|^friend|foe|^foe|neutral|^neutral</values>
+                <defaultvalue>!self</defaultvalue>
+                <labels>ally|not ally|enemy|not enemy|friend|not friend|foe|not foe</labels>
+                <values>ally|!ally|enemy|!enemy|friend|!friend|foe|!foe</values>
             </parameters>
         </cycler_eb_valueholder>
     </template>
