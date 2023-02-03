@@ -28,7 +28,7 @@ function updateAurasForActor(nodeCT, windowFilter, effectFilter)
 		local _, winImage, _ = ImageManager.getImageControl(CombatManager.getTokenFromCT(nodeCT))
 		if windowFilter and winImage ~= windowFilter then return end -- if filterImage is set and doesn't match, abort
 	end
-	for _, nodeEffect in ipairs(DB.getChildList(nodeCT, 'effects')) do
+	for _, nodeEffect in pairs(DB.getChildren(nodeCT, 'effects')) do
 		local bFilterSkip = effectFilter and nodeEffect ~= effectFilter
 		if not bFilterSkip then updateAurasForEffect(nodeEffect) end
 	end
@@ -37,7 +37,7 @@ end
 -- Calls updateAurasForActor on each CT node whose token is on the same image supplied as 'window'
 function updateAurasForMap(window)
 	if not window or not StringManager.contains({ 'imagepanelwindow', 'imagewindow' }, window.getClass()) then return end
-	for _, nodeCT in ipairs(DB.getChildList(CombatManager.CT_LIST)) do
+	for _, nodeCT in pairs(DB.getChildren(CombatManager.CT_LIST)) do
 		local _, winImage = ImageManager.getImageControl(CombatManager.getTokenFromCT(nodeCT))
 		if winImage == window then updateAurasForActor(nodeCT, winImage) end
 	end

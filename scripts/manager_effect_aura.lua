@@ -62,7 +62,7 @@ end
 local function saveAuraSource(nodeEffect, nodeSource, nodeTarget)
 	local sSourcePath = DB.getPath(nodeSource)
 	local sEffectPath = DB.getPath(nodeEffect)
-	for _, nodeTargetEffect in ipairs(DB.getChildList(nodeTarget, 'effects')) do
+	for _, nodeTargetEffect in pairs(DB.getChildren(nodeTarget, 'effects')) do
 		if isAuraMatchToSaveSource(nodeTargetEffect, sSourcePath) then
 			if not DB.getValue(nodeTargetEffect, 'source_aura') then DB.setValue(nodeTargetEffect, 'source_aura', 'string', sEffectPath) end
 			break
@@ -73,7 +73,7 @@ end
 -- Check effect nodes of nodeSource to see if they are children of nodeEffect
 local function hasFromAura(nodeEffect, nodeSource)
 	local sEffectPath = DB.getPath(nodeEffect)
-	for _, nodeTargetEffect in ipairs(DB.getChildList(nodeSource, 'effects')) do
+	for _, nodeTargetEffect in pairs(DB.getChildren(nodeSource, 'effects')) do
 		if DB.getValue(nodeTargetEffect, 'source_aura', '') == sEffectPath then return true end
 	end
 	return false
@@ -96,7 +96,7 @@ function removeAura(nodeEffect, nodeTarget)
 	if not nodeEffect or not nodeTarget then return end
 	local auraType = getAuraFaction(DB.getValue(nodeEffect, 'label', ''))
 	local sEffectPath = DB.getPath(nodeEffect)
-	for _, nodeTargetEffect in ipairs(DB.getChildList(nodeTarget, 'effects')) do
+	for _, nodeTargetEffect in pairs(DB.getChildren(nodeTarget, 'effects')) do
 		if DB.getValue(nodeTargetEffect, 'isactive', 0) == 1 and DB.getValue(nodeTargetEffect, 'source_aura', '') == sEffectPath then
 			AuraEffectSilencer.notifyExpire(nodeTargetEffect, nil, nil, auraType)
 			break
