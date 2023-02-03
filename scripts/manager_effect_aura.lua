@@ -4,7 +4,7 @@
 
 -- luacheck: globals bDebug updateAura addAura removeAura removeAllFromAuras isAuraApplicable
 -- luacheck: globals fromAuraString auraString getAuraDetails getAuraFaction getAuraRange
--- luacheck: globals DetectedEffectManager.parseEffectComp DetectedEffectManager.checkConditional
+-- luacheck: globals AuraFactionConditional.DetectedEffectManager.parseEffectComp AuraFactionConditional.DetectedEffectManager.checkConditional
 
 bDebug = false
 
