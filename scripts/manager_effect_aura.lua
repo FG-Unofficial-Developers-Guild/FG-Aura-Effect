@@ -43,7 +43,7 @@ local function buildFromAura(nodeEffect)
 	rEffect.nGMOnly = DB.getValue(nodeEffect, 'isgmonly', 0)
 	rEffect.nInit = DB.getValue(nodeEffect, 'init', 0)
 	rEffect.sName = fromAuraString .. applyLabel:gsub('IFT*:%s*FACTION%(%s*notself%s*%)%s*;*', '')
-	rEffect.sSource = DB.getPath(nodeEffect, '...')
+	rEffect.sSource = DB.getPath(DB.getChild(nodeEffect, '...'))
 	rEffect.sAuraNode = DB.getPath(nodeEffect)
 	rEffect.sUnits = DB.getValue(nodeEffect, 'unit', '')
 	return rEffect
