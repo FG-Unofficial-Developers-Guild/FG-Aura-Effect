@@ -54,8 +54,7 @@ end
 -- It does this without using source_aura as it's used in the pipeline that sets source_aura
 local function isAuraMatchToSaveSource(nodeTargetEffect, sSourcePath)
 	local bReturn = DB.getValue(nodeTargetEffect, 'source_name', '') == sSourcePath
-	bReturn = bReturn or string.find(DB.getValue(nodeTargetEffect, 'label', ''), fromAuraString) ~= nil
-	return bReturn
+	return bReturn and string.find(DB.getValue(nodeTargetEffect, 'label', ''), fromAuraString) ~= nil
 end
 
 -- Search for FROMAURA effects on nodeTarget where aura source matches nodeSource and source_aura is not set
@@ -64,8 +63,8 @@ local function saveAuraSource(nodeEffect, nodeSource, nodeTarget)
 	local sSourcePath = DB.getPath(nodeSource)
 	local sEffectPath = DB.getPath(nodeEffect)
 	for _, nodeTargetEffect in pairs(DB.getChildren(nodeTarget, 'effects')) do
-		if isAuraMatchToSaveSource(nodeTargetEffect, sSourcePath) then
-			if not DB.getValue(nodeTargetEffect, 'source_aura') then DB.setValue(nodeTargetEffect, 'source_aura', 'string', sEffectPath) end
+		if not DB.getValue(nodeTargetEffect, 'source_aura') and isAuraMatchToSaveSource(nodeTargetEffect, sSourcePath) then
+			DB.setValue(nodeTargetEffect, 'source_aura', 'string', sEffectPath)
 			break
 		end
 	end
