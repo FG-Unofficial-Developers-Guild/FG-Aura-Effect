@@ -36,6 +36,8 @@ function checkFaction(rActor, rTarget, sFactionFilter)
 		bReturn = rActor == rTarget
 	elseif sFactionFilter == 'all' then
 		bReturn = true
+	elseif sFactionFilter == 'none' then
+		bReturn = false
 	end
 
 	bReturn = bReturn or StringManager.contains({ ActorManager.getFaction(rActor), getRelationship(rActor, rTarget) }, sFactionFilter:lower())
