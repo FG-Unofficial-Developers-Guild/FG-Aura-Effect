@@ -34,10 +34,17 @@ jobs:
           regex: '[A-Za-z]+:\s+'
           replacement: ''
 
-      - id: removeapostrophes
+      - id: removetabs
         uses: ashley-taylor/regex-property-action@v1
         with:
           value: ${{ steps.removenameprefix.outputs.value }}
+          regex: "	"
+          replacement: ''
+
+      - id: removeapostrophes
+        uses: ashley-taylor/regex-property-action@v1
+        with:
+          value: ${{ steps.removetabs.outputs.value }}
           regex: "'"
           replacement: ''
 
@@ -76,10 +83,17 @@ jobs:
           regex: '[A-Za-z]+:\s'
           replacement: ''
 
-      - id: removeauthorapostrophes
+      - id: removetabs
         uses: ashley-taylor/regex-property-action@v1
         with:
           value: ${{ steps.removeauthorprefix.outputs.value }}
+          regex: "	"
+          replacement: ''
+
+      - id: removeauthorapostrophes
+        uses: ashley-taylor/regex-property-action@v1
+        with:
+          value: ${{ steps.removetabs.outputs.value }}
           regex: "'"
           replacement: ''
 
