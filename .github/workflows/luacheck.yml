@@ -61,7 +61,7 @@ jobs:
           string: ${{ steps.removenamespaces.outputs.value }}
 
       # Determine extension author
-      - name: Get Extension Name from XML
+      - name: Get Author Name from XML
         id: getauthorfromxml
         uses: mavrosxristoforos/get-xml-info@1.1.1
         with:
