@@ -34,7 +34,7 @@ jobs:
           regex: '[A-Za-z]+:\s+'
           replacement: ''
 
-      - id: removetabs
+      - id: removenametabs
         uses: ashley-taylor/regex-property-action@v1
         with:
           value: ${{ steps.removenameprefix.outputs.value }}
@@ -44,7 +44,7 @@ jobs:
       - id: removeapostrophes
         uses: ashley-taylor/regex-property-action@v1
         with:
-          value: ${{ steps.removetabs.outputs.value }}
+          value: ${{ steps.removenametabs.outputs.value }}
           regex: "'"
           replacement: ''
 
@@ -83,7 +83,7 @@ jobs:
           regex: '[A-Za-z]+:\s'
           replacement: ''
 
-      - id: removetabs
+      - id: removeauthortabs
         uses: ashley-taylor/regex-property-action@v1
         with:
           value: ${{ steps.removeauthorprefix.outputs.value }}
@@ -93,7 +93,7 @@ jobs:
       - id: removeauthorapostrophes
         uses: ashley-taylor/regex-property-action@v1
         with:
-          value: ${{ steps.removetabs.outputs.value }}
+          value: ${{ steps.removeauthortabs.outputs.value }}
           regex: "'"
           replacement: ''
 
