@@ -84,7 +84,7 @@ end
 function addAura(nodeEffect, nodeTarget)
 	local auraType = getAuraFaction(DB.getValue(nodeEffect, 'label', ''))
 	local nodeSource = DB.getChild(nodeEffect, '...')
-	if not nodeSource or not nodeTarget then return end
+	if not nodeSource or not nodeTarget or not nodeEffect then return end
 	if hasFromAura(nodeEffect, nodeTarget) then return end
 	AuraEffectSilencer.notifyApply(buildFromAura(nodeEffect), DB.getPath(nodeTarget), auraType)
 	saveAuraSource(nodeEffect, nodeSource, nodeTarget)
