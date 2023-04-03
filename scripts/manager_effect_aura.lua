@@ -140,23 +140,20 @@ end
 
 -- Check for IF/IFT conditionals blocking aura effect
 local function checkConditionalBeforeAura(nodeEffect, nodeCT, targetNodeCT)
-	if AuraFactionConditional.DetectedEffectManager.parseEffectComp then -- check conditionals if supported
-		for _, sEffectComp in ipairs(EffectManager.parseEffect(DB.getValue(nodeEffect, 'label', ''))) do
-			local rEffectComp = AuraFactionConditional.DetectedEffectManager.parseEffectComp(sEffectComp)
-			-- Check conditionals
-			if rEffectComp.type == 'AURA' then
-				return true
-			elseif rEffectComp.type == 'IF' then
-				local rActor = ActorManager.resolveActor(nodeCT) -- these are in here for performance reasons
-				if not AuraFactionConditional.DetectedEffectManager.checkConditional(rActor, nodeEffect, rEffectComp.remainder) then return false end
-			elseif rEffectComp.type == 'IFT' then
-				local rActor = ActorManager.resolveActor(nodeCT) -- these are in here for performance reasons
-				local rTarget = ActorManager.resolveActor(targetNodeCT) -- these are in here for performance reasons
-				if
-					rTarget and not AuraFactionConditional.DetectedEffectManager.checkConditional(rTarget, nodeEffect, rEffectComp.remainder, rActor)
-				then
-					return false
-				end
+	if not AuraFactionConditional.DetectedEffectManager.parseEffectComp then return true end
+	for _, sEffectComp in ipairs(EffectManager.parseEffect(DB.getValue(nodeEffect, 'label', ''))) do
+		local rEffectComp = AuraFactionConditional.DetectedEffectManager.parseEffectComp(sEffectComp)
+		-- Check conditionals
+		if rEffectComp.type == 'AURA' then
+			return true
+		elseif rEffectComp.type == 'IF' then
+			local rActor = ActorManager.resolveActor(nodeCT) -- these are in here for performance reasons
+			if not AuraFactionConditional.DetectedEffectManager.checkConditional(rActor, nodeEffect, rEffectComp.remainder) then return false end
+		elseif rEffectComp.type == 'IFT' then
+			local rActor = ActorManager.resolveActor(nodeCT) -- these are in here for performance reasons
+			local rTarget = ActorManager.resolveActor(targetNodeCT) -- these are in here for performance reasons
+			if rTarget and not AuraFactionConditional.DetectedEffectManager.checkConditional(rTarget, nodeEffect, rEffectComp.remainder, rActor) then
+				return false
 			end
 		end
 	end
@@ -188,16 +185,14 @@ function updateAura(tokenSource, nodeEffect, nRange)
 	-- compile lists
 	local rSource = ActorManager.resolveActor(DB.getChild(nodeEffect, '...'))
 	for _, token in pairs(imageControl.getTokensWithinDistance(tokenSource, nRange)) do
-		local nodeCT = CombatManager.getCTFromToken(token)
 		if isAuraApplicable(nodeEffect, rSource, token, sAuraFaction) then
-			tAdd[token.getId()] = { nodeEffect, nodeCT }
+			tAdd[token.getId()] = { nodeEffect, CombatManager.getCTFromToken(token) }
 		else
-			tRemove[token.getId()] = { nodeEffect, nodeCT }
+			tRemove[token.getId()] = { nodeEffect, CombatManager.getCTFromToken(token) }
 		end
 	end
 	for id, token in pairs(getTokensBeyondDistance(tokenSource, nRange)) do
-		local nodeCT = CombatManager.getCTFromToken(token)
-		tRemove[id] = { nodeEffect, nodeCT }
+		tRemove[id] = { nodeEffect, CombatManager.getCTFromToken(token) }
 	end
 
 	-- process add/remove

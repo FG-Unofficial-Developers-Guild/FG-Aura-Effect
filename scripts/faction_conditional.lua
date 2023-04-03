@@ -47,27 +47,26 @@ function checkFaction(rActor, rTarget, sFactionFilter)
 	return bReturn
 end
 
-local checkConditional_old
-local function checkConditional_new(rActor, nodeEffect, aConditions, rTarget, aIgnore, ...)
-	if bDebug then Debug.chat('checkConditional_new:args', rActor, nodeEffect, aConditions, rTarget, aIgnore, ...) end
-	local bReturn = checkConditional_old(rActor, nodeEffect, aConditions, rTarget, aIgnore, ...)
-
-	-- skip faction check if conditions already aren't passing
-	if bReturn == false then return bReturn end
-
+local function checkFactionConditional(rActor, nodeEffect, aConditions)
 	if aConditions and aConditions.remainder then aConditions = aConditions.remainder end
 	local rAuraSource = ActorManager.resolveActor(DB.getValue(nodeEffect, 'source_name', ''))
 	for _, v in ipairs(aConditions) do
 		local sFactionCheck = v:lower():match('^faction%s*%(([^)]+)%)$')
 		if sFactionCheck then
-			if not checkFaction(rActor, rAuraSource, sFactionCheck) then
-				bReturn = false
-				break
-			end
+			if not checkFaction(rActor, rAuraSource, sFactionCheck) then return false end
 		end
 	end
+	return true
+end
 
-	return bReturn
+local checkConditional_old
+local function checkConditional_new(rActor, nodeEffect, aConditions, rTarget, aIgnore, ...)
+	if bDebug then Debug.chat('checkConditional_new:args', rActor, nodeEffect, aConditions, rTarget, aIgnore, ...) end
+
+	local bReturn = checkConditional_old(rActor, nodeEffect, aConditions, rTarget, aIgnore, ...)
+	if not bReturn then return bReturn end -- skip faction check if conditions already aren't passing
+
+	return checkFactionConditional(rActor, nodeEffect, aConditions)
 end
 
 function onInit()
