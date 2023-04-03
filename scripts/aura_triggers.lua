@@ -14,9 +14,8 @@ OOB_MSGTYPE_AURATOKENMOVE = 'aurasontokenmove'
 function updateAurasForEffect(nodeEffect)
 	if type(nodeEffect) ~= 'databasenode' then return end -- sometimes userdata shows up here when used with BCE
 	local nRange = AuraEffect.getAuraRange(DB.getValue(nodeEffect, 'label', ''))
-	if nRange == 0 then return end
-	local nodeEffectParent = DB.getChild(nodeEffect, '...') -- 0 means no valid aura found
-	local tokenSource = CombatManager.getTokenFromCT(nodeEffectParent)
+	if nRange == 0 then return end -- 0 means no valid aura found
+	local tokenSource = CombatManager.getTokenFromCT(DB.getChild(nodeEffect, '...'))
 	AuraEffect.updateAura(tokenSource, nodeEffect, nRange)
 end
 
@@ -26,11 +25,10 @@ end
 function updateAurasForActor(nodeCT, windowFilter, effectFilter)
 	if windowFilter then -- if windowFilter is provided, save winImage to filterImage
 		local _, winImage, _ = ImageManager.getImageControl(CombatManager.getTokenFromCT(nodeCT))
-		if windowFilter and winImage ~= windowFilter then return end -- if filterImage is set and doesn't match, abort
+		if winImage ~= windowFilter then return end -- if filterImage is set and doesn't match, abort
 	end
 	for _, nodeEffect in ipairs(DB.getChildList(nodeCT, 'effects')) do
-		local bFilterSkip = effectFilter and nodeEffect ~= effectFilter
-		if not bFilterSkip then updateAurasForEffect(nodeEffect) end
+		if not effectFilter and nodeEffect ~= effectFilter then updateAurasForEffect(nodeEffect) end
 	end
 end
 
