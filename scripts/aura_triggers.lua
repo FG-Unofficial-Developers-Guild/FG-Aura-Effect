@@ -48,8 +48,7 @@ function handleTokenMovement(msgOOB)
 	local _, winImage = ImageManager.getImageControl(CombatManager.getTokenFromCT(msgOOB.sCTNode))
 	updateAurasForMap(winImage)
 	if bDebugPerformance then
-		local time2 = os.clock()
-		sTime = sTime .. tostring(time2 - time1) .. ','
+		sTime = string.format('%s%s,', sTime, tostring(os.clock() - time1))
 		Debug.console(sTime)
 	end
 end

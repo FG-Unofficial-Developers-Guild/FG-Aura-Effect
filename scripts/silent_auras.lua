@@ -30,7 +30,7 @@ function handleApplyEffect(msgOOB)
 	-- Get the target combat tracker node
 	local nodeCTEntry = DB.findNode(msgOOB.sTargetNode)
 	if not nodeCTEntry then
-		ChatManager.SystemMessage(Interface.getString('ct_error_effectapplyfail') .. ' (' .. msgOOB.sTargetNode .. ')')
+		ChatManager.SystemMessage(string.format('%s (%s)', Interface.getString('ct_error_effectapplyfail'), msgOOB.sTargetNode))
 		return
 	end
 
@@ -93,12 +93,12 @@ end
 function handleExpireEffect(msgOOB)
 	local nodeEffect = DB.findNode(msgOOB.sEffectNode)
 	if not nodeEffect then
-		ChatManager.SystemMessage(Interface.getString('ct_error_effectdeletefail') .. ' (' .. msgOOB.sEffectNode .. ')')
+		ChatManager.SystemMessage(string.format('%s (%s)', Interface.getString('ct_error_effectdeletefail'), msgOOB.sEffectNode))
 		return
 	end
 	local nodeActor = nodeEffect.getChild('...')
 	if not nodeActor then
-		ChatManager.SystemMessage(Interface.getString('ct_error_effectmissingactor') .. ' (' .. msgOOB.sEffectNode .. ')')
+		ChatManager.SystemMessage(string.format('%s (%s)', Interface.getString('ct_error_effectmissingactor'), msgOOB.sEffectNode))
 		return
 	end
 
