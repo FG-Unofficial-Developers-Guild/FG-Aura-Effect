@@ -13,10 +13,10 @@ OOB_MSGTYPE_AURATOKENMOVE = 'aurasontokenmove'
 -- Trigger AURA effect calculation on supplied effect node.
 function updateAurasForEffect(nodeEffect)
 	if type(nodeEffect) ~= 'databasenode' then return end -- sometimes userdata shows up here when used with BCE
-	local nRange = AuraEffect.getAuraRange(DB.getValue(nodeEffect, 'label', ''))
-	if nRange == 0 then return end -- 0 means no valid aura found
-	local tokenSource = CombatManager.getTokenFromCT(DB.getChild(nodeEffect, '...'))
-	AuraEffect.updateAura(tokenSource, nodeEffect, nRange)
+	local rAuraDetails = AuraEffect.getAuraDetails(nodeEffect)
+	if rAuraDetails.nRange == 0 then return end -- 0 means no valid aura found
+	local tokenSource = CombatManager.getTokenFromCT(DB.findNode(rAuraDetails.sSource))
+	AuraEffect.updateAura(tokenSource, nodeEffect, rAuraDetails)
 end
 
 -- Trigger AURA effect calculation on all effects in a supplied CT node.
