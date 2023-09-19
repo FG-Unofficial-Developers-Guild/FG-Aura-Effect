@@ -21,9 +21,21 @@ local aEffectVarMap = {
 	['sAuraSource'] = { sDBType = 'string', sDBField = 'source_aura' },
 }
 
-local function checkSilentNotification(auraType)
+local function checkSilentNotification(aFactions)
 	local option = OptionsManager.getOption('AURASILENT'):lower()
-	return option == 'all' or option == auraType:lower():gsub('[~%!]', '')
+	if option == 'all' then
+		return true
+	end
+	for _, sFaction in ipairs(aFactions) do
+		local bNegate = false
+		if StringManager.startsWith(sFaction, '!') then
+			sFaction = sFaction:sub(2);
+			bNegate = true
+		end
+		if (not bNegate and option == sFaction) or (bNegate and option ~= sFaction) then
+			return true
+		end
+	end
 end
 
 function handleApplyEffect(msgOOB)
@@ -82,8 +94,8 @@ function notifyApplySilent(rEffect, vTargets)
 	end
 end
 
-function notifyApply(rEffect, targetNodePath, auraType)
-	if checkSilentNotification(auraType) then
+function notifyApply(rEffect, targetNodePath, aFactions)
+	if checkSilentNotification(aFactions) then
 		notifyApplySilent(rEffect, targetNodePath)
 	else
 		EffectManager.notifyApply(rEffect, targetNodePath)
@@ -112,13 +124,13 @@ function notifyExpireSilent(varEffect)
 	DB.deleteNode(nodeEffect)
 end
 
-function notifyExpire(varEffect, nMatch, bImmediate, auraType)
+function notifyExpire(varEffect, nMatch, bImmediate, aFactions)
 	if type(varEffect) == 'databasenode' then
 		varEffect = DB.getPath(varEffect)
 	elseif type(varEffect) ~= 'string' then
 		return
 	end
-	if checkSilentNotification(auraType) then
+	if checkSilentNotification(aFactions) then
 		notifyExpireSilent(varEffect)
 	else
 		EffectManager.notifyExpire(varEffect, nMatch, bImmediate)

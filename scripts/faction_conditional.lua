@@ -24,25 +24,31 @@ function getRelationship(rActor, rTarget)
 	end
 end
 
-function checkFaction(rActor, rTarget, sFactionFilter)
-	if bDebug then Debug.chat('checkFaction:args', rActor, rTarget, sFactionFilter) end
-	if not rActor or not sFactionFilter then return false end
 
-	local bNegate = sFactionFilter:match('[~%!]') ~= nil
-	if bNegate then sFactionFilter = sFactionFilter:gsub('[~%!]', '') end
+function checkFaction(rActor, rTarget, aFactions)
+	local bReturn = false
+	if bDebug then Debug.chat('checkFaction:args', rActor, rTarget, aFactions) end
+	if not rActor or not next(aFactions) then return false end
+	local bNegate
+	for _, sFaction in ipairs(aFactions) do
+		bNegate = false
+		if StringManager.startsWith(sFaction, '!') or StringManager.startsWith(sFaction, '~') then
+			sFaction = sFaction:sub(2);
+			bNegate = true
+		end
 
-	local bReturn
-	if sFactionFilter == 'notself' or (sFactionFilter == 'self' and bNegate) then
-		bReturn = rActor == rTarget
-	elseif sFactionFilter == 'all' then
-		bReturn = true
-	elseif sFactionFilter == 'none' then
-		bReturn = false
+		if not bNegate and sFaction == 'all' then
+			bReturn = true
+			break
+		elseif not bNegate and StringManager.contains({ ActorManager.getFaction(rActor), getRelationship(rActor, rTarget) }, sFaction) then
+			bReturn = true
+			break
+		elseif bNegate and not StringManager.contains({ ActorManager.getFaction(rActor), getRelationship(rActor, rTarget) }, sFaction) then
+			bReturn = true
+			break
+		end
 	end
-
-	bReturn = bReturn or StringManager.contains({ ActorManager.getFaction(rActor), getRelationship(rActor, rTarget) }, sFactionFilter:lower())
 	if bDebug then Debug.chat('checkFaction:results', bReturn, 'negation:', bNegate) end
-	if bNegate then bReturn = not bReturn end
 
 	return bReturn
 end
@@ -53,7 +59,7 @@ local function checkFactionConditional(rActor, nodeEffect, aConditions)
 	for _, v in ipairs(aConditions) do
 		local sFactionCheck = v:lower():match('^faction%s*%(([^)]+)%)$')
 		if sFactionCheck then
-			if not checkFaction(rActor, rAuraSource, sFactionCheck) then return false end
+			if not checkFaction(rActor, rAuraSource, {sFactionCheck}) then return false end
 		end
 	end
 	return true
