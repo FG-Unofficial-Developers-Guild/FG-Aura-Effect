@@ -17,9 +17,9 @@ This will add a 10 foot aura around the person who has this effect.
 
 Allies within 10' will receive an effect "FROMAURA; Aura of Protection; SAVE: 5".
 
-While a name (such as 'Aura of Protection' in the above example) is not required it is highly reccomended to help avoid collisions between effects.
+While a name (such as 'Aura of Protection' in the above example) is not required it is highly recommended to help avoid collisions between effects.
 
-If IF/IFT conditions are included *before* the "AURA" effect, they will act to enable/disable parsing of the aura such as for auras that occur automatically when some conditions are met. If IF/IFT confitions are included after the aura, they will be copied to the recipients.
+If IF/IFT conditions are included *before* the "AURA" effect, they will act to enable/disable parsing of the aura such as for auras that occur automatically when some conditions are met. If IF/IFT conditions are included after the aura, they will be copied to the recipients.
 
 The bearer of the AURA effect will also receive its benefits. If this is not desired, see below.
 
@@ -63,6 +63,11 @@ You can also use the "!" or "~" operators in a FACTION conditional to reverse th
 ```AURA: 10 ally; Attack Bonus for Allies; IF: FACTION(notself); ATK: 2```
 
 ```AURA: 10 all; Speed Bonus for All, Attack Bonus for Blank Factions; SPEED: 20; IF: FACTION(faction); ATK: 2```
+
+### Special AURA type SINGLE
+There are a number of spells and effects, particularly in the 5E ruleset, which necessitate a slightly different aura behavior. These have the text or something similar *"When the creature enters the area for the first time on a turn or starts its turn there"*. This behavior can be enabled by adding **single** to the aura filter as shown in the example below. The aura will be applied to the target only when the target starts its turn in the aura or enters (moves into) the area for the first time on a turn. It will not be reapplied if the target leaves the area and returns on the same turn.
+
+```AURA: 10 !ally,single; Test; IF: FACTION(notself); ATK: -5```
 
 ### Option for disabling aura effect chat messages
 "Silence Notifications for Aura Types" can be used to hide aura apply/removal chat messages for a particular faction, relationship, or all.

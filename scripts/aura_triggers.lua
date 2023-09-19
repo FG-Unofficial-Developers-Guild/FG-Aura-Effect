@@ -4,40 +4,50 @@
 
 -- luacheck: globals bDebug bDebugPerformance handleTokenMovement notifyTokenMove
 -- luacheck: globals updateAurasForMap updateAurasForActor updateAurasForEffect
-
+-- luacheck: globals updateAurasForTurnStart AuraEffect.clearOncePerTurn
 bDebug = false
 bDebugPerformance = false
 
 OOB_MSGTYPE_AURATOKENMOVE = 'aurasontokenmove'
 
 -- Trigger AURA effect calculation on supplied effect node.
-function updateAurasForEffect(nodeEffect)
+function updateAurasForEffect(nodeEffect, nodeCTMoved)
 	if type(nodeEffect) ~= 'databasenode' then return end -- sometimes userdata shows up here when used with BCE
 	local rAuraDetails = AuraEffect.getAuraDetails(nodeEffect)
 	if rAuraDetails.nRange == 0 then return end -- 0 means no valid aura found
 	local tokenSource = CombatManager.getTokenFromCT(DB.findNode(rAuraDetails.sSource))
-	AuraEffect.updateAura(tokenSource, nodeEffect, rAuraDetails)
+	AuraEffect.updateAura(tokenSource, nodeEffect, rAuraDetails, nodeCTMoved)
 end
 
 -- Trigger AURA effect calculation on all effects in a supplied CT node.
 -- If supplied with windowFilter instance, abort if actor's map doesn't match
 -- If supplied with effectFilter node, skip that effect
-function updateAurasForActor(nodeCT, windowFilter, effectFilter)
+function updateAurasForActor(nodeCT, windowFilter, effectFilter, nodeCTMoved)
 	if windowFilter then -- if windowFilter is provided, save winImage to filterImage
 		local _, winImage, _ = ImageManager.getImageControl(CombatManager.getTokenFromCT(nodeCT))
 		if winImage ~= windowFilter then return end -- if filterImage is set and doesn't match, abort
 	end
 	for _, nodeEffect in ipairs(DB.getChildList(nodeCT, 'effects')) do
-		if not effectFilter and nodeEffect ~= effectFilter then updateAurasForEffect(nodeEffect) end
+		if not effectFilter and nodeEffect ~= effectFilter then updateAurasForEffect(nodeEffect, nodeCTMoved) end
 	end
 end
 
 -- Calls updateAurasForActor on each CT node whose token is on the same image supplied as 'window'
-function updateAurasForMap(window)
+function updateAurasForMap(window, nodeCTMoved)
 	if not window or not StringManager.contains({ 'imagepanelwindow', 'imagewindow' }, window.getClass()) then return end
 	for _, nodeCT in ipairs(DB.getChildList(CombatManager.CT_LIST)) do
 		local _, winImage = ImageManager.getImageControl(CombatManager.getTokenFromCT(nodeCT))
-		if winImage == window then updateAurasForActor(nodeCT, winImage) end
+		if winImage == window then updateAurasForActor(nodeCT, winImage, nil, nodeCTMoved) end
+	end
+end
+
+--SINGLE aura type to update on turn start
+function updateAurasForTurnStart(nodeCTStart)
+	AuraEffect.clearOncePerTurn()
+	local _, window = ImageManager.getImageControl(CombatManager.getTokenFromCT(nodeCTStart))
+	for _, nodeCT in ipairs(DB.getChildList(CombatManager.CT_LIST)) do
+		local _, winImage = ImageManager.getImageControl(CombatManager.getTokenFromCT(nodeCT))
+		if winImage == window then updateAurasForActor(nodeCT, winImage, nil, nodeCTStart) end
 	end
 end
 
@@ -46,7 +56,7 @@ function handleTokenMovement(msgOOB)
 	local time1 = nil
 	if bDebugPerformance then time1 = os.clock() end
 	local _, winImage = ImageManager.getImageControl(CombatManager.getTokenFromCT(msgOOB.sCTNode))
-	updateAurasForMap(winImage)
+	updateAurasForMap(winImage,DB.findNode(msgOOB.sCTNode))
 	if bDebugPerformance then
 		sTime = string.format('%s%s,', sTime, tostring(os.clock() - time1))
 		Debug.console(sTime)
@@ -121,4 +131,6 @@ function onInit()
 	DB.addHandler(DB.getPath(CombatManager.CT_LIST .. '.*.effects.*.isactive'), 'onUpdate', onEffectChanged)
 	DB.addHandler(DB.getPath(CombatManager.CT_LIST .. '.*.effects.*'), 'onDelete', onEffectToBeRemoved)
 	DB.addHandler(DB.getPath(CombatManager.CT_LIST .. '.*.effects'), 'onChildDeleted', onEffectRemoved)
+
+	CombatManager.setCustomTurnStart(updateAurasForTurnStart)
 end

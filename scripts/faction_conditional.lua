@@ -35,7 +35,6 @@ function checkFaction(rActor, rTarget, aFactions)
 			sFaction = sFaction:sub(2)
 			bNegate = true
 		end
-
 		if not bNegate and sFaction == 'all' then
 			bReturn = true
 			break
