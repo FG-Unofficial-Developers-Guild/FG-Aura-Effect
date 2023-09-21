@@ -21,21 +21,22 @@ local aEffectVarMap = {
 	['sAuraSource'] = { sDBType = 'string', sDBField = 'source_aura' },
 }
 
-local function checkSilentNotification(aFactions)
+local function checkSilentNotification(sSourcePath, targetNodePath)
+	local bReturn = false
 	local option = OptionsManager.getOption('AURASILENT'):lower()
 	if option == 'all' then
-		return true
-	end
-	for _, sFaction in ipairs(aFactions) do
-		local bNegate = false
-		if StringManager.startsWith(sFaction, '!') then
-			sFaction = sFaction:sub(2);
-			bNegate = true
+		bReturn = true
+	else
+		local rTarget = ActorManager.resolveActor(DB.findNode(targetNodePath))
+		local rSource = ActorManager.resolveActor(DB.findNode(sSourcePath))
+		local sRelationship = AuraFactionConditional.getRelationship(rSource, rTarget)
+		local sFaction = ActorManager.getFaction(rTarget)
+		if sFaction == '' then sFaction = 'faction' end
+		if option == sRelationship or option == sFaction then
+			bReturn = true
 		end
-		if (not bNegate and option == sFaction) or (bNegate and option ~= sFaction) then
-			return true
-		end
 	end
+	return bReturn
 end
 
 function handleApplyEffect(msgOOB)
@@ -94,8 +95,8 @@ function notifyApplySilent(rEffect, vTargets)
 	end
 end
 
-function notifyApply(rEffect, targetNodePath, aFactions)
-	if checkSilentNotification(aFactions) then
+function notifyApply(rEffect, targetNodePath)
+	if checkSilentNotification(rEffect.sSource, targetNodePath) then
 		notifyApplySilent(rEffect, targetNodePath)
 	else
 		EffectManager.notifyApply(rEffect, targetNodePath)
@@ -113,7 +114,6 @@ function handleExpireEffect(msgOOB)
 		ChatManager.SystemMessage(string.format('%s (%s)', Interface.getString('ct_error_effectmissingactor'), msgOOB.sEffectNode))
 		return
 	end
-
 	EffectManager.expireEffect(nodeActor, nodeEffect, tonumber(msgOOB.nExpireClause) or 0)
 end
 
@@ -124,13 +124,16 @@ function notifyExpireSilent(varEffect)
 	DB.deleteNode(nodeEffect)
 end
 
-function notifyExpire(varEffect, nMatch, bImmediate, aFactions)
+function notifyExpire(varEffect, nMatch, bImmediate)
+	local sSource = ''
 	if type(varEffect) == 'databasenode' then
+		sSource = DB.getValue(varEffect, 'source_name', '')
 		varEffect = DB.getPath(varEffect)
 	elseif type(varEffect) ~= 'string' then
 		return
 	end
-	if checkSilentNotification(aFactions) then
+	local sTarget = DB.getPath(DB.getChild(varEffect, '...'))
+	if checkSilentNotification(sSource, sTarget) then
 		notifyExpireSilent(varEffect)
 	else
 		EffectManager.notifyExpire(varEffect, nMatch, bImmediate)
