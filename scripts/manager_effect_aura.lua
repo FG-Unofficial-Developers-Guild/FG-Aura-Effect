@@ -27,13 +27,13 @@ function getAuraDetails(nodeEffect)
 			rDetails.sAuraNode = DB.getPath(nodeEffect)
             rDetails.nRange = rEffectComp.mod
             for _, sFilter in ipairs(rEffectComp.remainder) do
-                local sFilterCheck = sFilter:lower();
-				if StringManager.startsWith(sFilter, '!') then
-					sFilterCheck = sFilter:sub(2);
-				end
-				if StringManager.contains(aAuraFactions, sFilterCheck) then
-					table.insert(rDetails.aFactions, sFilter:lower());
-				end
+                local sFilterCheck = sFilter:lower()
+                if StringManager.startsWith(sFilter, '!') or StringManager.startsWith(sFilter, '~') then
+                    sFilterCheck = sFilter:sub(2)
+                end
+                if StringManager.contains(aAuraFactions, sFilterCheck) then
+                    table.insert(rDetails.aFactions, sFilter:lower())
+                end
             end
             break
         end
@@ -93,7 +93,7 @@ function addAura(nodeEffect, nodeTarget, rAuraDetails)
 	local nodeSource = DB.findNode(rAuraDetails.sSource)
 	if not nodeSource or not nodeTarget or not nodeEffect then return end
 	if hasFromAura(nodeEffect, nodeTarget) then return end
-	AuraEffectSilencer.notifyApply(buildFromAura(nodeEffect), DB.getPath(nodeTarget), rAuraDetails.aFactions)
+	AuraEffectSilencer.notifyApply(buildFromAura(nodeEffect), DB.getPath(nodeTarget))
 	saveAuraSource(nodeTarget, rAuraDetails)
 end
 
@@ -103,7 +103,7 @@ function removeAura(nodeEffect, nodeTarget, rAuraDetails)
 	if not nodeEffect or not nodeTarget then return end
 	for _, nodeTargetEffect in ipairs(DB.getChildList(nodeTarget, 'effects')) do
 		if DB.getValue(nodeTargetEffect, 'isactive', 0) == 1 and DB.getValue(nodeTargetEffect, 'source_aura', '') == rAuraDetails.sAuraNode then
-			AuraEffectSilencer.notifyExpire(nodeTargetEffect, nil, nil, rAuraDetails.aFactions)
+			AuraEffectSilencer.notifyExpire(nodeTargetEffect)
 			break
 		end
 	end
@@ -195,7 +195,8 @@ function updateAura(tokenSource, nodeEffect, rAuraDetails)
 
 	-- compile lists
     local nodeSource = DB.findNode(rAuraDetails.sSource)
- 	local rSource = ActorManager.resolveActor(nodeSource)
+    local sNodeTarget = DB.getName(nodeCT)
+	local rSource = ActorManager.resolveActor(nodeSource)
 	for _, token in pairs(imageControl.getTokensWithinDistance(tokenSource, rAuraDetails.nRange)) do
         if isAuraApplicable(nodeEffect, rSource, token, rAuraDetails.aFactions) then
             tAdd[token.getId()] = {nodeEffect, CombatManager.getCTFromToken(token)}

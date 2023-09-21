@@ -24,7 +24,6 @@ function getRelationship(rActor, rTarget)
 	end
 end
 
-
 function checkFaction(rActor, rTarget, aFactions)
 	local bReturn = false
 	if bDebug then Debug.chat('checkFaction:args', rActor, rTarget, aFactions) end
@@ -33,7 +32,7 @@ function checkFaction(rActor, rTarget, aFactions)
 	for _, sFaction in ipairs(aFactions) do
 		bNegate = false
 		if StringManager.startsWith(sFaction, '!') or StringManager.startsWith(sFaction, '~') then
-			sFaction = sFaction:sub(2);
+			sFaction = sFaction:sub(2)
 			bNegate = true
 		end
 
