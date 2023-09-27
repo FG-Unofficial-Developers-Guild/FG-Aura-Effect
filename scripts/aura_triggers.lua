@@ -56,14 +56,18 @@ function handleTokenMovement(msgOOB)
 	local time1 = nil
 	if bDebugPerformance then time1 = os.clock() end
 	local _, winImage = ImageManager.getImageControl(CombatManager.getTokenFromCT(msgOOB.sCTNode))
-	updateAurasForMap(winImage,DB.findNode(msgOOB.sCTNode))
-	if bDebugPerformance then
-		sTime = string.format('%s%s,', sTime, tostring(os.clock() - time1))
-		Debug.console(sTime)
+	if AuraToken.isMovedFilter(DB.findNode(msgOOB.sCTNode),CombatManager.getTokenFromCT(msgOOB.sCTNode)) then
+		updateAurasForMap(winImage,DB.findNode(msgOOB.sCTNode))
+		if bDebugPerformance then
+			sTime = string.format('%s%s,', sTime, tostring(os.clock() - time1))
+			Debug.console(sTime)
+		end
 	end
 end
 
----	This function requests aura processing to be performed on the host FG instance.
+
+
+	---	This function requests aura processing to be performed on the host FG instance.
 function notifyTokenMove(token)
 	local nodeCT = CombatManager.getCTFromToken(token)
 	if not nodeCT then return end
