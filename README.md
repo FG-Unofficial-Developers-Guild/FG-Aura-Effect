@@ -64,6 +64,10 @@ You can also use the "!" or "~" operators in a FACTION conditional to reverse th
 
 ```AURA: 10 all; Speed Bonus for All, Attack Bonus for Blank Factions; SPEED: 20; IF: FACTION(faction); ATK: 2```
 
+### Special AURA type CUBE
+Default auras are spheres. A cube shaped aura can be defined by adding **cube** to the aura filter as shown in the example below. The length of the side of the cube is defined by the aura value. In the case of the example, the length of a side of the cube aura is 10.
+
+```AURA: 10 all,cube; ATK: -5```
 ### Special AURA type SINGLE
 There are a number of spells and effects, particularly in the 5E ruleset, which necessitate a slightly different aura behavior. These have the text or something similar *"When the creature enters the area for the first time on a turn or starts its turn there"*. This behavior can be enabled by adding **single** to the aura filter as shown in the example below. The aura will be applied to the target only when the target starts its turn in the aura or enters (moves into) the area for the first time on a turn. It will not be reapplied if the target leaves the area and returns on the same turn.
 

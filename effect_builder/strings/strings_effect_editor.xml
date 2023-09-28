@@ -8,5 +8,6 @@
 <root version="3.0">
     <string name="conditional_aura_faction">Faction</string>
     <string name="effect_auraSingle">Type Single</string>
+    <string name="effect_auraCube">Type Cube</string>
     <string name="effect_aura">Aura</string>
 </root>
