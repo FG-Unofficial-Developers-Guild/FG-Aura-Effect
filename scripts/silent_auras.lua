@@ -96,7 +96,7 @@ function notifyApplySilent(rEffect, vTargets)
 end
 
 function notifyApply(rEffect, targetNodePath)
-	if checkSilentNotification(rEffect.sSource, targetNodePath) then
+	if rEffect and checkSilentNotification(rEffect.sSource, targetNodePath) then
 		notifyApplySilent(rEffect, targetNodePath)
 	else
 		EffectManager.notifyApply(rEffect, targetNodePath)
