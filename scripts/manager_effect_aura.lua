@@ -16,7 +16,7 @@ local aAuraFactions = {'ally', 'enemy', 'friend', 'foe', 'all', 'neutral', 'fact
 
 -- Checks AURA effect string common needed information
 function getAuraDetails(nodeEffect)
-    local rDetails = {bSingle = false, nRange = 0, sEffect = '', sSource = '', sAuraNode = '', aFactions = {}}
+    local rDetails = {bSingle = false, bCube = false, nRange = 0, sEffect = '', sSource = '', sAuraNode = '', aFactions = {}}
     if not AuraFactionConditional.DetectedEffectManager.parseEffectComp then return 'all' end
 
     rDetails.sEffect = DB.getValue(nodeEffect, 'label', '')
@@ -31,6 +31,8 @@ function getAuraDetails(nodeEffect)
                 local sFilterCheck = sFilter:lower()
                 if sFilterCheck == 'single' then
                     rDetails.bSingle = true
+                elseif sFilterCheck == 'cube' then
+                    rDetails.bCube = true
                 else
                     if StringManager.startsWith(sFilter, '!') or StringManager.startsWith(sFilter, '~') then
                         sFilterCheck = sFilter:sub(2)
@@ -224,6 +226,7 @@ function isAuraApplicable(nodeEffect, rSource, token, aFactions)
 	return false
 end
 
+
 -- Compile sets of tokens on same map as source that should/should not have aura applied.
 -- Trigger adding/removing auras as applicable.
 function updateAura(tokenSource, nodeEffect, rAuraDetails, nodeCT)
@@ -235,7 +238,13 @@ function updateAura(tokenSource, nodeEffect, rAuraDetails, nodeCT)
     local nodeSource = DB.findNode(rAuraDetails.sSource)
     local sNodeTarget = DB.getName(nodeCT)
 	local rSource = ActorManager.resolveActor(nodeSource)
-	for _, token in pairs(imageControl.getTokensWithinDistance(tokenSource, rAuraDetails.nRange)) do
+    local aTokens;
+    if rAuraDetails.bCube then
+        aTokens = AuraToken.getTokensWithinCube(tokenSource, rAuraDetails.nRange)
+    else
+        aTokens = imageControl.getTokensWithinDistance(tokenSource, rAuraDetails.nRange)
+    end
+	for _, token in pairs(aTokens) do
         if isAuraApplicable(nodeEffect, rSource, token, rAuraDetails.aFactions) then
             if rAuraDetails.bSingle then
                 if not checkOncePerTurn(rAuraDetails.sSource, sNodeTarget, rAuraDetails.sEffect)
