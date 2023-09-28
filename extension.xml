@@ -35,6 +35,7 @@
 		<script name="AuraEffectSilencer" file="scripts/silent_auras.lua" />
 		<script name="AuraFactionConditional" file="scripts/faction_conditional.lua" />
 		<script name="AuraToken" file="scripts/manager_token_aura.lua" />
+		<script name="AuraTracker" file="scripts/manager_aura_tracker.lua" />
 
 		<icon name="aura_icon" file="graphics/aura_icon.png" />
 
