@@ -4,7 +4,7 @@
 
 -- luacheck: globals bDebug bDebugPerformance handleTokenMovement notifyTokenMove
 -- luacheck: globals updateAurasForMap updateAurasForActor updateAurasForEffect
--- luacheck: globals updateAurasForTurnStart AuraEffect.clearOncePerTurn
+-- luacheck: globals updateAurasForTurnStart AuraEffect.clearOncePerTurn AuraTracker AuraToken
 bDebug = false
 bDebugPerformance = false
 
@@ -35,9 +35,21 @@ end
 -- Calls updateAurasForActor on each CT node whose token is on the same image supplied as 'window'
 function updateAurasForMap(window, nodeCTMoved)
 	if not window or not StringManager.contains({ 'imagepanelwindow', 'imagewindow' }, window.getClass()) then return end
-	for _, nodeCT in ipairs(DB.getChildList(CombatManager.CT_LIST)) do
-		local _, winImage = ImageManager.getImageControl(CombatManager.getTokenFromCT(nodeCT))
-		if winImage == window then updateAurasForActor(nodeCT, winImage, nil, nodeCTMoved) end
+
+	-- If we have a node that has moved (nodeCTMoved), use the aura tracker else we haven't initialized the tracker yet
+	-- so do the inefficient way (when a map is opened).
+	if nodeCTMoved then
+		local aAuras = AuraTracker.getAllTrackedAuras()
+		for sSourceNode, _ in pairs(aAuras) do
+			local nodeCT = DB.findNode(sSourceNode)
+			local _, winImage = ImageManager.getImageControl(CombatManager.getTokenFromCT(nodeCT))
+			if winImage == window then updateAurasForActor(nodeCT, winImage, nil, nodeCTMoved) end
+		end
+	else
+		for _, nodeCT in ipairs(DB.getChildList(CombatManager.CT_LIST)) do
+			local _, winImage = ImageManager.getImageControl(CombatManager.getTokenFromCT(nodeCT))
+			if winImage == window then updateAurasForActor(nodeCT, winImage) end
+		end
 	end
 end
 
@@ -45,7 +57,10 @@ end
 function updateAurasForTurnStart(nodeCTStart)
 	AuraEffect.clearOncePerTurn()
 	local _, window = ImageManager.getImageControl(CombatManager.getTokenFromCT(nodeCTStart))
-	for _, nodeCT in ipairs(DB.getChildList(CombatManager.CT_LIST)) do
+	local aAuras = AuraTracker.getAllTrackedAuras()
+
+	for sSourceNode, _ in pairs(aAuras) do
+		local nodeCT = DB.findNode(sSourceNode)
 		local _, winImage = ImageManager.getImageControl(CombatManager.getTokenFromCT(nodeCT))
 		if winImage == window then updateAurasForActor(nodeCT, winImage, nil, nodeCTStart) end
 	end
@@ -65,9 +80,7 @@ function handleTokenMovement(msgOOB)
 	end
 end
 
-
-
-	---	This function requests aura processing to be performed on the host FG instance.
+---	This function requests aura processing to be performed on the host FG instance.
 function notifyTokenMove(token)
 	local nodeCT = CombatManager.getCTFromToken(token)
 	if not nodeCT then return end
@@ -99,6 +112,15 @@ end
 local function onEffectChanged(nodeLabel)
 	local nodeEffect = DB.getParent(nodeLabel)
 	local sEffect = DB.getValue(nodeEffect, 'label', '')
+	if string.match(sEffect, 'AURA[:;]') and not string.match(sEffect, 'FROMAURA[:;]') then
+		local sNode = DB.getPath(DB.getChild(nodeEffect, '...'))
+		local sAuraEffect = DB.getPath(nodeEffect)
+		AuraTracker.removeTrackedFromAura(sNode,sAuraEffect) -- Effect changed
+		AuraTracker.addTrackedAura(sNode,sAuraEffect) -- Effect changed to no AURA and then back to AURA
+	else
+		AuraTracker.removeTrackedAura(DB.getPath(DB.getChild(nodeEffect, '...')), DB.getPath(nodeEffect))
+	end
+
 	if sEffect == '' or string.match(sEffect, 'AURA[:;]') then return end -- don't recalculate when changing aura or fromaura
 	updateAurasForActor(DB.getChild(nodeEffect, '...'))
 end
@@ -109,6 +131,7 @@ local function onEffectToBeRemoved(nodeEffect)
 	if string.find(sEffect, AuraEffect.fromAuraString) then return end
 	if not string.find(sEffect, AuraEffect.auraString) then return end
 	AuraEffect.removeAllFromAuras(nodeEffect)
+	AuraTracker.removeTrackedAura(DB.getPath(DB.getChild(nodeEffect, '...')), DB.getPath(nodeEffect))
 end
 
 ---	Recalculate auras after effects are removed to ensure conditionals before aura are respected

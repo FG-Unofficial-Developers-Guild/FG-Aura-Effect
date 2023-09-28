@@ -4,6 +4,7 @@
 -- luacheck: globals bDebug updateAura addAura removeAura removeAllFromAuras isAuraApplicable
 -- luacheck: globals fromAuraString auraString getAuraDetails clearOncePerTurn addOncePerTurn checkOncePerTurn
 -- luacheck: globals AuraFactionConditional.DetectedEffectManager.parseEffectComp AuraFactionConditional.DetectedEffectManager.checkConditional
+-- luacheck: globals AuraTracker AuraToken
 bDebug = false
 
 OOB_MSGTYPE_AURATOKENMOVE = 'aurasontokenmove'
@@ -26,6 +27,7 @@ function getAuraDetails(nodeEffect)
         if rEffectComp.type:upper() == 'AURA' then
             rDetails.sSource = DB.getPath(DB.getChild(nodeEffect, '...'))
             rDetails.sAuraNode = DB.getPath(nodeEffect)
+            AuraTracker.addTrackedAura(rDetails.sSource,rDetails.sAuraNode)
             rDetails.nRange = rEffectComp.mod
             for _, sFilter in ipairs(rEffectComp.remainder) do
                 local sFilterCheck = sFilter:lower()
@@ -121,9 +123,9 @@ end
 -- Add AURA in nodeEffect to targetToken actor if not already present.
 -- Then call saveAuraSource to keep track of the FROMAURA effect
 function addAura(nodeEffect, nodeTarget, rAuraDetails)
-
 	local nodeSource = DB.findNode(rAuraDetails.sSource)
 	if not nodeSource or not nodeTarget or not nodeEffect then return end
+    AuraTracker.addTrackedFromAura(rAuraDetails.sSource, rAuraDetails.sAuraNode, DB.getPath(nodeTarget))
 	if hasFromAura(nodeEffect, nodeTarget) then return end
 	AuraEffectSilencer.notifyApply(buildFromAura(nodeEffect), DB.getPath(nodeTarget))
 	saveAuraSource(nodeTarget, rAuraDetails)
@@ -133,9 +135,11 @@ end
 -- Skip "off/skip" effects to allow for immunity workaround.
 function removeAura(nodeEffect, nodeTarget, rAuraDetails, nodeMoved)
 	if not nodeEffect or not nodeTarget then return end
+    local sNodeTarget = DB.getPath(nodeTarget)
 	for _, nodeTargetEffect in ipairs(DB.getChildList(nodeTarget, 'effects')) do
 		if DB.getValue(nodeTargetEffect, 'isactive', 0) == 1 and DB.getValue(nodeTargetEffect, 'source_aura', '') == rAuraDetails.sAuraNode then
 			AuraEffectSilencer.notifyExpire(nodeTargetEffect)
+            AuraTracker.removeTrackedFromAura(rAuraDetails.sSource, rAuraDetails.sAuraNode, sNodeTarget)
             -- Leaving SINGLE aura. Track as Once per turn only if the target is the one moving
 			if rAuraDetails.bSingle and nodeMoved then
 				local sNodeMoved = DB.getPath(nodeMoved)
@@ -153,36 +157,11 @@ end
 function removeAllFromAuras(nodeEffect)
 	local rAuraDetails = AuraEffect.getAuraDetails(nodeEffect)
 	if not string.find(rAuraDetails.sEffect, auraString) then return end
-	local nodeSource = DB.getChild(nodeEffect, '...')
-	local _, winSource = ImageManager.getImageControl(CombatManager.getTokenFromCT(nodeSource))
-	for _, nodeCT in pairs(CombatManager.getCombatantNodes()) do
-		if nodeCT ~= nodeSource then -- don't check for FROMAURAs on parent of nodeEffect
-			local _, winTarget = ImageManager.getImageControl(CombatManager.getTokenFromCT(nodeCT))
-			if winTarget == winSource then AuraEffect.removeAura(nodeEffect, nodeCT, rAuraDetails) end
-		end
+    local aFromAuraNodes = AuraTracker.getTrackedFromAuras(rAuraDetails.sSource,rAuraDetails.sAuraNode)
+	for sNodeCT, _ in pairs(aFromAuraNodes) do
+        local nodeCT = DB.findNode(sNodeCT)
+        AuraEffect.removeAura(nodeEffect, nodeCT, rAuraDetails)
 	end
-end
-
--- Gets a table of tokens, keyed to their id number, that are further from tokenSource than the distance nRange.
-local function getTokensBeyondDistance(tokenSource, nRange)
-    local imageControl = ImageManager.getImageControl(tokenSource)
-    if not imageControl or not tokenSource or not nRange then return {} end -- only process if token is on map
-    local tCloseTokens, tFarTokens = {}, {}
-
-    -- Add tokens from tTokens to tNewTokens if they aren't tokenSource from getTokensBeyondDistance
-    -- If provided with tSkipTokens, don't include tokens with key matches in tNewTokens either.
-    local function compileTokensSkipSource(tTokens, tNewTokens, tSkipTokens)
-        for _, token in pairs(tTokens) do
-            if token ~= tokenSource and (not tSkipTokens or not tSkipTokens[token.getId()]) then
-                tNewTokens[token.getId()] = token
-            end
-        end
-    end
-
-    compileTokensSkipSource(imageControl.getTokensWithinDistance(tokenSource, nRange), tCloseTokens)
-    compileTokensSkipSource(ImageManager.getImageControl(tokenSource).getTokens(), tFarTokens, tCloseTokens)
-
-    return tFarTokens
 end
 
 -- Check for IF/IFT conditionals blocking aura effect
@@ -226,7 +205,6 @@ function isAuraApplicable(nodeEffect, rSource, token, aFactions)
 	return false
 end
 
-
 -- Compile sets of tokens on same map as source that should/should not have aura applied.
 -- Trigger adding/removing auras as applicable.
 function updateAura(tokenSource, nodeEffect, rAuraDetails, nodeCT)
@@ -239,28 +217,34 @@ function updateAura(tokenSource, nodeEffect, rAuraDetails, nodeCT)
     local sNodeTarget = DB.getName(nodeCT)
 	local rSource = ActorManager.resolveActor(nodeSource)
     local aTokens;
+    local aFromAuraNodes = AuraTracker.getTrackedFromAuras(rAuraDetails.sSource,rAuraDetails.sAuraNode)
     if rAuraDetails.bCube then
         aTokens = AuraToken.getTokensWithinCube(tokenSource, rAuraDetails.nRange)
     else
         aTokens = imageControl.getTokensWithinDistance(tokenSource, rAuraDetails.nRange)
     end
 	for _, token in pairs(aTokens) do
+        local nodeCTToken = CombatManager.getCTFromToken(token)
+        local sNodeCTToken = DB.getPath(nodeCTToken)
+        aFromAuraNodes[sNodeCTToken] = nil -- Processed so mark as such
         if isAuraApplicable(nodeEffect, rSource, token, rAuraDetails.aFactions) then
             if rAuraDetails.bSingle then
                 if not checkOncePerTurn(rAuraDetails.sSource, sNodeTarget, rAuraDetails.sEffect)
-                   and nodeCT and nodeCT == CombatManager.getCTFromToken(token) then
-                    tAdd[token.getId()] = {nodeEffect, CombatManager.getCTFromToken(token)}
+                   and nodeCT and nodeCT ==nodeCTToken then
+                    tAdd[token.getId()] = {nodeEffect, nodeCTToken}
                     addOncePerTurn(rAuraDetails.sSource, sNodeTarget, rAuraDetails.sEffect)
                 end
             else
-                tAdd[token.getId()] = {nodeEffect, CombatManager.getCTFromToken(token)}
+                tAdd[token.getId()] = {nodeEffect, nodeCTToken}
             end
         else
-            tRemove[token.getId()] = {nodeEffect, CombatManager.getCTFromToken(token)}
+            tRemove[token.getId()] = {nodeEffect, nodeCTToken}
         end
 	end
-	for id, token in pairs(getTokensBeyondDistance(tokenSource, rAuraDetails.nRange)) do
-		tRemove[id] = { nodeEffect, CombatManager.getCTFromToken(token) }
+
+    -- Anything left in aFromAuraNodes is out of range so remove
+    for sNode, _ in pairs(aFromAuraNodes) do
+        table.insert(tRemove, { nodeEffect, DB.findNode(sNode) } )
 	end
 
 	-- process add/remove

@@ -2,6 +2,7 @@
 --	Please see the LICENSE.md file included with this distribution for attribution and copyright information.
 --
 -- luacheck: globals add delete customLinkToken onAdd onDelete isMovedFilter getTokensWithinCube
+-- luacheck: globals Image.getGridSize Image.hasGrid Image.getDistanceBaseUnits
 local tImages = {}
 local linkToken = nil
 
