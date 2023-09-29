@@ -32,7 +32,6 @@ The following faction types are available:
 * **neutral** - applies aura to actors whose faction is "neutral"
 * **none** - applies aura to actors whose faction is "none" or blank
 
-
 You can also use the "!" or "~" operators to reverse the results such as "!friend", or "~ally".
 
 #### Exceptions
@@ -69,12 +68,14 @@ If using a proxy CT token to define an aura area, it is recommended to set the p
 Unless there is a specific advanced case to do so, any other FACTION conditional operators are not needed for an aura.
 
 ### Special AURA types
+Special aura types change the default behavior of auras. They are specified in the AURA effect descriptors. Multiple special aura types can be combined to create even more unique aruas such as cube that is single and sticky.
+
 |Descriptor|Notes|Example|
 |----------|-----|-------|
 |**cube**|Default auras are spheres. The length of the side of the cube is defined by the aura value. In the case of the example, the length of a side of the cube aura is 10.|```AURA: 10 all,cube; ATK: -5```|
-|**single**|There are a number of spells and effects, particularly in the 5E ruleset, which necessitate a slightly different aura behavior. These have the text or something similar *"When the creature enters the area for the first time on a turn or starts its turn there"*. The aura will be applied to the target only when the target starts its turn in the aura or enters (moves into) the area for the first time on a turn. It will not be reapplied if the target leaves the area and returns on the same turn.|```AURA: 10 !ally,single; Test; IF: FACTION(notself); ATK: -5```|
-|**sticky**|FROMAURA will not be removed from actors|```AURA: 10 all,sticky; Poison Trap; IF: FACTION(notself); Poisoned```|
-
+|**single**|There are a number of spells and effects, particularly in the 5E ruleset, which necessitate a slightly different aura behavior. These have the text or something similar *"When the creature enters the area for the first time on a turn or starts its turn there"*. The aura will be applied to the target only when the target starts its turn in the aura or enters (moves into) the area for the first time on a turn. It will not be reapplied if the target leaves the area and returns on the same turn. It also will not be applied if the actor is in the area when cast or if the aura area moves onto the actor.|```AURA: 10 !ally,single; Test; IF: FACTION(!self); ATK: -5```|
+|**sticky**|FROMAURA will not be removed from actors|```AURA: 10 all,sticky; Poison Trap; IF: FACTION(!self); Poisoned```|
+|**once**|The aura will only apply once per turn to an actor that starts or enters the area or if the area moves onto the actor. Leaving and re-entering the area on the same turn will not reapply the aura| ```AURA: 10 all,once; ATK: -5```|
 ### Option for disabling aura effect chat messages
 "Silence Notifications for Aura Types" can be used to hide aura apply/removal chat messages for a particular faction, relationship, or all.
 

@@ -16,7 +16,7 @@ local aAuraFactions = {'ally', 'enemy', 'friend', 'foe', 'all', 'neutral', 'fact
 
 -- Checks AURA effect string common needed information
 function getAuraDetails(nodeEffect)
-    local rDetails = {bSingle = false, bCube = false, bSticky = false,
+    local rDetails = {bSingle = false, bCube = false, bSticky = false, bOnce = false,
                       nRange = 0, sEffect = '', sSource = '', sAuraNode = '', aFactions = {}}
     if not AuraFactionConditional.DetectedEffectManager.parseEffectComp then return 'all' end
 
@@ -37,6 +37,8 @@ function getAuraDetails(nodeEffect)
                     rDetails.bCube = true
                 elseif sFilterCheck == 'sticky' then
                     rDetails.bSticky = true
+                elseif sFilterCheck == 'once' then
+                    rDetails.bOnce = true
                 else
                     if StringManager.startsWith(sFilter, '!') or StringManager.startsWith(sFilter, '~') then
                         sFilterCheck = sFilter:sub(2)
@@ -224,17 +226,15 @@ function updateAura(tokenSource, nodeEffect, rAuraDetails, nodeCT)
             end
             aFromAuraNodes[sNodeCTToken] = nil -- Processed so mark as such
             if isAuraApplicable(nodeEffect, rSource, token, rAuraDetails.aFactions) then
-                if rAuraDetails.bSingle then
+                if rAuraDetails.bSingle or rAuraDetails.bOnce then
                     if not AuraTracker.checkOncePerTurn(rAuraDetails.sSource, rAuraDetails.sAuraNode, nodeTarget)
-                    and nodeCT and nodeCT ==nodeCTToken then
+                    and (rAuraDetails.bOnce or (nodeCT and nodeCT == nodeCTToken)) then
                         tAdd[token.getId()] = {nodeEffect, nodeCTToken}
                         AuraTracker.addOncePerTurn(rAuraDetails.sSource, rAuraDetails.sAuraNode, nodeTarget)
                     end
                 else
                     tAdd[token.getId()] = {nodeEffect, nodeCTToken}
                 end
-            elseif not rAuraDetails.bSticky then
-                tRemove[token.getId()] = {nodeEffect, nodeCTToken}
             end
         end
 	end
