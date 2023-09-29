@@ -16,7 +16,8 @@ local aAuraFactions = {'ally', 'enemy', 'friend', 'foe', 'all', 'neutral', 'fact
 
 -- Checks AURA effect string common needed information
 function getAuraDetails(nodeEffect)
-    local rDetails = {bSingle = false, bCube = false, nRange = 0, sEffect = '', sSource = '', sAuraNode = '', aFactions = {}}
+    local rDetails = {bSingle = false, bCube = false, bSticky = false,
+                      nRange = 0, sEffect = '', sSource = '', sAuraNode = '', aFactions = {}}
     if not AuraFactionConditional.DetectedEffectManager.parseEffectComp then return 'all' end
 
     rDetails.sEffect = DB.getValue(nodeEffect, 'label', '')
@@ -34,6 +35,8 @@ function getAuraDetails(nodeEffect)
                     rDetails.bSingle = true
                 elseif sFilterCheck == 'cube' then
                     rDetails.bCube = true
+                elseif sFilterCheck == 'sticky' then
+                    rDetails.bSticky = true
                 else
                     if StringManager.startsWith(sFilter, '!') or StringManager.startsWith(sFilter, '~') then
                         sFilterCheck = sFilter:sub(2)
@@ -113,8 +116,10 @@ function removeAura(nodeEffect, nodeTarget, rAuraDetails, nodeMoved)
     local sNodeTarget = DB.getPath(nodeTarget)
 	for _, nodeTargetEffect in ipairs(DB.getChildList(nodeTarget, 'effects')) do
 		if DB.getValue(nodeTargetEffect, 'isactive', 0) == 1 and DB.getValue(nodeTargetEffect, 'source_aura', '') == rAuraDetails.sAuraNode then
-			AuraEffectSilencer.notifyExpire(nodeTargetEffect)
-            AuraTracker.removeTrackedFromAura(rAuraDetails.sSource, rAuraDetails.sAuraNode, sNodeTarget)
+            if not rAuraDetails.bSticky then
+			    AuraEffectSilencer.notifyExpire(nodeTargetEffect)
+                AuraTracker.removeTrackedFromAura(rAuraDetails.sSource, rAuraDetails.sAuraNode, sNodeTarget)
+            end
             -- Leaving SINGLE aura. Track as Once per turn only if the target is the one moving
 			if rAuraDetails.bSingle and nodeMoved and nodeMoved == nodeTarget then
 				AuraTracker.addOncePerTurn(rAuraDetails.sSource, rAuraDetails.sAuraNode, nodeTarget)
@@ -220,22 +225,26 @@ function updateAura(tokenSource, nodeEffect, rAuraDetails, nodeCT)
             aFromAuraNodes[sNodeCTToken] = nil -- Processed so mark as such
             if isAuraApplicable(nodeEffect, rSource, token, rAuraDetails.aFactions) then
                 if rAuraDetails.bSingle then
-                    if not AuraTracker.checkOncePerTurn(rAuraDetails.sSource, rAuraDetails.sEffect, nodeTarget)
+                    if not AuraTracker.checkOncePerTurn(rAuraDetails.sSource, rAuraDetails.sAuraNode, nodeTarget)
                     and nodeCT and nodeCT ==nodeCTToken then
                         tAdd[token.getId()] = {nodeEffect, nodeCTToken}
                         AuraTracker.addOncePerTurn(rAuraDetails.sSource, rAuraDetails.sAuraNode, nodeTarget)
                     end
                 else
-                    tRemove[token.getId()] = {nodeEffect, nodeCTToken}
+                    tAdd[token.getId()] = {nodeEffect, nodeCTToken}
                 end
+            elseif not rAuraDetails.bSticky then
+                tRemove[token.getId()] = {nodeEffect, nodeCTToken}
             end
         end
 	end
 
-    -- Anything left in aFromAuraNodes is out of range so remove
-    for sNode, _ in pairs(aFromAuraNodes) do
-        table.insert(tRemove, { nodeEffect, DB.findNode(sNode) } )
-	end
+    if not rAuraDetails.bSticky then
+        -- Anything left in aFromAuraNodes is out of range so remove
+        for sNode, _ in pairs(aFromAuraNodes) do
+            table.insert(tRemove, { nodeEffect, DB.findNode(sNode) } )
+        end
+    end
 
 	-- process add/remove
 	for _, v in pairs(tAdd) do

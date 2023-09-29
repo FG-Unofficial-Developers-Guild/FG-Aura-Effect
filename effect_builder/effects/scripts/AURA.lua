@@ -1,4 +1,5 @@
 -- luacheck: globals createEffectString parentcontrol number_value effect_faction effect_auraSingle effect_auraCube
+-- luacheck: globals effect_auraSticky
 
 function createEffectString()
 	local effectString = parentcontrol.window.effect.getStringValue() .. ': ' .. number_value.getStringValue()
@@ -6,5 +7,6 @@ function createEffectString()
 
 	if not effect_faction.isEmpty() and effect_auraSingle.getValue() > 0 then effectString = effectString .. ',single' end
 	if not effect_faction.isEmpty() and effect_auraCube.getValue() > 0 then effectString = effectString .. ',cube' end
+	if not effect_faction.isEmpty() and effect_auraSticky.getValue() > 0 then effectString = effectString .. ',sticky' end
 	return effectString
 end
