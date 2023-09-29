@@ -130,8 +130,23 @@ local function onEffectToBeRemoved(nodeEffect)
 	local sEffect = DB.getValue(nodeEffect, 'label', '')
 	if string.find(sEffect, AuraEffect.fromAuraString) then return end
 	if not string.find(sEffect, AuraEffect.auraString) then return end
-	AuraEffect.removeAllFromAuras(nodeEffect)
-	AuraTracker.removeTrackedAura(DB.getPath(DB.getChild(nodeEffect, '...')), DB.getPath(nodeEffect))
+	for _, sEffectComp in ipairs(EffectManager.parseEffect(sEffect)) do
+		local rEffectComp = AuraFactionConditional.DetectedEffectManager.parseEffectComp(sEffectComp)
+		if rEffectComp.type:upper() == 'AURA' then
+			local bSticky = false
+			for _, sFilter in ipairs(rEffectComp.remainder) do
+				if sFilter:lower() == 'sticky' then
+					bSticky = true
+					break
+				end
+			end
+			if not bSticky then
+				AuraEffect.removeAllFromAuras(nodeEffect)
+			end
+			AuraTracker.removeTrackedAura(DB.getPath(DB.getChild(nodeEffect, '...')), DB.getPath(nodeEffect))
+		end
+		break
+	end
 end
 
 local addEffect_old
