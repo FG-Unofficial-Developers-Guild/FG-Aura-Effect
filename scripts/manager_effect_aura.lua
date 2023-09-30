@@ -2,9 +2,9 @@
 --	Please see the LICENSE.md file included with this distribution for attribution and copyright information.
 --
 -- luacheck: globals bDebug updateAura addAura removeAura removeAllFromAuras isAuraApplicable
--- luacheck: globals fromAuraString auraString getAuraDetails clearOncePerTurn addOncePerTurn checkOncePerTurn
+-- luacheck: globals fromAuraString auraString getAuraDetails
 -- luacheck: globals AuraFactionConditional.DetectedEffectManager.parseEffectComp AuraFactionConditional.DetectedEffectManager.checkConditional
--- luacheck: globals AuraTracker AuraToken
+-- luacheck: globals AuraTracker AuraToken getPathsOncePerTurn
 bDebug = false
 
 OOB_MSGTYPE_AURATOKENMOVE = 'aurasontokenmove'
@@ -12,7 +12,6 @@ OOB_MSGTYPE_AURATOKENMOVE = 'aurasontokenmove'
 fromAuraString = 'FROMAURA;'
 auraString = 'AURA: %d+'
 
-local tAuraOncePerTurn = {}
 local aAuraFactions = {'ally', 'enemy', 'friend', 'foe', 'all', 'neutral', 'faction'}
 
 -- Checks AURA effect string common needed information
@@ -51,30 +50,6 @@ function getAuraDetails(nodeEffect)
         table.insert(rDetails.aFactions, 'all')
     end
 	return rDetails
-end
-
--- SINGLE aura type clear once per turn tracking
-function clearOncePerTurn()
-    tAuraOncePerTurn = {}
-end
-
--- SINGLE aura type aura effected target this turn
-function addOncePerTurn(sSource, sTarget, sEffect)
-    if not tAuraOncePerTurn[sTarget] then
-        tAuraOncePerTurn[sTarget] = {}
-    end
-    if not tAuraOncePerTurn[sTarget][sSource] then
-        tAuraOncePerTurn[sTarget][sSource] = {}
-    end
-    tAuraOncePerTurn[sTarget][sSource][sEffect] = true
-end
--- SINGLE aura type check if aura effected target this turn
-function checkOncePerTurn(sSource, sTarget, sEffect)
-    local bReturn = false
-    if tAuraOncePerTurn[sTarget] and tAuraOncePerTurn[sTarget][sSource] and tAuraOncePerTurn[sTarget][sSource][sEffect] then
-        bReturn = true
-    end
-    return bReturn
 end
 
 -- Sets up FROMAURA rEffect based on supplied AURA nodeEffect.
@@ -141,13 +116,12 @@ function removeAura(nodeEffect, nodeTarget, rAuraDetails, nodeMoved)
 			AuraEffectSilencer.notifyExpire(nodeTargetEffect)
             AuraTracker.removeTrackedFromAura(rAuraDetails.sSource, rAuraDetails.sAuraNode, sNodeTarget)
             -- Leaving SINGLE aura. Track as Once per turn only if the target is the one moving
-			if rAuraDetails.bSingle and nodeMoved then
-				local sNodeMoved = DB.getPath(nodeMoved)
-				local sTarget = DB.getPath(nodeTarget)
-				if sNodeMoved == sTarget then
-					addOncePerTurn(rAuraDetails.sSource, sTarget, rAuraDetails.sEffect)
-				end
+			if rAuraDetails.bSingle and nodeMoved and nodeMoved == nodeTarget then
+				AuraTracker.addOncePerTurn(rAuraDetails.sSource, rAuraDetails.sAuraNode, nodeTarget)
 			end
+            -- if rAuraDetails.bOnce then
+            --     AuraTracker.addOncePerTurn(rAuraDetails.sSource, nodeTarget, rAuraDetails.sAuraNode)
+            -- end
 			break
 		end
 	end
@@ -227,7 +201,7 @@ function updateAura(tokenSource, nodeEffect, rAuraDetails, nodeCT)
 
 	-- compile lists
     local nodeSource = DB.findNode(rAuraDetails.sSource)
-    local sNodeTarget = DB.getName(nodeCT)
+    local nodeTarget = nodeCT
 	local rSource = ActorManager.resolveActor(nodeSource)
     local aTokens;
     local aFromAuraNodes = AuraTracker.getTrackedFromAuras(rAuraDetails.sSource,rAuraDetails.sAuraNode)
@@ -240,19 +214,20 @@ function updateAura(tokenSource, nodeEffect, rAuraDetails, nodeCT)
         local nodeCTToken = CombatManager.getCTFromToken(token)
         if nodeCTToken then -- Guard against non-CT linked tokens
             local sNodeCTToken = DB.getPath(nodeCTToken)
+            if not nodeTarget then
+                nodeTarget = nodeCTToken
+            end
             aFromAuraNodes[sNodeCTToken] = nil -- Processed so mark as such
             if isAuraApplicable(nodeEffect, rSource, token, rAuraDetails.aFactions) then
                 if rAuraDetails.bSingle then
-                    if not checkOncePerTurn(rAuraDetails.sSource, sNodeTarget, rAuraDetails.sEffect)
+                    if not AuraTracker.checkOncePerTurn(rAuraDetails.sSource, rAuraDetails.sEffect, nodeTarget)
                     and nodeCT and nodeCT ==nodeCTToken then
                         tAdd[token.getId()] = {nodeEffect, nodeCTToken}
-                        addOncePerTurn(rAuraDetails.sSource, sNodeTarget, rAuraDetails.sEffect)
+                        AuraTracker.addOncePerTurn(rAuraDetails.sSource, rAuraDetails.sAuraNode, nodeTarget)
                     end
                 else
-                    tAdd[token.getId()] = {nodeEffect, nodeCTToken}
+                    tRemove[token.getId()] = {nodeEffect, nodeCTToken}
                 end
-            else
-                tRemove[token.getId()] = {nodeEffect, nodeCTToken}
             end
         end
 	end

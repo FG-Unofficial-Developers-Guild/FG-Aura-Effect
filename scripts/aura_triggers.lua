@@ -55,7 +55,7 @@ end
 
 --SINGLE aura type to update on turn start
 function updateAurasForTurnStart(nodeCTStart)
-	AuraEffect.clearOncePerTurn()
+	AuraTracker.clearOncePerTurn()
 	local _, window = ImageManager.getImageControl(CombatManager.getTokenFromCT(nodeCTStart))
 	local aAuras = AuraTracker.getAllTrackedAuras()
 
