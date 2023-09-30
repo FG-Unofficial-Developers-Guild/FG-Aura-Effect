@@ -31,7 +31,7 @@ local function checkSilentNotification(sSourcePath, targetNodePath)
 		local rSource = ActorManager.resolveActor(DB.findNode(sSourcePath))
 		local sRelationship = AuraFactionConditional.getRelationship(rSource, rTarget)
 		local sFaction = ActorManager.getFaction(rTarget)
-		if sFaction == '' then sFaction = 'faction' end
+		if sFaction == '' then sFaction = 'none' end
 		if option == sRelationship or option == sFaction then
 			bReturn = true
 		end
@@ -145,7 +145,7 @@ function onInit()
 	OptionsManager.registerOption2('AURASILENT', false, 'option_header_aura', 'option_label_AURASILENT', 'option_entry_cycler', {
 		labels = 'option_val_aura_all|option_val_aura_ally|option_val_aura_enemy|ct_tooltip_factionempty|'
 			.. 'ct_tooltip_factionfriend|ct_tooltip_factionneutral|ct_tooltip_factionfoe',
-		values = 'all|ally|enemy|faction|friend|neutral|foe',
+		values = 'all|ally|enemy|none|friend|neutral|foe',
 		baselabel = 'option_val_off',
 		baseval = 'off',
 		default = 'off',

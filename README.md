@@ -24,45 +24,49 @@ If IF/IFT conditions are included *before* the "AURA" effect, they will act to e
 The bearer of the AURA effect will also receive its benefits. If this is not desired, see below.
 
 The following faction types are available:
-* all - applies aura to all. if not specified, all is assumed.
-* friend - applies aura to actors whose faction is "friend"
-* foe - applies aura to actors whose faction is "foe"
-* neutral - applies aura to actors whose faction is "neutral"
-* faction - applies aura to actors whose faction is blank
-* ally - applies aura to actors whose faction matches the effect source's faction
-* enemy - applies aura to actors whose faction is "foe" when the effect source's faction is "friend" (or vice versa)
+* **all** - applies aura to all. if not specified, all is assumed.
+* **ally** - applies aura to actors whose faction matches the effect source's faction
+* **enemy** - applies aura to actors whose faction is "foe" when the effect source's faction is "friend" (or vice versa)
+* **foe** - applies aura to actors whose faction is "foe"
+* **friend** - applies aura to actors whose faction is "friend"
+* **neutral** - applies aura to actors whose faction is "neutral"
+* **none** - applies aura to actors whose faction is "none" or blank
+
 
 You can also use the "!" or "~" operators to reverse the results such as "!friend", or "~ally".
 
 #### Exceptions
 If a resulting FROMAURA is set to "off" in the combat tracker, then the effect will not be removed based on token movement. This allows you to set the automatic effects of creatures that saved or are immune to "off".
 
-### FACTION() conditional check
-To further limit bonuses/penalties/conditions applying to the bearer of the AURA effect, there is also an additional conditional type "FACTION()".
+A CT token that has a faction of *none*, the factional relationship of ally or enemy will be evaluated from the source of the aura effect with regards if a FROMAURA should be applied.
 
-```AURA: 10 all; Test; IF: FACTION(foe); ATK: -5```
+### FACTION() Conditional Operator
+* Not case-sensitive
+* ! or ~ can be prepended to FACTION to provide a logical not.
 
-The IF: FACTION(foe) ensures that the penalty to attacks does not impact the bearer of the AURA effect but only their foes.
+A factional conditional operator that expands IF/IFT. The conditional operator returns true if factional relationship is true. This feature works generically within Fantasy Grounds and can be used outside of an aura effect.
 
-The same faction types as above are available, along with "notself":
-* all - does not block processing on any actor
-* friend - continues if the effect bearer's faction is "friend"
-* foe - continues if the effect bearer's faction is "foe"
-* neutral - continues if the effect bearer's faction is "neutral"
-* faction - continues if the effect bearer's faction is blank
-* ally - continues if the effect bearer's faction matches the effect source's faction
-* enemy - continues if the effect bearer's faction is "foe" and the effect source's faction is "friend" (or vice versa)
-* notself - continues if the effect bearer does not match the effect source
+* **ally** - True if source faction matches the target faction. Always True with IF
+* **enemy** - True if the source faction is "foe" and target faction is "friend" **or** if the source faction is "friend" and target faction is "foe. Always False with IF
+* **foe** - True if the faction is "foe"
+* **friend** - True if the faction is "friend"
+* **neutral** - TRUE if the faction is "neutral"
+* **none** - True if the faction is "none"
+* **notself** - (Legacy, same as !self), True If the actor indicated by the conditional effect is NOT the source of the effect
+* **self** - True If the actor indicated by the conditional effect is the source of the effect
 
-You can also use the "!" or "~" operators in a FACTION conditional to reverse the results:
+**!** or **~** can be prepended to any of the above to provide a logical not
+Multiple of the above can be combined
 
-```AURA: 10; Save Bonus for All and Attack Bonus Except for Actor With Aura; SAVE: 1; IF: FACTION(notself); ATK: 1```
+#### Aura Use
+Auras affect source of the aura by default. To have the aura **NOT** affect the source of the aura, a FACTION conditional operator is needed using one of the following descriptors *!self* or *~self* or *notself* when the aura is placed on the source node. The source of the aura does not benefit from the aura in the following example.
 
-```AURA: 10 !ally; Attack Penalty for All Except Allies; ATK: -5```
+```AURA: 10 ally; Test; IF: FACTION(!self); ATK: 5```
 
-```AURA: 10 ally; Attack Bonus for Allies; IF: FACTION(notself); ATK: 2```
+If using a proxy CT token to define an aura area, it is recommended to set the proxy CT entry to NONE and check for *!none* as in the following example. Having all proxy auras check for faction will ensure they don't affect one another or themselves.
+```AURA: 10 all; Debuff Area; IF: FACTION(!none); poisoned```
 
-```AURA: 10 all; Speed Bonus for All, Attack Bonus for Blank Factions; SPEED: 20; IF: FACTION(faction); ATK: 2```
+Unless there is a specific advanced case to do so, any other FACTION conditional operators are not needed for an aura.
 
 ### Special AURA type CUBE
 Default auras are spheres. A cube shaped aura can be defined by adding **cube** to the aura filter as shown in the example below. The length of the side of the cube is defined by the aura value. In the case of the example, the length of a side of the cube aura is 10.

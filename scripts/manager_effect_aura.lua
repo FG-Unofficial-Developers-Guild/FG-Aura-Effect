@@ -86,7 +86,7 @@ local function buildFromAura(nodeEffect)
     rEffect.nDuration = 0
     rEffect.nGMOnly = DB.getValue(nodeEffect, 'isgmonly', 0)
     rEffect.nInit = DB.getValue(nodeEffect, 'init', 0)
-    rEffect.sName = fromAuraString .. applyLabel:gsub('IFT*:%s*FACTION%(%s*notself%s*%)%s*;*', '')
+    rEffect.sName = fromAuraString .. applyLabel
     rEffect.sSource = DB.getPath(DB.getChild(nodeEffect, '...'))
     rEffect.sAuraNode = DB.getPath(nodeEffect)
     rEffect.sUnits = DB.getValue(nodeEffect, 'unit', '')
@@ -194,11 +194,24 @@ end
 -- Should auras in range be added to this target?
 function isAuraApplicable(nodeEffect, rSource, token, aFactions)
 	local rTarget = ActorManager.resolveActor(CombatManager.getCTFromToken(token))
+    local rAuraSource
+
+    -- If the source token is set to faction is set to none, use the faction of the source of the aura to get the relationship
+    if ActorManager.getFaction(rSource) == '' then
+        local sSourcePath = DB.getValue(nodeEffect, 'source_name', '')
+        if sSourcePath == '' then
+            rAuraSource = rSource -- Source is the Source
+        else
+            rAuraSource = ActorManager.resolveActor(DB.findNode(sSourcePath))
+        end
+    else
+        rAuraSource = rSource
+    end
 	if
 		rTarget ~= rSource
 		and DB.getValue(nodeEffect, 'isactive', 0) == 1
 		and checkConditionalBeforeAura(nodeEffect, ActorManager.getCTNode(rSource), ActorManager.getCTNode(rTarget))
-		and AuraFactionConditional.checkFaction(rTarget, rSource, aFactions)
+        and AuraFactionConditional.customCheckConditional(rAuraSource, nodeEffect, aFactions, rTarget)
 	then
 		return true
 	end
