@@ -71,29 +71,28 @@ end
 
 -- Although the token is marked as moved, for performance reasons it needs to move more than the
 -- threshold distance (at least half of grid size rounded down) to count as moved
-function isMovedFilter(nodeCT, token)
+function isMovedFilter(sNodeCT, token)
     local bReturn = false
     local nodeImage = token.getContainerNode()
     local sImagePath = DB.getPath(nodeImage)
 
-    if tImages[sImagePath] and nodeCT and Image.hasGrid(sImagePath) then
-        local sNodePath = DB.getPath(nodeCT)
+    if tImages[sImagePath] and sNodeCT and Image.hasGrid(sImagePath) then
         local nThreshold = (math.floor(tImages[sImagePath].nGridSize - 1) / 2)
         local nX, nY = token.getPosition()
         local nZ = token.getHeight()
 
-        if tImages[sImagePath].tTokens[sNodePath] then
-            if math.abs(tImages[sImagePath].tTokens[sNodePath].nX - nX) > nThreshold or
-               math.abs(tImages[sImagePath].tTokens[sNodePath].nY - nY) > nThreshold then
-                tImages[sImagePath].tTokens[sNodePath].nX = nX
-                tImages[sImagePath].tTokens[sNodePath].nY = nY
-                tImages[sImagePath].tTokens[sNodePath].nZ = nZ
+        if tImages[sImagePath].tTokens[sNodeCT] then
+            if math.abs(tImages[sImagePath].tTokens[sNodeCT].nX - nX) > nThreshold or
+               math.abs(tImages[sImagePath].tTokens[sNodeCT].nY - nY) > nThreshold then
+                tImages[sImagePath].tTokens[sNodeCT].nX = nX
+                tImages[sImagePath].tTokens[sNodeCT].nY = nY
+                tImages[sImagePath].tTokens[sNodeCT].nZ = nZ
                 bReturn = true
             end
         else
-            tImages[sImagePath].tTokens[sNodePath].nX = nX
-            tImages[sImagePath].tTokens[sNodePath].nY = nY
-            tImages[sImagePath].tTokens[sNodePath].nZ = nZ
+            tImages[sImagePath].tTokens[sNodeCT].nX = nX
+            tImages[sImagePath].tTokens[sNodeCT].nY = nY
+            tImages[sImagePath].tTokens[sNodeCT].nZ = nZ
             bReturn = true
         end
     end
