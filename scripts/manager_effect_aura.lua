@@ -238,20 +238,22 @@ function updateAura(tokenSource, nodeEffect, rAuraDetails, nodeCT)
     end
 	for _, token in pairs(aTokens) do
         local nodeCTToken = CombatManager.getCTFromToken(token)
-        local sNodeCTToken = DB.getPath(nodeCTToken)
-        aFromAuraNodes[sNodeCTToken] = nil -- Processed so mark as such
-        if isAuraApplicable(nodeEffect, rSource, token, rAuraDetails.aFactions) then
-            if rAuraDetails.bSingle then
-                if not checkOncePerTurn(rAuraDetails.sSource, sNodeTarget, rAuraDetails.sEffect)
-                   and nodeCT and nodeCT ==nodeCTToken then
+        if nodeCTToken then -- Guard against non-CT linked tokens
+            local sNodeCTToken = DB.getPath(nodeCTToken)
+            aFromAuraNodes[sNodeCTToken] = nil -- Processed so mark as such
+            if isAuraApplicable(nodeEffect, rSource, token, rAuraDetails.aFactions) then
+                if rAuraDetails.bSingle then
+                    if not checkOncePerTurn(rAuraDetails.sSource, sNodeTarget, rAuraDetails.sEffect)
+                    and nodeCT and nodeCT ==nodeCTToken then
+                        tAdd[token.getId()] = {nodeEffect, nodeCTToken}
+                        addOncePerTurn(rAuraDetails.sSource, sNodeTarget, rAuraDetails.sEffect)
+                    end
+                else
                     tAdd[token.getId()] = {nodeEffect, nodeCTToken}
-                    addOncePerTurn(rAuraDetails.sSource, sNodeTarget, rAuraDetails.sEffect)
                 end
             else
-                tAdd[token.getId()] = {nodeEffect, nodeCTToken}
+                tRemove[token.getId()] = {nodeEffect, nodeCTToken}
             end
-        else
-            tRemove[token.getId()] = {nodeEffect, nodeCTToken}
         end
 	end
 
