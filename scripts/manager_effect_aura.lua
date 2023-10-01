@@ -2,14 +2,13 @@
 --	Please see the LICENSE.md file included with this distribution for attribution and copyright information.
 --
 -- luacheck: globals bDebug updateAura addAura removeAura removeAllFromAuras isAuraApplicable
--- luacheck: globals fromAuraString auraString getAuraDetails
+-- luacheck: globals auraString getAuraDetails
 -- luacheck: globals AuraFactionConditional.DetectedEffectManager.parseEffectComp AuraFactionConditional.DetectedEffectManager.checkConditional
 -- luacheck: globals AuraTracker AuraToken getPathsOncePerTurn
 bDebug = false
 
 OOB_MSGTYPE_AURATOKENMOVE = 'aurasontokenmove'
 
-fromAuraString = 'FROMAURA;'
 auraString = 'AURA: %d+'
 
 local aAuraFactions = {'ally', 'enemy', 'friend', 'foe', 'all', 'neutral', 'faction'}
@@ -66,29 +65,11 @@ local function buildFromAura(nodeEffect)
     rEffect.nDuration = 0
     rEffect.nGMOnly = DB.getValue(nodeEffect, 'isgmonly', 0)
     rEffect.nInit = DB.getValue(nodeEffect, 'init', 0)
-    rEffect.sName = fromAuraString .. applyLabel
+    rEffect.sName =  applyLabel
     rEffect.sSource = DB.getPath(DB.getChild(nodeEffect, '...'))
-    rEffect.sAuraNode = DB.getPath(nodeEffect)
+    rEffect.sAuraSource = DB.getPath(nodeEffect)
     rEffect.sUnits = DB.getValue(nodeEffect, 'unit', '')
     return rEffect
-end
-
--- Checks provided effect node to see whether it's a fromaura matching the actor at the provided string
--- It does this without using source_aura as it's used in the pipeline that sets source_aura
-local function isAuraMatchToSaveSource(nodeTargetEffect, sSourcePath)
-    local bReturn = DB.getValue(nodeTargetEffect, 'source_name', '') == sSourcePath
-    return bReturn and string.find(DB.getValue(nodeTargetEffect, 'label', ''), fromAuraString) ~= nil
-end
-
--- Search for FROMAURA effects on nodeTarget where aura source matches nodeSource and source_aura is not set
--- If found, set source_aura to nodeEffect. this could be bad for users of older versions.
-local function saveAuraSource(nodeTarget, rAuraDetails)
-    for _, nodeTargetEffect in ipairs(DB.getChildList(nodeTarget, 'effects')) do
-        if not DB.getValue(nodeTargetEffect, 'source_aura') and isAuraMatchToSaveSource(nodeTargetEffect, rAuraDetails.sSource) then
-            DB.setValue(nodeTargetEffect, 'source_aura', 'string', rAuraDetails.sAuraNode)
-            break
-        end
-    end
 end
 
 -- Check effect nodes of nodeSource to see if they are children of nodeEffect
@@ -108,7 +89,6 @@ function addAura(nodeEffect, nodeTarget, rAuraDetails)
     AuraTracker.addTrackedFromAura(rAuraDetails.sSource, rAuraDetails.sAuraNode, DB.getPath(nodeTarget))
 	if hasFromAura(nodeEffect, nodeTarget) then return end
 	AuraEffectSilencer.notifyApply(buildFromAura(nodeEffect), DB.getPath(nodeTarget))
-	saveAuraSource(nodeTarget, rAuraDetails)
 end
 
 -- Search all effects on target to find matching auras to remove.

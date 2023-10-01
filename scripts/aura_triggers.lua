@@ -112,7 +112,7 @@ end
 local function onEffectChanged(nodeLabel)
 	local nodeEffect = DB.getParent(nodeLabel)
 	local sEffect = DB.getValue(nodeEffect, 'label', '')
-	if string.match(sEffect, 'AURA[:;]') and not string.match(sEffect, 'FROMAURA[:;]') then
+	if string.match(sEffect, 'AURA[:;]')  then
 		local sNode = DB.getPath(DB.getChild(nodeEffect, '...'))
 		local sAuraEffect = DB.getPath(nodeEffect)
 		AuraTracker.removeTrackedFromAura(sNode,sAuraEffect) -- Effect changed
@@ -128,7 +128,6 @@ end
 ---	Remove fromaura effects just before source aura is removed
 local function onEffectToBeRemoved(nodeEffect)
 	local sEffect = DB.getValue(nodeEffect, 'label', '')
-	if string.find(sEffect, AuraEffect.fromAuraString) then return end
 	if not string.find(sEffect, AuraEffect.auraString) then return end
 	for _, sEffectComp in ipairs(EffectManager.parseEffect(sEffect)) do
 		local rEffectComp = AuraFactionConditional.DetectedEffectManager.parseEffectComp(sEffectComp)

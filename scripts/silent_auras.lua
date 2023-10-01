@@ -9,17 +9,19 @@ bDebug = false
 OOB_MSGTYPE_AURAAPPLYSILENT = 'applyeffsilent'
 OOB_MSGTYPE_AURAEXPIRESILENT = 'expireeffsilent'
 
-local aEffectVarMap = {
-	['nActive'] = { sDBType = 'number', sDBField = 'isactive' },
-	['nDuration'] = { sDBType = 'number', sDBField = 'duration', vDBDefault = 1, sDisplay = '[D: %d]' },
-	['nGMOnly'] = { sDBType = 'number', sDBField = 'isgmonly' },
-	['nInit'] = { sDBType = 'number', sDBField = 'init', sSourceChangeSet = 'initresult', bClearOnUntargetedDrop = true },
-	['sName'] = { sDBType = 'string', sDBField = 'label' },
-	['sSource'] = { sDBType = 'string', sDBField = 'source_name', bClearOnUntargetedDrop = true },
-	['sTarget'] = { sDBType = 'string', bClearOnUntargetedDrop = true },
-	['sUnit'] = { sDBType = 'string', sDBField = 'unit' },
-	['sAuraSource'] = { sDBType = 'string', sDBField = 'source_aura' },
-}
+local aEffectVarMap
+-- Leaving for refernce but the VarMap is ruleset specific. This gets set in onInit()
+-- = {
+-- 	['nActive'] = { sDBType = 'number', sDBField = 'isactive' },
+-- 	['nDuration'] = { sDBType = 'number', sDBField = 'duration', vDBDefault = 1, sDisplay = '[D: %d]' },
+-- 	['nGMOnly'] = { sDBType = 'number', sDBField = 'isgmonly' },
+-- 	['nInit'] = { sDBType = 'number', sDBField = 'init', sSourceChangeSet = 'initresult', bClearOnUntargetedDrop = true },
+-- 	['sName'] = { sDBType = 'string', sDBField = 'label' },
+-- 	['sSource'] = { sDBType = 'string', sDBField = 'source_name', bClearOnUntargetedDrop = true },
+-- 	['sTarget'] = { sDBType = 'string', bClearOnUntargetedDrop = true },
+-- 	['sUnit'] = { sDBType = 'string', sDBField = 'unit' },
+-- 	['sAuraSource'] = { sDBType = 'string', sDBField = 'source_aura' },
+-- }
 
 local function checkSilentNotification(sSourcePath, targetNodePath)
 	local bReturn = false
@@ -150,6 +152,9 @@ function onInit()
 		baseval = 'off',
 		default = 'off',
 	})
+	-- Mod the EffectVarMap to track the source of the aura effect
+	EffectManager. registerEffectVar('sAuraSource' , { sDBType = 'string', sDBField = 'source_aura' })
+	aEffectVarMap = EffectManager.getEffectVarMap()
 
 	OOBManager.registerOOBMsgHandler(OOB_MSGTYPE_AURAAPPLYSILENT, handleApplyEffect)
 	OOBManager.registerOOBMsgHandler(OOB_MSGTYPE_AURAEXPIRESILENT, handleExpireEffect)
