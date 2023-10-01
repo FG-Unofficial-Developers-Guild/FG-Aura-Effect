@@ -15,7 +15,7 @@ Mattekure's [Complete Offensive Package Aura Extension](https://forge.fantasygro
 
 This will add a 10 foot aura around the person who has this effect.
 
-Allies within 10' will receive an effect "FROMAURA; Aura of Protection; SAVE: 5".
+Allies within 10' will receive an effect "Aura of Protection; SAVE: 5".
 
 While a name (such as 'Aura of Protection' in the above example) is not required it is highly recommended to help avoid collisions between effects.
 
@@ -35,9 +35,9 @@ The following faction types are available:
 You can also use the "!" or "~" operators to reverse the results such as "!friend", or "~ally".
 
 #### Exceptions
-If a resulting FROMAURA is set to "off" in the combat tracker, then the effect will not be removed based on token movement. This allows you to set the automatic effects of creatures that saved or are immune to "off".
+If a resulting aura applied effect is set to "off" in the combat tracker, then the effect will not be removed based on token movement. This allows you to set the automatic effects of creatures that saved or are immune to "off".
 
-A CT token that has a faction of *none*, the factional relationship of ally or enemy will be evaluated from the source of the aura effect with regards if a FROMAURA should be applied.
+A CT token that has a faction of *none*, the factional relationship of ally or enemy will be evaluated from the source of the aura effect with regards if a aura applied effect should be applied.
 
 ### FACTION() Conditional Operator
 * Not case-sensitive
@@ -74,7 +74,7 @@ Special aura types change the default behavior of auras. They are specified in t
 |----------|-----|-------|
 |**cube**|Default auras are spheres. The length of the side of the cube is defined by the aura value. In the case of the example, the length of a side of the cube aura is 10.|```AURA: 10 all,cube; ATK: -5```|
 |**single**|There are a number of spells and effects, particularly in the 5E ruleset, which necessitate a slightly different aura behavior. These have the text or something similar *"When the creature enters the area for the first time on a turn or starts its turn there"*. The aura will be applied to the target only when the target starts its turn in the aura or enters (moves into) the area for the first time on a turn. It will not be reapplied if the target leaves the area and returns on the same turn. It also will not be applied if the actor is in the area when cast or if the aura area moves onto the actor.|```AURA: 10 !ally,single; Test; IF: FACTION(!self); ATK: -5```|
-|**sticky**|FROMAURA will not be removed from actors|```AURA: 10 all,sticky; Poison Trap; IF: FACTION(!self); Poisoned```|
+|**sticky**|Applied aura effects will not be removed from actors|```AURA: 10 all,sticky; Poison Trap; IF: FACTION(!self); Poisoned```|
 |**once**|The aura will only apply once per turn to an actor that starts or enters the area or if the area moves onto the actor. Leaving and re-entering the area on the same turn will not reapply the aura| ```AURA: 10 all,once; ATK: -5```|
 ### Option for disabling aura effect chat messages
 "Silence Notifications for Aura Types" can be used to hide aura apply/removal chat messages for a particular faction, relationship, or all.
