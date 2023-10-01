@@ -3,7 +3,7 @@
 --
 
 -- luacheck: globals bDebug bDebugPerformance handleTokenMovement notifyTokenMove
--- luacheck: globals updateAurasForMap updateAurasForActor updateAurasForEffect
+-- luacheck: globals updateAurasForMap updateAurasForActor updateAurasForEffect addEffect_new
 -- luacheck: globals updateAurasForTurnStart AuraEffect.clearOncePerTurn AuraTracker AuraToken
 bDebug = false
 bDebugPerformance = false
@@ -134,6 +134,21 @@ local function onEffectToBeRemoved(nodeEffect)
 	AuraTracker.removeTrackedAura(DB.getPath(DB.getChild(nodeEffect, '...')), DB.getPath(nodeEffect))
 end
 
+local addEffect_old
+function addEffect_new(sUser, sIdentity, nodeCT, rNewEffect, bShowMsg)
+	addEffect_old(sUser, sIdentity, nodeCT, rNewEffect, bShowMsg)
+	if AuraFactionConditional.DetectedEffectManager.parseEffectComp then
+		for _, sEffectComp in ipairs(EffectManager.parseEffect(rNewEffect.sName)) do
+			local rEffectComp = AuraFactionConditional.DetectedEffectManager.parseEffectComp(sEffectComp)
+			if rEffectComp.type:upper() == 'AURA' then
+				local _, winImage = ImageManager.getImageControl(CombatManager.getTokenFromCT(nodeCT))
+				local rNodeStart = ActorManager.resolveActor(nodeCT)
+				updateAurasForMap(winImage,rNodeStart)
+				break
+			end
+		end
+	end
+end
 ---	Recalculate auras after effects are removed to ensure conditionals before aura are respected
 local function onEffectRemoved(nodeEffects) updateAurasForActor(DB.getParent(nodeEffects)) end
 
@@ -160,4 +175,7 @@ function onInit()
 	DB.addHandler(DB.getPath(CombatManager.CT_LIST .. '.*.effects'), 'onChildDeleted', onEffectRemoved)
 
 	CombatManager.setCustomTurnStart(updateAurasForTurnStart)
+
+	addEffect_old = EffectManager.addEffect;
+	EffectManager.addEffect = addEffect_new;
 end
