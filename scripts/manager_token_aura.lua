@@ -6,21 +6,6 @@
 local tImages = {}
 local linkToken = nil
 
-function onInit()
-    if Session.IsHost then
-        Token.addEventHandler('onDelete', onDelete)
-
-        linkToken = TokenManager.linkToken
-        TokenManager.linkToken = customLinkToken
-    end
-end
-
-function onClose()
-    if Session.IsHost then
-        TokenManager.linkToken = linkToken
-    end
-end
-
 function add(nodeCT)
     onAdd(CombatManager.getTokenFromCT(nodeCT))
 end
@@ -119,4 +104,19 @@ function getTokensWithinCube(tokenSource, nSideLength)
         end
     end
     return aReturn
+end
+
+function onInit()
+    if Session.IsHost then
+        Token.addEventHandler('onDelete', onDelete)
+
+        linkToken = TokenManager.linkToken
+        TokenManager.linkToken = customLinkToken
+    end
+end
+
+function onClose()
+    if Session.IsHost then
+        TokenManager.linkToken = linkToken
+    end
 end
