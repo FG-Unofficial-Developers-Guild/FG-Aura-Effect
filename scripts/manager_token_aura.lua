@@ -60,6 +60,9 @@ function isMovedFilter(sNodeCT, token)
     local bReturn = false
     local nodeImage = token.getContainerNode()
     local sImagePath = DB.getPath(nodeImage)
+    if not tImages[sImagePath] or not tImages[sImagePath].tTokens[sNodeCT] then
+        onAdd(token)
+    end
 
     if tImages[sImagePath] and sNodeCT and Image.hasGrid(sImagePath) then
         local nThreshold = (math.floor(tImages[sImagePath].nGridSize - 1) / 2)
