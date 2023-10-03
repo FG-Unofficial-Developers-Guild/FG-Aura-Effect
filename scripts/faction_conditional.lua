@@ -32,8 +32,10 @@ function hasFaction(rActor, sFaction, rTarget, nodeEffect)
     local sTargetFaction
     local sTargetNode
     local aFactions = StringManager.splitByPattern(sFaction, '%s*,%s*', true)
-    local sNodeEffectSource = DB.getValue(nodeEffect, 'source_name', DB.getPath(DB.getChild(nodeEffect, '...')))
-
+    local sNodeEffectSource = DB.getValue(nodeEffect, 'source_name', '')
+    if sNodeEffectSource == '' then
+        sNodeEffectSource = DB.getPath(DB.getChild(nodeEffect, '...'))
+    end
     -- If there is a target IFT. No Target IF
     if rTarget then
         sTargetNode = rTarget.sCTNode

@@ -151,7 +151,7 @@ function isAuraApplicable(nodeEffect, rSource, rTarget, aFactions)
         if sSourcePath == '' then
             rAuraSource = rSource -- Source is the Source
         else
-            rAuraSource = ActorManager.resolveActor(DB.findNode(sSourcePath))
+            rAuraSource = ActorManager.resolveActor(DB.findNode(DB.getPath(DB.getChild(nodeEffect, '...'))))
         end
     else
         rAuraSource = rSource
