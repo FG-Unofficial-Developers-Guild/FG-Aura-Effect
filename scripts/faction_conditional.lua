@@ -44,7 +44,6 @@ function hasFaction(rActor, sFaction, rTarget, nodeEffect)
         sTargetNode = rActor.sCTNode
         sTargetFaction = ActorManager.getFaction(rActor)
     end
-
     for _, sFactionElement in ipairs(aFactions) do
         if StringManager.startsWith(sFactionElement, '!') or StringManager.startsWith(sFactionElement, '~') then
             sFactionElement = sFactionElement:sub(2)
@@ -86,7 +85,7 @@ end
 
 local checkConditional_old
 function customCheckConditional(rActor, nodeEffect, aConditions, rTarget, aIgnore)
-    local bReturn = checkConditional_old(rActor, nodeEffect, aConditions, rTarget, aIgnore);
+    local bReturn = checkConditional_old(rActor, nodeEffect, aConditions, rTarget, aIgnore)
     if bReturn then
         for _, v in ipairs(aConditions) do
             local sLower = v:lower()

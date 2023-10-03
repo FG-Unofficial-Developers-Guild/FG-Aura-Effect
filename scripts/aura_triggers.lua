@@ -5,7 +5,7 @@
 -- luacheck: globals bDebug bDebugPerformance handleTokenMovement notifyTokenMove
 -- luacheck: globals updateAurasForMap updateAurasForActor updateAurasForEffect addEffect_new
 -- luacheck: globals updateAurasForTurnStart AuraEffect.clearOncePerTurn AuraTracker AuraToken
--- luacheck: globals AuraFactionConditional.DetectedEffectManager.parseEffectComp AuraFactionConditional.DetectedEffectManager.checkConditional
+-- luacheck: globals AuraFactionConditional.DetectedEffectManager.parseEffectComp
 
 bDebug = false
 bDebugPerformance = false

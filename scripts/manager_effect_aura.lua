@@ -4,7 +4,7 @@
 -- luacheck: globals bDebug updateAura addAura removeAura removeAllFromAuras isAuraApplicable
 -- luacheck: globals auraString getAuraDetails
 -- luacheck: globals AuraFactionConditional.DetectedEffectManager.parseEffectComp AuraFactionConditional.DetectedEffectManager.checkConditional
--- luacheck: globals AuraTracker AuraToken getPathsOncePerTurn AuraFactionConditional.customCheckConditional
+-- luacheck: globals AuraTracker AuraToken getPathsOncePerTurn
 bDebug = false
 
 OOB_MSGTYPE_AURATOKENMOVE = 'aurasontokenmove'
@@ -160,7 +160,8 @@ function isAuraApplicable(nodeEffect, rSource, rTarget, aFactions)
 		rTarget ~= rSource
 		and DB.getValue(nodeEffect, 'isactive', 0) == 1
 		and checkConditionalBeforeAura(nodeEffect, rSource, rTarget)
-        and AuraFactionConditional.customCheckConditional(rAuraSource, nodeEffect, aFactions, rTarget)
+        and AuraFactionConditional.DetectedEffectManager.checkConditional(rAuraSource,
+            nodeEffect, {'FACTION(' .. table.concat(aFactions, ',') .. ')'}, rTarget)
 	then
 		return true
 	end
