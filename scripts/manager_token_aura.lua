@@ -71,7 +71,8 @@ function isMovedFilter(sNodeCT, token)
 
         if tImages[sImagePath].tTokens[sNodeCT] then
             if math.abs(tImages[sImagePath].tTokens[sNodeCT].nX - nX) > nThreshold or
-               math.abs(tImages[sImagePath].tTokens[sNodeCT].nY - nY) > nThreshold then
+               math.abs(tImages[sImagePath].tTokens[sNodeCT].nY - nY) > nThreshold or
+               tImages[sImagePath].tTokens[sNodeCT].nZ ~= nZ then
                 tImages[sImagePath].tTokens[sNodeCT].nX = nX
                 tImages[sImagePath].tTokens[sNodeCT].nY = nY
                 tImages[sImagePath].tTokens[sNodeCT].nZ = nZ
