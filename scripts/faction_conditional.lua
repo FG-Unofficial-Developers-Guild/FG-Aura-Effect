@@ -120,6 +120,7 @@ function onInit()
         DetectedEffectManager = EffectManager5E
     elseif EffectManager4E then
         DetectedEffectManager = EffectManager4E
+        DetectedEffectManager.parseEffectComp = EffectManager.parseEffectCompSimple
     end
 
     -- create proxy function to add FACTION conditional
