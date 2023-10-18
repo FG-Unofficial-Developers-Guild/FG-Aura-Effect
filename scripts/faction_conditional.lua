@@ -1,7 +1,7 @@
 --
 --	Please see the LICENSE.md file included with this distribution for attribution and copyright information.
 --
--- luacheck: globals bDebug getRelationship DetectedEffectManager hasFaction customCheckConditional
+-- luacheck: globals bDebug getRelationship DetectedEffectManager hasFaction customCheckConditional customParseWords
 bDebug = false
 
 DetectedEffectManager = nil
@@ -116,6 +116,19 @@ function customCheckConditional(rActor, nodeEffect, aConditions, rTarget, aIgnor
     return bReturn
 end
 
+local parseWordsOriginal
+function customParseWords(s, extra_delimiters)
+    local delim = '!~'
+    if extra_delimiters  then
+        if not extra_delimiters:match('!~') then
+            delim = delim .. extra_delimiters
+        else
+            delim = extra_delimiters
+        end
+    end
+    return parseWordsOriginal(s, delim)
+end
+
 function onInit()
     -- Set up the effect manager proxy functions for the detected ruleset
     if EffectManager35E then
@@ -130,6 +143,9 @@ function onInit()
         DetectedEffectManager = EffectManager4E
         DetectedEffectManager.parseEffectComp = EffectManager.parseEffectCompSimple
     end
+
+    parseWordsOriginal = StringManager.parseWords
+    StringManager.parseWords = customParseWords
 
     -- create proxy function to add FACTION conditional
     checkConditional_old = DetectedEffectManager.checkConditional
