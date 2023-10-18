@@ -17,7 +17,7 @@ local aAuraFactions = {'ally', 'enemy', 'friend', 'foe', 'all', 'neutral', 'none
 function getAuraDetails(nodeEffect)
     local rDetails = {bSingle = false, bCube = false, bSticky = false, bOnce = false,
                       nRange = 0, sEffect = '', sSource = '', sAuraNode = '', aFactions = {}}
-    if not AuraFactionConditional.DetectedEffectManager.parseEffectComp then return 'all' end
+    if not AuraFactionConditional.DetectedEffectManager.parseEffectComp then return rDetails end
 
     rDetails.sEffect = DB.getValue(nodeEffect, 'label', '')
     for _, sEffectComp in ipairs(EffectManager.parseEffect(rDetails.sEffect)) do
@@ -111,7 +111,7 @@ end
 function removeAllFromAuras(nodeEffect)
 	local rAuraDetails = AuraEffect.getAuraDetails(nodeEffect)
 	if not string.find(rAuraDetails.sEffect, auraString) then return end
-    local aFromAuraNodes = AuraTracker.getTrackedFromAuras(rAuraDetails.sSource,rAuraDetails.sAuraNode)
+    local aFromAuraNodes = AuraTracker.getTrackedFromAuras(rAuraDetails.sSource, rAuraDetails.sAuraNode)
 	for sNodeCT, _ in pairs(aFromAuraNodes) do
         local nodeCT = DB.findNode(sNodeCT)
         AuraEffect.removeAura(nodeEffect, nodeCT, rAuraDetails)

@@ -82,8 +82,8 @@ function handleTokenMovement(msgOOB)
 	local _, winImage = ImageManager.getImageControl(CombatManager.getTokenFromCT(msgOOB.sCTNode))
 	local rNodeStart = ActorManager.resolveActor(DB.findNode(msgOOB.sCTNode))
 
-	if AuraToken.isMovedFilter(msgOOB.sCTNode,CombatManager.getTokenFromCT(msgOOB.sCTNode)) then
-		updateAurasForMap(winImage,rNodeStart)
+	if AuraToken.isMovedFilter(msgOOB.sCTNode, CombatManager.getTokenFromCT(msgOOB.sCTNode)) then
+		updateAurasForMap(winImage, rNodeStart)
 		if bDebugPerformance then
 			sTime = string.format('%s%s,', sTime, tostring(os.clock() - time1))
 			Debug.console(sTime)
@@ -168,7 +168,7 @@ function addEffect_new(sUser, sIdentity, nodeCT, rNewEffect, bShowMsg)
 			if rEffectComp.type:upper() == 'AURA' then
 				local _, winImage = ImageManager.getImageControl(CombatManager.getTokenFromCT(nodeCT))
 				local rNodeStart = ActorManager.resolveActor(nodeCT)
-				updateAurasForMap(winImage,rNodeStart)
+				updateAurasForMap(winImage, rNodeStart)
 				break
 			end
 		end
