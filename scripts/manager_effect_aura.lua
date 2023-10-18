@@ -125,17 +125,23 @@ local function checkConditionalBeforeAura(nodeEffect, rSource, rTarget)
 	if not AuraFactionConditional.DetectedEffectManager.parseEffectComp then return true end
 	for _, sEffectComp in ipairs(EffectManager.parseEffect(DB.getValue(nodeEffect, 'label', ''))) do
 		local rEffectComp = AuraFactionConditional.DetectedEffectManager.parseEffectComp(sEffectComp)
+        local aCondHelper
+        if EffectManager4E then
+            aCondHelper = rEffectComp
+        else
+            aCondHelper = rEffectComp.remainder
+        end
 		-- Check conditionals
 		if rEffectComp.type == 'AURA' then
-			if not AuraFactionConditional.DetectedEffectManager.checkConditional(rSource, nodeEffect, rEffectComp.remainder) then
+			if not AuraFactionConditional.DetectedEffectManager.checkConditional(rSource, nodeEffect, aCondHelper) then
 				return false
 			else
 				return true
 			end
 		elseif rEffectComp.type == 'IF' then
-			if not AuraFactionConditional.DetectedEffectManager.checkConditional(rSource, nodeEffect, rEffectComp.remainder) then return false end
+			if not AuraFactionConditional.DetectedEffectManager.checkConditional(rSource, nodeEffect, aCondHelper) then return false end
 		elseif rEffectComp.type == 'IFT' then
-			if rTarget and not AuraFactionConditional.DetectedEffectManager.checkConditional(rTarget, nodeEffect, rEffectComp.remainder, rSource) then
+			if rTarget and not AuraFactionConditional.DetectedEffectManager.checkConditional(rTarget, nodeEffect, aCondHelper, rSource) then
 				return false
 			end
 		end
@@ -158,12 +164,20 @@ function isAuraApplicable(nodeEffect, rSource, rTarget, aFactions)
 	else
 		rAuraSource = rSource
 	end
+    local aConditions = {'FACTION(' .. table.concat(aFactions, ',') .. ')'}
+    local aCondHelper = {}
+    if EffectManager4E then
+        aCondHelper.remainder = aConditions
+        aCondHelper.original = DB.getValue(nodeEffect,'label')
+    else
+        aCondHelper = aConditions
+    end
 	if
 		rTarget ~= rSource
 		and DB.getValue(nodeEffect, 'isactive', 0) == 1
 		and checkConditionalBeforeAura(nodeEffect, rSource, rTarget)
 		and AuraFactionConditional.DetectedEffectManager.checkConditional(rAuraSource,
-			nodeEffect, {'FACTION(' .. table.concat(aFactions, ',') .. ')'}, rTarget)
+			nodeEffect, aCondHelper, rTarget)
 	then
 		return true
 	end

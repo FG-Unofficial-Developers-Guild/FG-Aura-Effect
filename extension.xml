@@ -3,7 +3,7 @@
 <root version="3.0" >
 	<properties>
 		<name>Feature: Aura Effects</name>
-		<version>3.0</version>
+		<version>3.1</version>
 		<author>Kent McCullough</author>
 		<description>Adds and removes effects based on proximity.</description>
 		<loadorder>999</loadorder>
@@ -19,9 +19,9 @@
 		<ruleset>
 			<name>SFRPG</name>
 		</ruleset>
-		<!-- <ruleset>
+		<ruleset>
 			<name>4E</name>
-		</ruleset> -->
+		</ruleset>
 		<ruleset>
 			<name>5E</name>
 		</ruleset>

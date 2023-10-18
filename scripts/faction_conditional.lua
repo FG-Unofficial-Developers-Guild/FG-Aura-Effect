@@ -84,10 +84,18 @@ function hasFaction(rActor, sFaction, rTarget, nodeEffect)
 end
 
 local checkConditional_old
+-- NOTE: 4E aConditions is a rEffectComp
 function customCheckConditional(rActor, nodeEffect, aConditions, rTarget, aIgnore)
     local bReturn = checkConditional_old(rActor, nodeEffect, aConditions, rTarget, aIgnore)
     if bReturn then
-        for _, v in ipairs(aConditions) do
+        local aCondHelper
+        if EffectManager4E then
+            aCondHelper = aConditions.remainder
+        else
+            aCondHelper = aConditions
+        end
+
+        for _, v in ipairs(aCondHelper) do
             local sLower = v:lower()
             local bNegate = false
             if StringManager.startsWith(sLower, '!') or StringManager.startsWith(sLower, '~') then
