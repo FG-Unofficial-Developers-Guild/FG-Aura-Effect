@@ -153,17 +153,13 @@ end
 function isAuraApplicable(nodeEffect, rSource, rTarget, aFactions)
 	local rAuraSource
 
-	-- If the source token is set to faction is set to none, use the faction of the source of the aura to get the relationship
-	if ActorManager.getFaction(rSource) == '' then
-		local sSourcePath = DB.getValue(nodeEffect, 'source_name', '')
-		if sSourcePath == '' then
-			rAuraSource = rSource -- Source is the Source
-		else
-			rAuraSource = ActorManager.resolveActor(DB.findNode(DB.getPath(DB.getChild(nodeEffect, '...'))))
-		end
-	else
-		rAuraSource = rSource
-	end
+    local sSourcePath = DB.getValue(nodeEffect, 'source_name', '')
+    if sSourcePath == '' then
+        rAuraSource = rSource -- Source is the Source
+    else
+        rAuraSource = ActorManager.resolveActor(DB.findNode(DB.getPath(DB.getChild(nodeEffect, '...'))))
+    end
+
     local aConditions = {'FACTION(' .. table.concat(aFactions, ',') .. ')'}
     local aCondHelper = {}
     if EffectManager4E then
