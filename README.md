@@ -6,7 +6,7 @@ This extension accommodates auras and area-of-effect buffs/debuffs by adding/rem
 # Compatibility and Instructions
 This extension has been tested with [FantasyGrounds Unity](https://www.fantasygrounds.com/home/FantasyGroundsUnity.php) v4.4.3(2023-09-30).
 
-It works with the 3.5E, 5E, PFRPG, PFRPG2, and SFRPG rulesets.
+It works with the 3.5E, 4E, 5E, PFRPG, PFRPG2, and SFRPG rulesets.
 
 Mattekure's [Complete Offensive Package Aura Extension](https://forge.fantasygrounds.com/shop/items/620/view) also allows you to see the auras that this extension creates. It is a paid extension.
 
