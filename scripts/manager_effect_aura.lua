@@ -90,7 +90,9 @@ function addAura(nodeEffect, nodeTarget, rAuraDetails)
 	if not nodeSource or not nodeTarget or not nodeEffect then return end
 	AuraTracker.addTrackedFromAura(rAuraDetails.sSource, rAuraDetails.sAuraNode, DB.getPath(nodeTarget))
 	if hasFromAura(nodeEffect, nodeTarget) then return end
-	AuraEffectSilencer.notifyApply(buildFromAura(nodeEffect), DB.getPath(nodeTarget))
+	local rEffectAura = buildFromAura(nodeEffect)
+	if not rEffectAura then Debug.console(rEffectAura); return end
+	AuraEffectSilencer.notifyApply(rEffectAura, DB.getPath(nodeTarget))
 end
 
 -- Search all effects on target to find matching auras to remove.
