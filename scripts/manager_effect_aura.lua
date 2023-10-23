@@ -91,7 +91,7 @@ function addAura(nodeEffect, nodeTarget, rAuraDetails)
 	AuraTracker.addTrackedFromAura(rAuraDetails.sSource, rAuraDetails.sAuraNode, DB.getPath(nodeTarget))
 	if hasFromAura(nodeEffect, nodeTarget) then return end
 	local rEffectAura = buildFromAura(nodeEffect)
-	if not rEffectAura then Debug.console(rEffectAura); return end
+	if not rEffectAura then return end
 	AuraEffectSilencer.notifyApply(rEffectAura, DB.getPath(nodeTarget))
 end
 
