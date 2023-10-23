@@ -153,7 +153,7 @@ function onInit()
 		default = 'off',
 	})
 	-- Mod the EffectVarMap to track the source of the aura effect
-	EffectManager. registerEffectVar('sAuraSource' , { sDBType = 'string', sDBField = 'source_aura' })
+	EffectManager.registerEffectVar('sAuraSource' , { sDBType = 'string', sDBField = 'source_aura' })
 	aEffectVarMap = EffectManager.getEffectVarMap()
 
 	OOBManager.registerOOBMsgHandler(OOB_MSGTYPE_AURAAPPLYSILENT, handleApplyEffect)

@@ -118,15 +118,19 @@ end
 
 local parseWordsOriginal
 function customParseWords(s, extra_delimiters)
-    local delim = '!~'
-    if extra_delimiters  then
-        if not extra_delimiters:match('!~') then
-            delim = delim .. extra_delimiters
-        else
-            delim = extra_delimiters
+    local sDelim = ''
+    if extra_delimiters then
+        if not extra_delimiters:match('!') then
+            sDelim = sDelim .. '!'
         end
+        if not extra_delimiters:match('~') then
+            sDelim = sDelim .. '~'
+        end
+        sDelim = sDelim .. extra_delimiters
+    else
+        sDelim = '!~'
     end
-    return parseWordsOriginal(s, delim)
+    return parseWordsOriginal(s, sDelim)
 end
 
 function onInit()
