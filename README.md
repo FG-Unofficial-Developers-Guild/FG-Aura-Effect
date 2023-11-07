@@ -39,6 +39,11 @@ If a resulting aura applied effect is set to "off" in the combat tracker, then t
 
 The factional relationship of ally or enemy will be evaluated from the source of the aura effect with regards if a aura applied effect should be applied.
 
+#### 5E Concentration (C)
+Concentration spells the (C) should be in it's own clause before the AURA clause or in the AURA clause. It should not be in a clause after after the AURA clause (applied effect)
+* **Correct** ```Example; (C); AURA: 10 all; Example; Do something```
+* **Correct** ```Example; AURA: 10 all (C); Example; Do something```
+* **Incorrect** ```Example; AURA: 10 all; Example; Do something (C)```
 ### FACTION() Conditional Operator
 * Not case-sensitive
 * ! or ~ can be prepended to FACTION to provide a logical not.
