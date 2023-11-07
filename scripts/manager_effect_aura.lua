@@ -76,23 +76,27 @@ end
 
 -- Check effect nodes of nodeSource to see if they are children of nodeEffect
 local function hasFromAura(nodeEffect, nodeSource)
-	local sEffectPath = DB.getPath(nodeEffect)
-	for _, nodeTargetEffect in ipairs(DB.getChildList(nodeSource, 'effects')) do
-		if DB.getValue(nodeTargetEffect, 'source_aura', '') == sEffectPath then return true end
-	end
+    if type(nodeEffect) == 'databasenode' then
+        local sEffectPath = DB.getPath(nodeEffect)
+        for _, nodeTargetEffect in ipairs(DB.getChildList(nodeSource, 'effects')) do
+            if DB.getValue(nodeTargetEffect, 'source_aura', '') == sEffectPath then return true end
+        end
+    end
 	return false
 end
 
 -- Add AURA in nodeEffect to targetToken actor if not already present.
 -- Then call saveAuraSource to keep track of the FROMAURA effect
 function addAura(nodeEffect, nodeTarget, rAuraDetails)
-	local nodeSource = DB.findNode(rAuraDetails.sSource)
-	if not nodeSource or not nodeTarget or not nodeEffect then return end
-	AuraTracker.addTrackedFromAura(rAuraDetails.sSource, rAuraDetails.sAuraNode, DB.getPath(nodeTarget))
-	if hasFromAura(nodeEffect, nodeTarget) then return end
-	local rEffectAura = buildFromAura(nodeEffect)
-	if not rEffectAura then return end
-	AuraEffectSilencer.notifyApply(rEffectAura, DB.getPath(nodeTarget))
+    if type(nodeEffect) == 'databasenode' then
+        local nodeSource = DB.findNode(rAuraDetails.sSource)
+        if not nodeSource or not nodeTarget or not nodeEffect then return end
+        AuraTracker.addTrackedFromAura(rAuraDetails.sSource, rAuraDetails.sAuraNode, DB.getPath(nodeTarget))
+        if hasFromAura(nodeEffect, nodeTarget) then return end
+        local rEffectAura = buildFromAura(nodeEffect)
+        if not rEffectAura then return end
+        AuraEffectSilencer.notifyApply(rEffectAura, DB.getPath(nodeTarget))
+    end
 end
 
 -- Search all effects on target to find matching auras to remove.
