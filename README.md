@@ -83,6 +83,11 @@ Special aura types change the default behavior of auras. They are specified in t
 |**once**|The aura will only apply once per turn to an actor that starts or enters the area or if the area moves onto the actor. Leaving and re-entering the area on the same turn will not reapply the aura| ```AURA: 10 all,once; ATK: -5```|
 ### Option for disabling aura effect chat messages
 "Silence Notifications for Aura Types" can be used to hide aura apply/removal chat messages for a particular faction, relationship, or all.
+### Option for Diagonal Distance Multiplier
+"Diagonal Multiplier for Aura Distance" defines how diagonals are calcuated with respect to distance between tokens
+* ***Raw*** - Default, Diagonals are measured explicitly (Pythagorean Theorem)
+* ***1x*** - Diagonals are measured as a distance of 1 (like 5E)
+* ***1.5x*** - Diagonals are measured as a distance of 1.5 rounded down (like 35E/pathfinder)
 
 # Effect Sharing Threads
 5E: https://www.fantasygrounds.com/forums/showthread.php?69965-5E-Aura-Effects-Coding
