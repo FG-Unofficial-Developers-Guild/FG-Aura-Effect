@@ -2,14 +2,19 @@
 
 <!-- Please see the LICENSE.md file included with this distribution for attribution and copyright information. -->
 
-<root version="3.0">	
+<root version="3.0">
 	<!-- Options -->
 	<string name="option_header_aura">Auras (GM)</string>
 	<string name="option_label_AURASILENT">Silence Notifications for Aura Types</string>
 	<string name="option_label_AURANMDD">Only Calculate Auras After Moving</string>
+	<string name="option_label_AURADISTANCE">Diagonal Multiplier for Aura Distance</string>
 	<string name="option_val_aura_all">Silence All</string>
 	<string name="option_val_aura_ally">Relation: Ally</string>
 	<string name="option_val_aura_enemy">Relation: Enemy</string>
+	<string name="option_val_aura_one">1x</string>
+	<string name="option_val_aura_onepointfive">1.5x</string>
+	<string name="option_val_aura_raw">Raw</string>
+
 	<!-- Console Messages -->
 	<string name="aura_console_notext">Aura Effect: Aura text not found. FROMAURA effects will not be created.</string>
 	<string name="aura_console_norange">Aura Effect: Aura range is missing. Proper aura format is AURA: 5</string>
