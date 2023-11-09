@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
 
-<!-- 
-  Please see the LICENSE.md file included with this distribution for 
+<!--
+  Please see the LICENSE.md file included with this distribution for
   attribution and copyright information.
 -->
 
@@ -11,7 +11,10 @@
 		<margins control="0,0,0,2" />
         <sheetdata>
             <leftanchor_eb />
-
+            <label_eb>
+                <static textres="conditional_not" />
+            </label_eb>
+            <checkbox_eb_valueholder name="conditional_not" />
             <cycler_eb_aura_faction_conditional name="aura_faction_conditional"/>
         </sheetdata>
     </windowclass>

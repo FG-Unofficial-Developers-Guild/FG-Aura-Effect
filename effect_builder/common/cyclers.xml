@@ -11,8 +11,8 @@
             <parameters mergerule="replace">
                 <defaultlabel>all</defaultlabel>
                 <defaultvalue>all</defaultvalue>
-                <labels>ally|not ally|enemy|not enemy|friend|not friend|foe|not foe|none|not none|self||not self|</labels>
-                <values>ally|!ally|enemy|!enemy|friend|!friend|foe|!foe|none|!none|self|!self|</values>
+                <labels>ally|not ally|enemy|not enemy|friend|not friend|foe|not foe|none|not none|self||not self|neutral|not neutral|</labels>
+                <values>ally|!ally|enemy|!enemy|friend|!friend|foe|!foe|none|!none|self|!self|neutral|!neutral|</values>
             </parameters>
         </cycler_eb_valueholder>
     </template>
@@ -22,8 +22,8 @@
             <parameters mergerule="replace">
                 <defaultlabel>not self</defaultlabel>
                 <defaultvalue>!self</defaultvalue>
-                <labels>self|ally|not ally|enemy|not enemy|friend|not friend|foe|not foe|none|not none|</labels>
-                <values>self|ally|!ally|enemy|!enemy|friend|!friend|foe|!foe|none|!none|</values>
+                <labels>self|ally|not ally|enemy|not enemy|friend|not friend|foe|not foe|none|not none|neutral|not neutral|</labels>
+                <values>self|ally|!ally|enemy|!enemy|friend|!friend|foe|!foe|none|!none|neutral|!neutral|</values>
             </parameters>
         </cycler_eb_valueholder>
     </template>
