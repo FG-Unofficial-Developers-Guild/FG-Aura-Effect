@@ -37,6 +37,8 @@ You can also use the "!" or "~" operators to reverse the results such as "!frien
 #### Exceptions
 If a resulting aura applied effect is set to "off" in the combat tracker, then the effect will not be removed based on token movement. This allows you to set the automatic effects of creatures that saved or are immune to "off".
 
+Holding shift while moving a token will disable aura calculation. Auras will be recalculated when shift is released. Allows for bypassing aura area.
+
 The factional relationship of ally or enemy will be evaluated from the source of the aura effect with regards if a aura applied effect should be applied.
 
 #### 5E Concentration (C)
