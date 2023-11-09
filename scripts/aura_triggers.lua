@@ -2,7 +2,7 @@
 --	Please see the LICENSE.md file included with this distribution for attribution and copyright information.
 --
 
--- luacheck: globals bDebug bDebugPerformance handleTokenMovement notifyTokenMove
+-- luacheck: globals bDebug bDebugPerformance handleTokenMovement notifyTokenMove onShift
 -- luacheck: globals updateAurasForMap updateAurasForActor updateAurasForEffect addEffect_new
 -- luacheck: globals updateAurasForTurnStart AuraEffect.clearOncePerTurn AuraTracker AuraToken
 -- luacheck: globals AuraFactionConditional.DetectedEffectManager.parseEffectComp
@@ -94,7 +94,7 @@ end
 ---	This function requests aura processing to be performed on the host FG instance.
 function notifyTokenMove(token)
 	local nodeCT = CombatManager.getCTFromToken(token)
-	if not nodeCT then return end
+	if not nodeCT or Input.isShiftPressed() then return end
 
 	local msgOOB = {}
 	msgOOB.type = OOB_MSGTYPE_AURATOKENMOVE
@@ -177,6 +177,19 @@ end
 ---	Recalculate auras after effects are removed to ensure conditionals before aura are respected
 local function onEffectRemoved(nodeEffects) updateAurasForActor(DB.getParent(nodeEffects)) end
 
+-- Holding shift bypasses aura
+function onShift()
+	if not Input.isShiftPressed() then
+		local tImages = ImageManager.getActiveImages()
+		for  _, image in ipairs(tImages) do
+			local aTokens = image.getSelectedTokens()
+			for  _, token in ipairs(aTokens) do
+				notifyTokenMove(token)
+			end
+		 end
+	end
+end
+
 function onInit()
 	-- register OOB message handlers to allow player movement
 	OOBManager.registerOOBMsgHandler(OOB_MSGTYPE_AURATOKENMOVE, handleTokenMovement)
@@ -191,6 +204,7 @@ function onInit()
 
 	-- create the proxy function to trigger aura calculation on token movement.
 	Token.addEventHandler('onMove', onMove)
+	Input.addEventHandler('onShift', onShift)
 
 	-- all handlers should be created on GM machine
 	if not Session.IsHost then return end
