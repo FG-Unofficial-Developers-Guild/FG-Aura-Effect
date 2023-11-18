@@ -2,15 +2,13 @@
 --	Please see the LICENSE.md file included with this distribution for attribution and copyright information.
 --
 
--- luacheck: globals bDebug bDebugPerformance handleTokenMovement notifyTokenMove
+-- luacheck: globals bDebug bDebugPerformance tokenMovement
 -- luacheck: globals updateAurasForMap updateAurasForActor updateAurasForEffect addEffect_new
 -- luacheck: globals updateAurasForTurnStart AuraEffect.clearOncePerTurn AuraTracker AuraToken
 -- luacheck: globals AuraFactionConditional.DetectedEffectManager.parseEffectComp
 
 bDebug = false
 bDebugPerformance = false
-
-OOB_MSGTYPE_AURATOKENMOVE = 'aurasontokenmove'
 
 -- Trigger AURA effect calculation on supplied effect node.
 function updateAurasForEffect(nodeEffect, rMoved)
@@ -76,13 +74,16 @@ function updateAurasForTurnStart(nodeCTStart)
 end
 
 local sTime = ''
-function handleTokenMovement(msgOOB)
+function tokenMovement(token)
 	local time1 = nil
+	if not token then return end
 	if bDebugPerformance then time1 = os.clock() end
-	local _, winImage = ImageManager.getImageControl(CombatManager.getTokenFromCT(msgOOB.sCTNode))
-	local rNodeStart = ActorManager.resolveActor(DB.findNode(msgOOB.sCTNode))
 
-	if AuraToken.isMovedFilter(msgOOB.sCTNode, CombatManager.getTokenFromCT(msgOOB.sCTNode)) then
+	local _, winImage = ImageManager.getImageControl(token)
+	local nodeCT = CombatManager.getCTFromToken(token)
+	local rNodeStart = ActorManager.resolveActor(nodeCT)
+
+	if AuraToken.isMovedFilter(rNodeStart.sCTNode, token) then
 		updateAurasForMap(winImage, rNodeStart)
 		if bDebugPerformance then
 			sTime = string.format('%s%s,', sTime, tostring(os.clock() - time1))
@@ -91,19 +92,7 @@ function handleTokenMovement(msgOOB)
 	end
 end
 
----	This function requests aura processing to be performed on the host FG instance.
-function notifyTokenMove(token)
-	local nodeCT = CombatManager.getCTFromToken(token)
-	if not nodeCT then return end
-
-	local msgOOB = {}
-	msgOOB.type = OOB_MSGTYPE_AURATOKENMOVE
-	msgOOB.sCTNode = DB.getPath(nodeCT)
-
-	Comm.deliverOOBMessage(msgOOB, '')
-end
-
-local function onMove(token) notifyTokenMove(token) end
+local function onMove(token) tokenMovement(token) end
 
 -- Recalculate auras when opening images
 local onWindowOpened_old
@@ -178,8 +167,15 @@ end
 local function onEffectRemoved(nodeEffects) updateAurasForActor(DB.getParent(nodeEffects)) end
 
 function onInit()
-	-- register OOB message handlers to allow player movement
-	OOBManager.registerOOBMsgHandler(OOB_MSGTYPE_AURATOKENMOVE, handleTokenMovement)
+	-- all handlers should be created on GM machine
+	if not Session.IsHost then return end
+	DB.addHandler(DB.getPath(CombatManager.CT_LIST .. '.*.effects.*.label'), 'onUpdate', onEffectChanged)
+	DB.addHandler(DB.getPath(CombatManager.CT_LIST .. '.*.effects.*.isactive'), 'onUpdate', onEffectChanged)
+	DB.addHandler(DB.getPath(CombatManager.CT_LIST .. '.*.effects.*'), 'onDelete', onEffectToBeRemoved)
+	DB.addHandler(DB.getPath(CombatManager.CT_LIST .. '.*.effects'), 'onChildDeleted', onEffectRemoved)
+
+	-- create the proxy function to trigger aura calculation on token movement.
+	Token.addEventHandler('onMove', onMove)
 
 	-- create proxy function to recalculate auras when adding tokens
 	handleStandardCombatAddPlacement_old = CombatRecordManager.handleStandardCombatAddPlacement
@@ -188,16 +184,6 @@ function onInit()
 	-- create proxy function to recalculate auras when new windows are opened
 	onWindowOpened_old = Interface.onWindowOpened
 	Interface.onWindowOpened = onWindowOpened_new
-
-	-- create the proxy function to trigger aura calculation on token movement.
-	Token.addEventHandler('onMove', onMove)
-
-	-- all handlers should be created on GM machine
-	if not Session.IsHost then return end
-	DB.addHandler(DB.getPath(CombatManager.CT_LIST .. '.*.effects.*.label'), 'onUpdate', onEffectChanged)
-	DB.addHandler(DB.getPath(CombatManager.CT_LIST .. '.*.effects.*.isactive'), 'onUpdate', onEffectChanged)
-	DB.addHandler(DB.getPath(CombatManager.CT_LIST .. '.*.effects.*'), 'onDelete', onEffectToBeRemoved)
-	DB.addHandler(DB.getPath(CombatManager.CT_LIST .. '.*.effects'), 'onChildDeleted', onEffectRemoved)
 
 	CombatManager.setCustomTurnStart(updateAurasForTurnStart)
 
