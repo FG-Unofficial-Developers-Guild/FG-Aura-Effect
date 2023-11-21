@@ -81,13 +81,17 @@ Special aura types change the default behavior of auras. They are specified in t
 |**single**|There are a number of spells and effects, particularly in the 5E ruleset, which necessitate a slightly different aura behavior. These have the text or something similar *"When the creature enters the area for the first time on a turn or starts its turn there"*. The aura will be applied to the target only when the target starts its turn in the aura or enters (moves into) the area for the first time on a turn. It will not be reapplied if the target leaves the area and returns on the same turn. It also will not be applied if the actor is in the area when cast or if the aura area moves onto the actor.|```AURA: 10 !ally,single; Test; IF: FACTION(!self); ATK: -5```|
 |**sticky**|Applied aura effects will not be removed from actors|```AURA: 10 all,sticky; Poison Trap; IF: FACTION(!self); Poisoned```|
 |**once**|The aura will only apply once per turn to an actor that starts or enters the area or if the area moves onto the actor. Leaving and re-entering the area on the same turn will not reapply the aura| ```AURA: 10 all,once; ATK: -5```|
+### Point Descriptor
+By default the sphere aura distance is calcuated from the outside of the token that is linked to the CT Actor. The descriptor "point" can be added to have that distance instead be calculated from the center of the token. Points are always calcuated with RAW diagional distance.
+```AURA: 10 all,point; ATK: -5```
+
 ### Option for disabling aura effect chat messages
 "Silence Notifications for Aura Types" can be used to hide aura apply/removal chat messages for a particular faction, relationship, or all.
 ### Option for Diagonal Distance Multiplier
 "Diagonal Multiplier for Aura Distance" defines how diagonals are calcuated with respect to distance between tokens
+
 * ***Raw*** - Default, Diagonals are measured explicitly (Pythagorean Theorem)
-* ***1x*** - Diagonals are measured as a distance of 1 (like 5E)
-* ***1.5x*** - Diagonals are measured as a distance of 1.5 rounded down (like 35E/pathfinder)
+* ***Ruleset*** - Diagonals are measured as per Ruleset definition
 
 # Effect Sharing Threads
 5E: https://www.fantasygrounds.com/forums/showthread.php?69965-5E-Aura-Effects-Coding

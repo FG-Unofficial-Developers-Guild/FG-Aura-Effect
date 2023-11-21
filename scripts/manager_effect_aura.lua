@@ -16,7 +16,7 @@ local aAuraFactions = {'ally', 'enemy', 'friend', 'foe', 'all', 'neutral', 'none
 -- Checks AURA effect string common needed information
 function getAuraDetails(nodeEffect)
 	local rDetails = {
-		bSingle = false, bCube = false, bSticky = false, bOnce = false,
+		bSingle = false, bCube = false, bSticky = false, bOnce = false, bPoint = false,
 		nRange = 0, sEffect = '', sSource = '', sAuraNode = '', aFactions = {}
 	}
 	if not AuraFactionConditional.DetectedEffectManager.parseEffectComp then return rDetails end
@@ -40,6 +40,8 @@ function getAuraDetails(nodeEffect)
 					rDetails.bSticky = true
 				elseif sFilterCheck == 'once' then
 					rDetails.bOnce = true
+				elseif sFilterCheck == 'point' then
+					rDetails.bPoint= true
 				else
 					if StringManager.startsWith(sFilter, '!') or StringManager.startsWith(sFilter, '~') then
 						sFilterCheck = sFilter:sub(2)
@@ -202,7 +204,15 @@ function updateAura(tokenSource, nodeEffect, rAuraDetails, rMoved)
 	if rAuraDetails.bCube then
 		aTokens = AuraToken.getTokensWithinCube(tokenSource, rAuraDetails.nRange)
 	else
-		aTokens = imageControl.getTokensWithinDistance(tokenSource, rAuraDetails.nRange)
+		if rAuraDetails.bPoint then
+			local nX, nY = tokenSource.getPosition()
+			local nZ = tokenSource.getHeight()
+			local aPosition = {nX,nY,nZ}
+			aTokens = imageControl.getTokensWithinDistance(aPosition, rAuraDetails.nRange)
+		else
+			aTokens = imageControl.getTokensWithinDistance(tokenSource, rAuraDetails.nRange)
+		end
+
 	end
     imageControl.setDistanceDiagMult(nDiagMulti)
 	for _, token in pairs(aTokens) do
