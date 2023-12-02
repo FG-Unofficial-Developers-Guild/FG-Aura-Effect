@@ -2,7 +2,7 @@
 --	Please see the LICENSE.md file included with this distribution for attribution and copyright information.
 --
 -- luacheck: globals add delete customLinkToken onAdd onDelete isMovedFilter getTokensWithinCube
--- luacheck: globals Image.getGridSize Image.hasGrid Image.getDistanceBaseUnits
+-- luacheck: globals Image.getGridSize Image.hasGrid Image.getDistanceBaseUnits getTokensWithinSphere
 local tImages = {}
 local linkToken = nil
 
@@ -105,6 +105,37 @@ function getTokensWithinCube(tokenSource, nSideLength)
 
         if nTokenX < aX.nX1 and nTokenX > aX.nX2 and nTokenY < aY.nY1 and nTokenY > aY.nY2 and nTokenZ < aZ.nZ1 and nTokenZ > aZ.nZ2 then
             table.insert(aReturn, token)
+        end
+    end
+    return aReturn
+end
+
+-- Need because depending on what the diagDistance is set at, imageCtl.getTokensWithinDistance may not return tokens as expected.
+-- If the diagDistance is set to 1, then we will really be getting a cube. This is mostly needed for 5E but is also useful for other
+-- rulesets where one wants to sphere to calculate raw rather than based on whatever diagDistance is set to.
+function getTokensWithinSphere(tokenSource, nRadius, bPoint)
+    local aReturn = {}
+    local imageCtl = ImageManager.getImageControl(tokenSource)
+    local nodeImage = tokenSource.getContainerNode()
+    local nRadiusPx =  (Image.getGridSize(nodeImage) / Image.getDistanceBaseUnits(nodeImage)) * nRadius
+    local aTokens
+    local nX, nY = tokenSource.getPosition()
+    local nZ = tokenSource.getHeight()
+    if bPoint then
+        aTokens = imageCtl.getTokensWithinDistance({nX,nY,nZ}, nRadius)
+    else
+        aTokens = imageCtl.getTokensWithinDistance(tokenSource, nRadius)
+        local nTokenSize, _ = tokenSource.getSize()
+        nRadiusPx = nRadiusPx + nTokenSize / 2
+    end
+    for _, token in pairs(aTokens) do
+        if token.getId() ~= tokenSource.getId() then
+            local nTokenX, nTokenY = token.getPosition()
+            local nTokenZ = token.getHeight()
+            local nDistanceVector = math.sqrt((nX-nTokenX)*(nX-nTokenX) + (nY-nTokenY)*(nY-nTokenY) + (nZ-nTokenZ)*(nZ-nTokenZ))
+            if  nDistanceVector <= nRadiusPx then
+                table.insert(aReturn, token)
+            end
         end
     end
     return aReturn

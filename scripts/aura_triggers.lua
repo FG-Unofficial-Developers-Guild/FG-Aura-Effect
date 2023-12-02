@@ -82,6 +82,7 @@ function tokenMovement(token)
 	local _, winImage = ImageManager.getImageControl(token)
 	local nodeCT = CombatManager.getCTFromToken(token)
 	local rNodeStart = ActorManager.resolveActor(nodeCT)
+	if not rNodeStart then return end
 
 	if AuraToken.isMovedFilter(rNodeStart.sCTNode, token) then
 		updateAurasForMap(winImage, rNodeStart)
