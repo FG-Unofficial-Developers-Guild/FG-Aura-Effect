@@ -73,7 +73,7 @@ If using a proxy CT token to define an aura area, it is recommended to set the p
 Unless there is a specific advanced case to do so, any other FACTION conditional operators are not needed for an aura.
 
 ### Special AURA types
-Special aura types change the default behavior of auras. They are specified in the AURA effect descriptors. Multiple special aura types can be combined to create even more unique aruas such as cube that is single and sticky.
+Special aura types change the default behavior of auras. They are specified in the AURA effect descriptors. Multiple special aura types can be combined to create even more unique auras such as cube that is single and sticky.
 
 |Descriptor|Notes|Example|
 |----------|-----|-------|
