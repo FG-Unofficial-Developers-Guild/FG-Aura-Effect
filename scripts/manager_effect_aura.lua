@@ -196,25 +196,19 @@ function updateAura(tokenSource, nodeEffect, rAuraDetails, rMoved)
 	local tAdd, tRemove = {}, {}
 	-- compile lists
 	local rSource = ActorManager.resolveActor(DB.findNode(rAuraDetails.sSource))
-	local aTokens;
+	local aTokens
 	local aFromAuraNodes = AuraTracker.getTrackedFromAuras(rAuraDetails.sSource,rAuraDetails.sAuraNode)
-    local nDiagMulti = imageControl.getDistanceDiagMult()
-    local nOptionDiagMulti = tonumber(OptionsManager.getOption('AURADISTANCE'))
-    imageControl.setDistanceDiagMult(nOptionDiagMulti)
 	if rAuraDetails.bCube then
 		aTokens = AuraToken.getTokensWithinCube(tokenSource, rAuraDetails.nRange)
 	else
-		if rAuraDetails.bPoint then
-			local nX, nY = tokenSource.getPosition()
-			local nZ = tokenSource.getHeight()
-			local aPosition = {nX,nY,nZ}
-			aTokens = imageControl.getTokensWithinDistance(aPosition, rAuraDetails.nRange)
+		local nCalcFormat = tonumber(OptionsManager.getOption('AURADISTANCE'))
+		if(nCalcFormat == 0 or (nCalcFormat > 0 and rAuraDetails.bPoint)) then
+			aTokens = AuraToken.getTokensWithinSphere(tokenSource, rAuraDetails.nRange, rAuraDetails.bPoint)
 		else
 			aTokens = imageControl.getTokensWithinDistance(tokenSource, rAuraDetails.nRange)
 		end
-
 	end
-    imageControl.setDistanceDiagMult(nDiagMulti)
+
 	for _, token in pairs(aTokens) do
 		local nodeCTToken = CombatManager.getCTFromToken(token)
 		if nodeCTToken then -- Guard against non-CT linked tokens
@@ -258,8 +252,8 @@ end
 function onInit()
 	-- register option for silent aura messages
 	OptionsManager.registerOption2('AURADISTANCE', false, 'option_header_aura', 'option_label_AURADISTANCE', 'option_entry_cycler', {
-		labels = 'option_val_aura_one|option_val_aura_onepointfive',
-		values = '1|1.5',
+		labels = 'option_val_aura_ruleset',
+		values = '1',
 		baselabel = 'option_val_aura_raw',
 		baseval = '0',
 		default = '0',
