@@ -76,7 +76,7 @@ end
 local sTime = ''
 function tokenMovement(token)
 	local time1 = nil
-	if not token then return end
+	if not token or Input.isShiftPressed() then return end
 	if bDebugPerformance then time1 = os.clock() end
 
 	local _, winImage = ImageManager.getImageControl(token)
