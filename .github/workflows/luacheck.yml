@@ -16,12 +16,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       # Determine extension name
       - name: Get Extension Name from XML
         id: getnamefromxml
-        uses: mavrosxristoforos/get-xml-info@1.1.1
+        uses: mavrosxristoforos/get-xml-info@1.2.1
         with:
           xml-file: 'extension.xml'
           xpath: '//properties//name'
@@ -63,14 +63,14 @@ jobs:
           replacement: ''
 
       - id: namelowercase
-        uses: ASzc/change-string-case-action@v5
+        uses: ASzc/change-string-case-action@v6
         with:
           string: ${{ steps.removenamespaces.outputs.value }}
 
       # Determine extension author
       - name: Get Author Name from XML
         id: getauthorfromxml
-        uses: mavrosxristoforos/get-xml-info@1.1.1
+        uses: mavrosxristoforos/get-xml-info@1.2.1
         with:
           xml-file: 'extension.xml'
           xpath: '//properties//author'
@@ -112,7 +112,7 @@ jobs:
           replacement: ''
 
       - id: authorlowercase
-        uses: ASzc/change-string-case-action@v5
+        uses: ASzc/change-string-case-action@v6
         with:
           string: ${{ steps.removeauthorspaces.outputs.value }}
 
@@ -125,10 +125,10 @@ jobs:
     needs: getnames
     steps:
       - name: Checkout default branch
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install Lua/LuaJIT
-        uses: leafo/gh-actions-lua@v9
+        uses: leafo/gh-actions-lua@v10
         with:
           luaVersion: 5.1
 
