@@ -14,15 +14,21 @@
 
             <subwindow_eb_number_value />
 
-            <cycler_eb_aura_faction name="effect_faction" />
+            <label_eb>
+				<static textres="effect_auraFaction" />
+			</label_eb>
+            <cycler_eb_aura_faction name="effect_auraFaction" />
+
             <label_eb>
 				<static textres="effect_auraCube" />
 			</label_eb>
             <checkbox_eb_valueholder name="effect_auraCube" />
+
             <label_eb>
 				<static textres="effect_auraSingle" />
 			</label_eb>
             <checkbox_eb_valueholder name="effect_auraSingle" />
+
             <label_eb>
 				<static textres="effect_auraSticky" />
 			</label_eb>
