@@ -2,13 +2,14 @@
 --	Please see the LICENSE.md file included with this distribution for attribution and copyright information.
 --
 
--- luacheck: globals bDebug bDebugPerformance tokenMovement
+-- luacheck: globals bDebug bDebugPerformance tokenMovement getExtensions
 -- luacheck: globals updateAurasForMap updateAurasForActor updateAurasForEffect addEffect_new
 -- luacheck: globals updateAurasForTurnStart AuraEffect.clearOncePerTurn AuraTracker AuraToken
--- luacheck: globals AuraFactionConditional.DetectedEffectManager.parseEffectComp
+-- luacheck: globals AuraFactionConditional.DetectedEffectManager.parseEffectComp hasExtension
 
 bDebug = false
 bDebugPerformance = false
+local tExtensions= {}
 
 -- Trigger AURA effect calculation on supplied effect node.
 function updateAurasForEffect(nodeEffect, rMoved)
@@ -164,10 +165,37 @@ function addEffect_new(sUser, sIdentity, nodeCT, rNewEffect, bShowMsg)
 		end
 	end
 end
+
+function getExtensions()
+    local tReturn = {};
+    for _, sName in pairs(Extension.getExtensions()) do
+        tReturn[sName] = Extension.getExtensionInfo(sName);
+    end
+    return tReturn;
+end
+
+-- Matches on the filname minus the .ext or on the name in defined in the extension.xml
+function hasExtension(sName)
+    local bReturn = false;
+
+    if tExtensions[sName] then
+        bReturn = true;
+    else
+        for _, tExtension in pairs(tExtensions) do
+            if tExtension.name == sName then
+                bReturn = true;
+                break
+            end
+        end
+    end
+    return bReturn;
+end
+
 ---	Recalculate auras after effects are removed to ensure conditionals before aura are respected
 local function onEffectRemoved(nodeEffects) updateAurasForActor(DB.getParent(nodeEffects)) end
 
 function onInit()
+	tExtensions = getExtensions()
 	-- all handlers should be created on GM machine
 	if not Session.IsHost then return end
 	DB.addHandler(DB.getPath(CombatManager.CT_LIST .. '.*.effects.*.label'), 'onUpdate', onEffectChanged)
