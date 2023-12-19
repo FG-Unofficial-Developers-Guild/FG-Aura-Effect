@@ -20,7 +20,11 @@
     </windowclass>
     <script name="loader_conditional_FACTION">
         function onInit()
-            if EditorManager and EditorManager.addEditor then
+            if  AuraEffectTriggers.hasExtension('Feature: Effect Builder Plugin - 5e') or
+                    AuraEffectTriggers.hasExtension('Feature: Effect Builder Plugin - PFRPG2') or
+                    AuraEffectTriggers.hasExtension('Feature: Effect Builder Plugin - Starfinder') or
+                    AuraEffectTriggers.hasExtension('Feature: Effect Builder Plugin - 3.5e/PFRPG') and
+                    (EditorManager and EditorManager.addEditor) then
                 EditorManager.addEditor(
                     "category_conditional",
                     {
