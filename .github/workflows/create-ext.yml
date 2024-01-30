@@ -15,18 +15,26 @@ jobs:
     steps:
     - name: Checkout Repo Assets
       uses: actions/checkout@v4
+      
     - name: Create GitHub Release
       uses: ncipollo/release-action@v1
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
+        
     - name: Zip Assets Into ${{ env.EXTENSION }} File
       uses: thedoctor0/zip-release@0.7.6
       with:
         filename: ${{ github.event.repository.name }}${{ env.EXTENSION }}
         exclusions: '*.git* /*node_modules/* .editorconfig body.md *.psd *.xcf forge-thumbnail.png thumbnail.png *.toml'
+        
     - name: Add ${{ env.EXTENSION }} File to Release
       uses: ncipollo/release-action@v1
       with:
         artifacts: ${{ github.event.repository.name }}${{ env.EXTENSION }}
         token: ${{ secrets.GITHUB_TOKEN }}
         allowUpdates: true
+        
+    - uses: actions/upload-artifact@v4
+      with:
+        name: new-release-file
+        path: ${{ github.event.repository.name }}${{ env.EXTENSION }}
