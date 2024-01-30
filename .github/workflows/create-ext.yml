@@ -19,14 +19,14 @@ jobs:
       uses: ncipollo/release-action@v1
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
-    - name: Zip Assets Into .ext File
+    - name: Zip Assets Into ${{ env.EXTENSION }} File
       uses: thedoctor0/zip-release@0.7.6
       with:
-        filename: ${{ github.event.repository.name }}${{ env.EXTENSION }}])
+        filename: ${{ github.event.repository.name }}${{ env.EXTENSION }}
         exclusions: '*.git* /*node_modules/* .editorconfig body.md *.psd *.xcf forge-thumbnail.png thumbnail.png *.toml'
-    - name: Add .ext File to Release
+    - name: Add ${{ env.EXTENSION }} File to Release
       uses: ncipollo/release-action@v1
       with:
-        artifacts: ${{ github.event.repository.name }}${{ env.EXTENSION }}])
+        artifacts: ${{ github.event.repository.name }}${{ env.EXTENSION }}
         token: ${{ secrets.GITHUB_TOKEN }}
         allowUpdates: true
