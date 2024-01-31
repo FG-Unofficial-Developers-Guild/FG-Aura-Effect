@@ -65,9 +65,6 @@ jobs:
         with:
           name: ${{ github.event.repository.name }}${{ env.EXTENSION }}
 
-      - name: Display structure of downloaded files
-        run: ls -R
-
       - name: Upload ext file to FG Forge
         run: |
           python src/main.py
