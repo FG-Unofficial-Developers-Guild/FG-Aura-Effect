@@ -4,10 +4,16 @@ on:
     tags:
     - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
 
-name: Build FG-Usable File
+name: Release Build
+
+permissions: write-all
 
 env:
   EXTENSION: '.ext'
+  FG_USER_PASS: ${{ secrets.FORGE_USER_PASS }}
+  FG_USER_NAME: ${{ secrets.FORGE_USER_NAME }}
+  FG_USER_ID: ${{ secrets.FORGE_USER_ID }}
+  FG_ITEM_ID: ${{ secrets.FORGE_ITEM_ID }}
 
 jobs:
   build:
@@ -15,26 +21,53 @@ jobs:
     steps:
     - name: Checkout Repo Assets
       uses: actions/checkout@v4
-      
-    - name: Create GitHub Release
-      uses: ncipollo/release-action@v1
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        
+
     - name: Zip Assets Into ${{ env.EXTENSION }} File
       uses: thedoctor0/zip-release@0.7.6
       with:
         filename: ${{ github.event.repository.name }}${{ env.EXTENSION }}
         exclusions: '*.git* /*node_modules/* .editorconfig body.md *.psd *.xcf forge-thumbnail.png thumbnail.png *.toml'
-        
+
     - name: Add ${{ env.EXTENSION }} File to Release
       uses: ncipollo/release-action@v1
       with:
         artifacts: ${{ github.event.repository.name }}${{ env.EXTENSION }}
-        token: ${{ secrets.GITHUB_TOKEN }}
-        allowUpdates: true
-        
+
     - uses: actions/upload-artifact@v4
       with:
-        name: new-release-file
+        name: ${{ github.event.repository.name }}${{ env.EXTENSION }}
         path: ${{ github.event.repository.name }}${{ env.EXTENSION }}
+        
+  upload:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Add upload path to environment variables
+        run: |
+          echo "FG_UL_FILE=${{ github.event.repository.name }}${{ env.EXTENSION }}" >> $GITHUB_ENV
+
+      - name: Checkout FG-Forge-Updater repository
+        uses: actions/checkout@v4
+        with:
+          repository: 'bmos/FG-Forge-Updater'
+
+      - name: Set up python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install general dependencies
+        run: |
+          pip install -U pip
+          pip install .
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: ${{ github.event.repository.name }}${{ env.EXTENSION }}
+
+      - name: Display structure of downloaded files
+        run: ls -R
+
+      - name: Upload ext file to FG Forge
+        run: |
+          python src/main.py
