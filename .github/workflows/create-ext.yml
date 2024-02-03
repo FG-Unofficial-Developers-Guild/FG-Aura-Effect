@@ -12,7 +12,7 @@ env:
   EXTENSION: '.ext'
   FG_USER_PASS: ${{ secrets.FORGE_USER_PASS }}
   FG_USER_NAME: ${{ secrets.FORGE_USER_NAME }}
-  FG_ITEM_ID: ${{ secrets.FORGE_ITEM_ID }}
+  FG_ITEM_ID: ${{ vars.FORGE_ITEM_ID }}
 
 jobs:
   build:
