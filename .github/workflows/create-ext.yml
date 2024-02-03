@@ -42,8 +42,10 @@ jobs:
     needs: build
     steps:
       - name: Add upload path to environment variables
+        env:
+          REPO_NAME: ${{ github.event.repository.name }}
         run: |
-          echo "FG_UL_FILE=${{ github.event.repository.name }}${{ env.EXTENSION }}" >> $GITHUB_ENV
+          echo "FG_UL_FILE=${{ env.REPO_NAME }}${{ env.EXTENSION }}" >> $GITHUB_ENV
 
       - name: Checkout FG-Forge-Updater repository
         uses: actions/checkout@v4
