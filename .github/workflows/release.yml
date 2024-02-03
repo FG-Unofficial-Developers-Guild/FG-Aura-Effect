@@ -9,14 +9,14 @@ name: Release Build
 permissions: write-all
 
 env:
-  FG_USER_NAME: ${{ vars.FORGE_USER_NAME }}
-  FG_USER_PASS: ${{ secrets.FORGE_USER_PASS }}
-  FG_ITEM_ID: ${{ vars.FORGE_ITEM_ID }}
   EXTENSION: ${{ vars.FORGE_EXTENSION }}
+  FILE_TYPE_EXLUSIONS: '*.git* /*node_modules/* .editorconfig body.md *.psd *.xcf forge-thumbnail.png thumbnail.png *.toml'
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      FG_UL_FILE: ${{ env.FG_UL_FILE }}
     steps:
     - name: Checkout Repo Assets
       uses: actions/checkout@v4
@@ -24,29 +24,25 @@ jobs:
     - name: Zip Assets Into ${{ env.EXTENSION }} File
       uses: thedoctor0/zip-release@0.7.6
       with:
-        filename: ${{ github.event.repository.name }}${{ env.EXTENSION }}
-        exclusions: '*.git* /*node_modules/* .editorconfig body.md *.psd *.xcf forge-thumbnail.png thumbnail.png *.toml'
+        filename: ${{ env.FG_UL_FILE }}
+        exclusions: ${{ env.FILE_TYPE_EXLUSIONS }}
 
     - name: Add ${{ env.EXTENSION }} File to Release
       uses: ncipollo/release-action@v1
       with:
-        artifacts: ${{ github.event.repository.name }}${{ env.EXTENSION }}
+        artifacts: ${{ env.FG_UL_FILE }}
 
     - uses: actions/upload-artifact@v4
       with:
-        name: ${{ github.event.repository.name }}${{ env.EXTENSION }}
-        path: ${{ github.event.repository.name }}${{ env.EXTENSION }}
+        name: ${{ env.FG_UL_FILE }}
+        path: ${{ env.FG_UL_FILE }}
         
   upload:
     runs-on: ubuntu-latest
     needs: build
+    env:
+      FG_UL_FILE: ${{ env.FG_UL_FILE }}
     steps:
-      - name: Add upload path to environment variables
-        env:
-          REPO_NAME: ${{ github.event.repository.name }}
-        run: |
-          echo "FG_UL_FILE=${{ env.REPO_NAME }}${{ env.EXTENSION }}" >> $GITHUB_ENV
-
       - name: Checkout FG-Forge-Updater repository
         uses: actions/checkout@v4
         with:
@@ -64,8 +60,13 @@ jobs:
 
       - uses: actions/download-artifact@v4
         with:
-          name: ${{ github.event.repository.name }}${{ env.EXTENSION }}
+          name: ${{ env.FG_UL_FILE }}
 
       - name: Upload ext file to FG Forge
+        env:
+          FG_USER_NAME: ${{ vars.FORGE_USER_NAME }}
+          FG_USER_PASS: ${{ secrets.FORGE_USER_PASS }}
+          FG_ITEM_ID: ${{ vars.FORGE_ITEM_ID }}
+          FG_UL_FILE: ${{ env.FG_UL_FILE }}
         run: |
           python src/main.py
