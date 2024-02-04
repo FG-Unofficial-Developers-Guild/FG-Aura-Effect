@@ -10,7 +10,6 @@ permissions: write-all
 
 env:
   EXTENSION: ${{ vars.FORGE_EXTENSION }}
-  FILE_TYPE_EXLUSIONS: '*.git* /*node_modules/* .editorconfig body.md *.psd *.xcf forge-thumbnail.png thumbnail.png *.toml'
 
 jobs:
   build:
@@ -25,7 +24,7 @@ jobs:
       uses: thedoctor0/zip-release@0.7.6
       with:
         filename: ${{ env.FG_UL_FILE }}
-        exclusions: ${{ env.FILE_TYPE_EXLUSIONS }}
+        exclusions: '*.git* /*node_modules/* .editorconfig body.md *.psd *.xcf forge-thumbnail.png thumbnail.png *.toml'
 
     - name: Add ${{ env.EXTENSION }} File to Release
       uses: ncipollo/release-action@v1
