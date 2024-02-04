@@ -15,7 +15,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      FG_UL_FILE: ${{ env.FG_UL_FILE }}
+      FG_UL_FILE: ${{ github.event.repository.name }}${{ env.EXTENSION }}
     steps:
     - name: Checkout Repo Assets
       uses: actions/checkout@v4
@@ -40,7 +40,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     env:
-      FG_UL_FILE: ${{ env.FG_UL_FILE }}
+      FG_UL_FILE: ${{ github.event.repository.name }}${{ env.EXTENSION }}
     steps:
       - name: Checkout FG-Forge-Updater repository
         uses: actions/checkout@v4
