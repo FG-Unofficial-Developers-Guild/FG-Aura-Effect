@@ -1,9 +1,12 @@
-[![Build FG-Usable File](https://github.com/FG-Unofficial-Developers-Guild/FG-Aura-Effect/actions/workflows/create-ext.yml/badge.svg)](https://github.com/FG-Unofficial-Developers-Guild/FG-Aura-Effect/actions/workflows/create-ext.yml) [![Luacheck](https://github.com/FG-Unofficial-Developers-Guild/FG-Aura-Effect/actions/workflows/luacheck.yml/badge.svg)](https://github.com/FG-Unofficial-Developers-Guild/FG-Aura-Effect/actions/workflows/luacheck.yml)
 
 # FG Aura Effect
+
+[![Build FG-Usable File](https://github.com/FG-Unofficial-Developers-Guild/FG-Aura-Effect/actions/workflows/create-ext.yml/badge.svg)](https://github.com/FG-Unofficial-Developers-Guild/FG-Aura-Effect/actions/workflows/create-ext.yml) [![Luacheck](https://github.com/FG-Unofficial-Developers-Guild/FG-Aura-Effect/actions/workflows/luacheck.yml/badge.svg)](https://github.com/FG-Unofficial-Developers-Guild/FG-Aura-Effect/actions/workflows/luacheck.yml)
+
 This extension accommodates auras and area-of-effect buffs/debuffs by adding/removing effects to other characters based on proximity.
 
-# Compatibility and Instructions
+## Compatibility and Instructions
+
 This extension has been tested with [FantasyGrounds Unity](https://www.fantasygrounds.com/home/FantasyGroundsUnity.php) v4.4.3(2023-09-30).
 
 It works with the 3.5E, 4E, 5E, PFRPG, PFRPG2, and SFRPG rulesets.
@@ -11,6 +14,7 @@ It works with the 3.5E, 4E, 5E, PFRPG, PFRPG2, and SFRPG rulesets.
 Mattekure's [Complete Offensive Package Aura Extension](https://forge.fantasygrounds.com/shop/items/620/view) also allows you to see the auras that this extension creates. It is a paid extension.
 
 ### AURA Effect
+
 ```AURA: 10 friend; Aura of Protection; SAVE: 5```
 
 This will add a 10 foot aura around the person who has this effect.
@@ -24,6 +28,7 @@ If IF/IFT conditions are included *before* the "AURA" effect, they will act to e
 The bearer of the AURA effect will also receive its benefits. If this is not desired, see below.
 
 The following faction types are available:
+
 * **all** - applies aura to all. if not specified, all is assumed.
 * **ally** - applies aura to actors whose faction matches the effect source's faction
 * **enemy** - applies aura to actors whose faction is "foe" when the effect source's faction is "friend" (or vice versa)
@@ -35,16 +40,21 @@ The following faction types are available:
 You can also use the "!" or "~" operators to reverse the results such as "!friend", or "~ally".
 
 #### Exceptions
+
 If a resulting aura applied effect is set to "off" in the combat tracker, then the effect will not be removed based on token movement. This allows you to set the automatic effects of creatures that saved or are immune to "off".
 
 The factional relationship of ally or enemy will be evaluated from the source of the aura effect with regards if a aura applied effect should be applied.
 
 #### 5E Concentration (C)
+
 Concentration spells the (C) should be in it's own clause before the AURA clause or in the AURA clause. It should not be in a clause after after the AURA clause (applied effect)
+
 * **Correct** ```Example; (C); AURA: 10 all; Example; Do something```
 * **Correct** ```Example; AURA: 10 all (C); Example; Do something```
 * **Incorrect** ```Example; AURA: 10 all; Example; Do something (C)```
+
 ### FACTION() Conditional Operator
+
 * Not case-sensitive
 * ! or ~ can be prepended to FACTION to provide a logical not.
 
@@ -62,7 +72,8 @@ A factional conditional operator that expands IF/IFT. The conditional operator r
 **!** or **~** can be prepended to any of the above to provide a logical not
 Multiple of the above can be combined
 
-#### Aura Use
+### Aura Use
+
 Auras affect source of the aura by default. To have the aura **NOT** affect the source of the aura, a FACTION conditional operator is needed using one of the following descriptors *!self* or *~self* or *notself* when the aura is placed on the source node. The source of the aura does not benefit from the aura in the following example.
 
 ```AURA: 10 ally; Test; IF: FACTION(!self); ATK: 5```
@@ -72,7 +83,8 @@ If using a proxy CT token to define an aura area, it is recommended to set the p
 
 Unless there is a specific advanced case to do so, any other FACTION conditional operators are not needed for an aura.
 
-### Special AURA types
+### Special AURA Types
+
 Special aura types change the default behavior of auras. They are specified in the AURA effect descriptors. Multiple special aura types can be combined to create even more unique auras such as cube that is single and sticky.
 
 |Descriptor|Notes|Example|
@@ -81,22 +93,33 @@ Special aura types change the default behavior of auras. They are specified in t
 |**single**|There are a number of spells and effects, particularly in the 5E ruleset, which necessitate a slightly different aura behavior. These have the text or something similar *"When the creature enters the area for the first time on a turn or starts its turn there"*. The aura will be applied to the target only when the target starts its turn in the aura or enters (moves into) the area for the first time on a turn. It will not be reapplied if the target leaves the area and returns on the same turn. It also will not be applied if the actor is in the area when cast or if the aura area moves onto the actor.|```AURA: 10 !ally,single; Test; IF: FACTION(!self); ATK: -5```|
 |**sticky**|Applied aura effects will not be removed from actors|```AURA: 10 all,sticky; Poison Trap; IF: FACTION(!self); Poisoned```|
 |**once**|The aura will only apply once per turn to an actor that starts or enters the area or if the area moves onto the actor. Leaving and re-entering the area on the same turn will not reapply the aura| ```AURA: 10 all,once; ATK: -5```|
-### Point Descriptor
-By default the sphere aura distance is calcuated from the outside of the token that is linked to the CT Actor. The descriptor "point" can be added to have that distance instead be calculated from the center of the token. Points are always calcuated with RAW diagional distance.
+
+#### Point Descriptor
+
+By default the sphere aura distance is calcuated from the outside of the token that is linked to the CT Actor. The descriptor "point" can be added to have that distance instead be calculated from the center of the token. Points are always calcuated with RAW diagional distance. Cubes are always calcuated using the point method.
 ```AURA: 10 all,point; ATK: -5```
 
-### Option for disabling aura effect chat messages
+### GM Holding Shift
+
+As long as the GM is holding shift, Aura calcuations will be disabled. This allows the GM to move a token through an aura without the Aura affecting the token.
+
+### Option for Disabling Aura Effect Chat Messages
+
 "Silence Notifications for Aura Types" can be used to hide aura apply/removal chat messages for a particular faction, relationship, or all.
+
 ### Option for Diagonal Distance Multiplier
+
 "Diagonal Multiplier for Aura Distance" defines how diagonals are calcuated with respect to distance between tokens
 
 * ***Raw*** - Default, Diagonals are measured explicitly (Pythagorean Theorem)
 * ***Ruleset*** - Diagonals are measured as per Ruleset definition
 
-# Effect Sharing Threads
+## Effect Sharing Threads
+
 5E: https://www.fantasygrounds.com/forums/showthread.php?69965-5E-Aura-Effects-Coding
 
 ... if you create a thread for your ruleset let me know and I will add it to this list.
 
-# Video Demonstration (click for video)
+## Video Demonstration (click for video)
+
 [<img src="https://i.ytimg.com/vi_webp/e2JQzf5HI6I/hqdefault.webp">](https://www.youtube.com/watch?v=e2JQzf5HI6I)
