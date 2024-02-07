@@ -37,7 +37,7 @@ jobs:
   upload:
     runs-on: ubuntu-latest
     needs: build
-    if: ${{ env.FORGE_ITEM_ID != '' }}
+    if: ${{ vars.FORGE_ITEM_ID != '' }}
     env:
       IS_PRERELEASE: ${{ contains(github.ref_name,'-rc') }} && ${{ contains(github.ref_name,'-beta') }}
     steps:
