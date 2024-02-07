@@ -33,7 +33,9 @@ local function checkSilentNotification(sSourcePath, targetNodePath)
 		local rSource = ActorManager.resolveActor(DB.findNode(sSourcePath))
 		local sRelationship = AuraFactionConditional.getRelationship(rSource, rTarget)
 		local sFaction = ActorManager.getFaction(rTarget)
-		if sFaction == '' then sFaction = 'none' end
+		if sFaction == '' then
+			sFaction = 'none'
+		end
 		if option == sRelationship or option == sFaction then
 			bReturn = true
 		end
@@ -122,7 +124,9 @@ end
 -- luacheck: globals notifyExpireSilent
 function notifyExpireSilent(varEffect)
 	local nodeEffect = DB.findNode(varEffect)
-	if not nodeEffect then return false end
+	if not nodeEffect then
+		return false
+	end
 	DB.deleteNode(nodeEffect)
 end
 
@@ -153,7 +157,7 @@ function onInit()
 		default = 'off',
 	})
 	-- Mod the EffectVarMap to track the source of the aura effect
-	EffectManager.registerEffectVar('sAuraSource' , { sDBType = 'string', sDBField = 'source_aura' })
+	EffectManager.registerEffectVar('sAuraSource', { sDBType = 'string', sDBField = 'source_aura' })
 	aEffectVarMap = EffectManager.getEffectVarMap()
 
 	OOBManager.registerOOBMsgHandler(OOB_MSGTYPE_AURAAPPLYSILENT, handleApplyEffect)
