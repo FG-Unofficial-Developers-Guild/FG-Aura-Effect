@@ -37,7 +37,12 @@ jobs:
   upload:
     runs-on: ubuntu-latest
     needs: build
-    if: ${{ ! contains(github.ref_name,'-rc') }} && ${{ ! contains(github.ref_name,'-beta') }} && ${{ env.FORGE_ITEM_ID != '' }}
+    if: ${{ env.FORGE_ITEM_ID != '' }}
+    env:
+      IS_PRERELEASE: ${{ contains(github.ref_name,'-rc') }} && ${{ contains(github.ref_name,'-beta') }}
+      FG_USER_NAME: ${{ vars.FORGE_USER_NAME }}
+      FG_ITEM_ID: ${{ vars.FORGE_ITEM_ID }}
+      FG_UL_FILE: ${{ github.event.repository.name }}${{ env.EXTENSION }}
     steps:
       - name: Checkout FG-Forge-Updater repository
         uses: actions/checkout@v4
@@ -50,7 +55,7 @@ jobs:
           python-version: "3.12"
           cache: 'pip'
 
-      - name: Install general dependencies
+      - name: Install general project dependencies
         run: |
           pip install -U pip
           pip install .
@@ -60,10 +65,19 @@ jobs:
           name: ${{ github.event.repository.name }}${{ env.EXTENSION }}
 
       - name: Upload ext file to FG Forge
+        id: upload-live
+        if: ${{ ! env.IS_PRERELEASE }}
         env:
-          FG_USER_NAME: ${{ vars.FORGE_USER_NAME }}
+          FG_RELEASE_CHANNEL: Live
           FG_USER_PASS: ${{ secrets.FORGE_USER_PASS }}
-          FG_ITEM_ID: ${{ vars.FORGE_ITEM_ID }}
-          FG_UL_FILE: ${{ github.event.repository.name }}${{ env.EXTENSION }}
+        run: |
+          python src/main.py
+
+      - name: Upload ext file to FG Forge
+        id: upload-test
+        if: ${{ env.IS_PRERELEASE }}
+        env:
+          FG_RELEASE_CHANNEL: Test
+          FG_USER_PASS: ${{ secrets.FORGE_USER_PASS }}
         run: |
           python src/main.py
