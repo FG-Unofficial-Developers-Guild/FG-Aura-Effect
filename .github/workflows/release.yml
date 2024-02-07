@@ -75,7 +75,7 @@ jobs:
 
       - name: Upload ext file to FG Forge
         id: upload-test
-        if: ${{ env.IS_PRERELEASE }}
+        if: ${{ env.IS_PRERELEASE != '' }}
         env:
           FG_ITEM_ID: ${{ vars.FORGE_ITEM_ID }}
           FG_USER_NAME: ${{ vars.FORGE_USER_NAME }}
