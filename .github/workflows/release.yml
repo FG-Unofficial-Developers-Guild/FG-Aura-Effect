@@ -13,6 +13,7 @@ env:
 
 jobs:
   build:
+    name: Create Release
     runs-on: ubuntu-latest
     steps:
     - name: Checkout Repo Assets
@@ -35,6 +36,7 @@ jobs:
         path: ${{ github.event.repository.name }}${{ env.EXTENSION }}
         
   upload:
+    name: Upload to Forge
     runs-on: ubuntu-latest
     needs: build
     if: ${{ vars.FORGE_ITEM_ID != '' }}
@@ -61,7 +63,7 @@ jobs:
         with:
           name: ${{ github.event.repository.name }}${{ env.EXTENSION }}
 
-      - name: Upload ext file to FG Forge
+      - name: Upload ${{ env.EXTENSION }} file to live channel
         id: upload-live
         if: ${{ env.IS_PRERELEASE == 'false && false' }}
         env:
@@ -73,7 +75,7 @@ jobs:
         run: |
           python src/main.py
 
-      - name: Upload ext file to FG Forge
+      - name: Upload ${{ env.EXTENSION }} file to test channel
         id: upload-test
         if: ${{ env.IS_PRERELEASE != 'false && false' }}
         env:
