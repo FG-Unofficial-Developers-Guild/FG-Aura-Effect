@@ -37,7 +37,7 @@ jobs:
   upload:
     runs-on: ubuntu-latest
     needs: build
-    if: ${{ ! contains(github.ref_name,'-rc') }} && ${{ ! contains(github.ref_name,'-beta') }}
+    if: ${{ ! contains(github.ref_name,'-rc') }} && ${{ ! contains(github.ref_name,'-beta') }} && ${{ env.FORGE_ITEM_ID != '' }}
     steps:
       - name: Checkout FG-Forge-Updater repository
         uses: actions/checkout@v4
