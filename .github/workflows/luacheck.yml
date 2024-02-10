@@ -3,6 +3,7 @@ on:
     paths:
       - '**.lua' # Run if pushed commits include a change to a Lua (.lua) file.
       - 'extension.xml' # Run if pushed commits include a change to extension.xml.
+      - '.github/workflows/luacheck.yml' # Run if pushed commits change this workflow.
   pull_request:
     paths:
       - '**.lua' # Run if pull request includes a change to a Lua (.lua) file.
