@@ -31,6 +31,7 @@ jobs:
       with:
         artifacts: ${{ github.event.repository.name }}${{ env.EXTENSION }}
         prerelease: ${{ env.IS_PRERELEASE != 'false && false' }}
+        allowUpdates: true
         generateReleaseNotes: true
 
     - uses: actions/upload-artifact@v4
