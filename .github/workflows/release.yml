@@ -57,10 +57,26 @@ jobs:
           python-version: "3.12"
           cache: 'pip'
 
-      - name: Install general project dependencies
+      - name: Install uv and create venv
         run: |
-          pip install -U pip
-          pip install .
+          pip install -U pip uv
+          uv venv
+
+      - name: Enable macOS/Linux venv
+        if: runner.os != 'Windows'
+        run: |
+          source .venv/bin/activate
+          echo $PATH >> $GITHUB_PATH
+
+      - name: Enable Windows venv
+        if: runner.os == 'Windows'
+        run: |
+          .venv\Scripts\activate
+          echo $env:path >> $ENV:GITHUB_PATH
+
+      - name: Install dependencies
+        run: |
+          uv pip install -e .
 
       - uses: actions/download-artifact@v4
         with:
@@ -92,12 +108,13 @@ jobs:
           FG_UL_FILE: ${{ github.event.repository.name }}${{ env.EXTENSION }}
           FG_README_UPDATE: "FALSE"
           FG_UPLOAD_BUILD: "TRUE"
-          FG_GRAPH_SALES: "FALSE"
+          FG_GRAPH_SALES: "TRUE"
         run: |
           python -m src.main
 
       - name: Add cumulative users graph to release
         uses: ncipollo/release-action@v1
         with:
+          body: "![Cumulative Users Graph](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/cumulative_users.png)"
           artifacts: cumulative_users.png
           allowUpdates: true
