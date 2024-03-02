@@ -115,6 +115,6 @@ jobs:
       - name: Add cumulative users graph to release
         uses: ncipollo/release-action@v1
         with:
-          body: "![Cumulative Users Graph](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/cumulative_users.svg)"
-          artifacts: cumulative_users.svg
+          body: "![Cumulative Users Graph](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/cumulative_users.png)"
+          artifacts: cumulative_users.png
           allowUpdates: true
