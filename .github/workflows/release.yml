@@ -89,9 +89,9 @@ jobs:
           FG_USER_NAME: ${{ vars.FORGE_USER_NAME }}
           FG_USER_PASS: ${{ secrets.FORGE_USER_PASS }}
           FG_UL_FILE: ${{ github.event.repository.name }}${{ env.EXTENSION }}
-          FG_README_UPDATE: "TRUE"
+          FG_README_UPDATE: "FALSE"
           FG_UPLOAD_BUILD: "TRUE"
-          FG_GRAPH_SALES: "TRUE"
+          FG_GRAPH_SALES: "FALSE"
         run: |
           python -m src.main
 
