@@ -1,10 +1,10 @@
 --
 --	Please see the LICENSE.md file included with this distribution for attribution and copyright information.
 --
--- luacheck: globals bDebug updateAura addAura removeAura removeAllFromAuras isAuraApplicable
+-- luacheck: globals bDebug AuraEffect updateAura addAura removeAura removeAllFromAuras isAuraApplicable
 -- luacheck: globals auraString getAuraDetails AuraFactionConditional.isNot
 -- luacheck: globals AuraFactionConditional.DetectedEffectManager.parseEffectComp AuraFactionConditional.DetectedEffectManager.checkConditional
--- luacheck: globals AuraTracker AuraAPI AuraToken getPathsOncePerTurn isBaseDetail
+-- luacheck: globals AuraTracker AuraAPI AuraToken getPathsOncePerTurn isBaseDetail checkDying isCreatureSize isCreatureType isAlignment
 bDebug = false
 
 OOB_MSGTYPE_AURATOKENMOVE = 'aurasontokenmove'
@@ -15,11 +15,15 @@ local aReservedDetails = {
 	'bSticky',
 	'bOnce',
 	'bPoint',
+	'bDying',
 	'nRange',
 	'sEffect',
 	'sSource',
 	'sAuraNode',
 	'aFactions',
+	'aAlignment',
+	'aCreatureType',
+	'aCreatureSize',
 	'aDefined',
 	'aOther'
 }
@@ -30,18 +34,45 @@ local rBaseDetails = {
 	bSticky = false,
 	bOnce = false,
 	bPoint = false,
+	bDying =  false,
 	nRange = 0,
 	sEffect = '',
 	sSource = '',
 	sAuraNode = '',
 	aFactions = {},
+	aAlignment = {},
+	aCreatureType = {},
+	aCreatureSize = {},
 	aDefined = {},
 	aOther = {}
 }
+
 auraString = 'AURA: %d+'
 
+local aAuraAlignment = {
+	'lawful',
+	'chaotic',
+	'good',
+	'evil',
+	'l',
+	'c',
+	'g',
+	'e',
+	'n',
+	'lg',
+	'ln',
+	'le',
+	'ng',
+	'ne',
+	'cg',
+	'cn',
+	'ce'
+}
+
+local aAuraCreatureType = {}
+local aAuraCreatureSize = {}
 local aAuraFactions = { 'ally', 'enemy', 'friend', 'foe', 'all', 'neutral', 'none' }
-local aDefinedDescriptors = { } -- Other descriptors aura uses but don't need to be grouped
+local aDefinedDescriptors = { 'dying' } -- Other descriptors aura uses but don't need to be grouped
 
 -- Checks AURA effect string common needed information
 function getAuraDetails(nodeEffect)
@@ -78,6 +109,12 @@ function getAuraDetails(nodeEffect)
 						table.insert(rDetails.aFactions, sFilter)
 					elseif StringManager.contains(aDefinedDescriptors, sFilterCheck) then
 						table.insert(rDetails.aDefined, sFilter)
+					elseif StringManager.contains(aAuraAlignment, sFilterCheck) then
+						table.insert(rDetails.aAlignment, sFilter)
+					elseif StringManager.contains(aAuraCreatureType, sFilterCheck) then
+						table.insert(rDetails.aCreatureType, sFilter)
+					elseif StringManager.contains(aAuraCreatureSize, sFilterCheck) then
+						table.insert(rDetails.aCreatureSize, sFilter)
 					else
 						local sKey = AuraAPI.processDescriptor(sFilterCheck, bNot)
 						if sKey then
@@ -223,6 +260,78 @@ local function checkConditionalBeforeAura(nodeEffect, rSource, rTarget)
 	return true
 end
 
+function isCreatureSize(rAuraDetails, rTarget)
+	local bReturn = true
+	if next(rAuraDetails.aCreatureSize) and rTarget then
+		local a5Ruleset = {'5E', 'SFRPG', 'DCC', 'MCC'}
+		local a3Ruleset = {'PFRPG', '3.5E', '4E', '13A', 'd20Modern'}
+		local sRuleset =  User.getRulesetName()
+		bReturn = false
+		for _,sDescriptor in ipairs(rAuraDetails.aCreatureSize) do
+			local bNot, sSize = AuraFactionConditional.isNot(sDescriptor)
+			local bSize
+			if StringManager.contains(a5Ruleset, sRuleset) then
+				bSize = ActorCommonManager.isCreatureSizeDnD5(rTarget, sSize)
+			elseif StringManager.contains(a3Ruleset, sRuleset) then
+				bSize = ActorCommonManager.isCreatureSizeDnD3(rTarget, sSize)
+			elseif sRuleset == 'PFRPG2' then
+				bSize = ActorManager2.isSize(rTarget, sSize)
+			elseif sRuleset == '2E' then
+				bSize = ActorManagerADND.isSize(rTarget, sSize)
+			end
+			if (not bNot and bSize) or (not bSize and bNot) then
+				bReturn = true
+			end
+		end
+	end
+	return bReturn
+end
+
+function isCreatureType(rAuraDetails, rTarget)
+	local bReturn = true
+	if next(rAuraDetails.aCreatureType) and rTarget then
+		bReturn = false
+		for _,sDescriptor in ipairs(rAuraDetails.aCreatureType) do
+			local bNot, sType = AuraFactionConditional.isNot(sDescriptor)
+			local bType = ActorCommonManager.isCreatureTypeDnD(rTarget, sType)
+			if (not bNot and bType) or (not bType and bNot) then
+				bReturn = true
+			end
+		end
+	end
+	return bReturn
+end
+
+function isAlignment(rAuraDetails, rTarget)
+	local bReturn = true
+	if next(rAuraDetails.aAlignment) and rTarget then
+		for _,sDescriptor in ipairs(rAuraDetails.aAlignment) do
+			local bNot, sAlignment = AuraFactionConditional.isNot(sDescriptor)
+			local bAlign = ActorCommonManager.isCreatureAlignmentDnD(rTarget, sAlignment)
+			if (bNot and bAlign) or (not bAlign and not bNot) then
+				bReturn = false
+				break
+			end
+		end
+	end
+	return bReturn
+end
+
+function checkDying(rAuraDetails)
+	local bReturn = true
+	if next(rAuraDetails.aDefined)then
+		local bFilterDying = StringManager.contains(rAuraDetails.aDefined, 'dying')
+		local bFilterNotDying = StringManager.contains(rAuraDetails.aDefined, '!dying') or StringManager.contains(rAuraDetails.aDefined, '~dying')
+
+		if  bFilterDying or bFilterNotDying then
+			if (not rAuraDetails.bDying and bFilterDying) or (rAuraDetails.bDying and bFilterNotDying) then
+				bReturn = false
+			end
+		end
+	end
+	return bReturn
+end
+
 -- Should auras in range be added to this target?
 function isAuraApplicable(nodeEffect, rSource, rTarget, rAuraDetails)
 	local rAuraSource
@@ -242,11 +351,16 @@ function isAuraApplicable(nodeEffect, rSource, rTarget, rAuraDetails)
 	else
 		aCondHelper = aConditions
 	end
+
 	if
 		rTarget ~= rSource
 		and DB.getValue(nodeEffect, 'isactive', 0) == 1
 		and checkConditionalBeforeAura(nodeEffect, rSource, rTarget)
 		and AuraFactionConditional.DetectedEffectManager.checkConditional(rAuraSource, nodeEffect, aCondHelper, rTarget)
+		and AuraEffect.checkDying(rAuraDetails)
+		and AuraEffect.isAlignment(rAuraDetails, rTarget)
+		and AuraEffect.isCreatureSize(rAuraDetails, rTarget)
+		and AuraEffect.isCreatureType(rAuraDetails, rTarget)
 		and AuraAPI.isAuraApplicable(nodeEffect, rSource, rTarget, rAuraDetails)
 	then
 		return true
@@ -264,6 +378,7 @@ function updateAura(tokenSource, nodeEffect, rAuraDetails, rMoved)
 	local tAdd, tRemove = {}, {}
 	-- compile lists
 	local rSource = ActorManager.resolveActor(DB.findNode(rAuraDetails.sSource))
+	rAuraDetails.bDying = ActorHealthManager.isDyingOrDead(rSource)
 	local aTokens
 	local aFromAuraNodes = AuraTracker.getTrackedFromAuras(rAuraDetails.sSource, rAuraDetails.sAuraNode)
 	if rAuraDetails.bCube then
@@ -294,6 +409,8 @@ function updateAura(tokenSource, nodeEffect, rAuraDetails, rMoved)
 				else
 					tAdd[token.getId()] = { nodeEffect, nodeCTToken }
 				end
+			elseif not rAuraDetails.bSticky then
+				table.insert(tRemove, { nodeEffect, nodeCTToken })
 			end
 		end
 	end
@@ -327,4 +444,24 @@ function onInit()
 		baseval = '0',
 		default = '0',
 	})
+
+	if DataCommon then
+		if DataCommon.creaturetype then
+			aAuraCreatureType = UtilityManager.copyDeep(DataCommon.creaturetype)
+		end
+		if DataCommon.creaturesubtype then
+			for _,sSubType in ipairs(DataCommon.creaturesubtype) do
+				table.insert(aAuraCreatureType, sSubType)
+			end
+		end
+		table.insert(aAuraCreatureType, 'humanoid')
+		table.insert(aAuraCreatureType, 'human')
+		if DataCommon.creaturesize then
+			for sSize,_ in pairs(DataCommon.creaturesize) do
+				if sSize:len() > 1 then
+					table.insert(aAuraCreatureSize, sSize)
+				end
+			end
+		end
+	end
 end
