@@ -101,7 +101,7 @@ end
 
 function notifyApply(rEffect, targetNodePath)
 	if rEffect and checkSilentNotification(rEffect.sSource, targetNodePath) then
-		notifyApplySilent(rEffect, targetNodePath)
+		AuraEffectSilencer.notifyApplySilent(rEffect, targetNodePath)
 	else
 		EffectManager.notifyApply(rEffect, targetNodePath)
 	end
@@ -140,7 +140,7 @@ function notifyExpire(varEffect, nMatch, bImmediate)
 	end
 	local sTarget = DB.getPath(DB.getChild(varEffect, '...'))
 	if checkSilentNotification(sSource, sTarget) then
-		notifyExpireSilent(varEffect)
+		AuraEffectSilencer.notifyExpireSilent(varEffect)
 	else
 		EffectManager.notifyExpire(varEffect, nMatch, bImmediate)
 	end

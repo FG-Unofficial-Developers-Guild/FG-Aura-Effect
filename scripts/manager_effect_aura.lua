@@ -243,7 +243,7 @@ function updateAura(tokenSource, nodeEffect, rAuraDetails, rMoved)
 		if nodeCTToken then -- Guard against non-CT linked tokens
 			local rTarget = ActorManager.resolveActor(nodeCTToken)
 			aFromAuraNodes[rTarget.sCTNode] = nil -- Processed so mark as such
-			if isAuraApplicable(nodeEffect, rSource, rTarget, rAuraDetails.aFactions) then
+			if AuraEffect.isAuraApplicable(nodeEffect, rSource, rTarget, rAuraDetails) then
 				if rAuraDetails.bSingle or rAuraDetails.bOnce then
 					if
 						not AuraTracker.checkOncePerTurn(rAuraDetails.sSource, rAuraDetails.sAuraNode, rTarget.sCTNode)

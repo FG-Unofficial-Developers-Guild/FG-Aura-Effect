@@ -40,7 +40,7 @@ end
 
 -- Add an aura to be tracked
 function addTrackedAura(nodeSource, nodeEffect)
-	local sSource, sAura = getAuraTrackerPaths(nodeSource, nodeEffect)
+	local sSource, sAura = AuraTracker.getAuraTrackerPaths(nodeSource, nodeEffect)
 	if not tActiveAuras[sSource] then
 		tActiveAuras[sSource] = {}
 	end
@@ -51,7 +51,7 @@ end
 
 -- get tracked aura paths for a node
 function getTrackedAuras(nodeSource)
-	local sSource = getAuraTrackerPaths(nodeSource)
+	local sSource = AuraTracker.getAuraTrackerPaths(nodeSource)
 	local aReturn = {}
 	if tActiveAuras[sSource] then
 		aReturn = UtilityManager.copyDeep(tActiveAuras[sSource])
@@ -61,13 +61,13 @@ end
 
 -- delete tracked aura paths for a node
 function deleteTrackedAuras(nodeSource)
-	local sSource = getAuraTrackerPaths(nodeSource)
+	local sSource = AuraTracker.getAuraTrackerPaths(nodeSource)
 	tActiveAuras[sSource] = nil
 end
 
 -- remove a specific tracked aura for a node
 function removeTrackedAura(nodeSource, nodeEffect)
-	local sSource, sAura = getAuraTrackerPaths(nodeSource, nodeEffect)
+	local sSource, sAura = AuraTracker.getAuraTrackerPaths(nodeSource, nodeEffect)
 	if tActiveAuras[sSource] and tActiveAuras[sSource][sAura] then
 		tActiveAuras[sSource][sAura] = nil
 	end
@@ -78,8 +78,8 @@ end
 
 -- add a fromaura to track
 function addTrackedFromAura(nodeSource, nodeEffect, nodeTarget)
-	local sSource, sAura, sTarget = getAuraTrackerPaths(nodeSource, nodeEffect, nodeTarget)
-	addTrackedAura(sSource, sAura)
+	local sSource, sAura, sTarget = AuraTracker.getAuraTrackerPaths(nodeSource, nodeEffect, nodeTarget)
+	AuraTracker.addTrackedAura(sSource, sAura)
 	if not tActiveAuras[sSource][sAura][sTarget] then
 		tActiveAuras[sSource][sAura][sTarget] = true
 	end
@@ -87,7 +87,7 @@ end
 
 -- get fromauras that are a result of nodeEffect
 function getTrackedFromAuras(nodeSource, nodeEffect)
-	local sSource, sAura = getAuraTrackerPaths(nodeSource, nodeEffect)
+	local sSource, sAura = AuraTracker.getAuraTrackerPaths(nodeSource, nodeEffect)
 	local aReturn = {}
 	if tActiveAuras[sSource] and tActiveAuras[sSource][sAura] then
 		aReturn = UtilityManager.copyDeep(tActiveAuras[sSource][sAura])
@@ -97,7 +97,7 @@ end
 
 -- delete specific tracked fromauras
 function removeTrackedFromAura(nodeSource, nodeEffect, nodeTarget)
-	local sSource, sAura, sTarget = getAuraTrackerPaths(nodeSource, nodeEffect, nodeTarget)
+	local sSource, sAura, sTarget = AuraTracker.getAuraTrackerPaths(nodeSource, nodeEffect, nodeTarget)
 	if sTarget then
 		if tActiveAuras[sSource] and tActiveAuras[sSource][sAura] then
 			tActiveAuras[sSource][sAura][sTarget] = nil
@@ -128,7 +128,7 @@ end
 
 -- SINGLE/ONCE  aura type aura effected target this turn
 function addOncePerTurn(nodeSource, nodeEffect, nodeTarget)
-	local sSource, sEffect, sTarget = getAuraTrackerPaths(nodeSource, nodeEffect, nodeTarget)
+	local sSource, sEffect, sTarget = AuraTracker.getAuraTrackerPaths(nodeSource, nodeEffect, nodeTarget)
 	if not tAuraOncePerTurn[sTarget] then
 		tAuraOncePerTurn[sTarget] = {}
 	end
@@ -140,7 +140,7 @@ end
 
 -- SINGLE/ONCE aura type check if aura effected target this turn
 function checkOncePerTurn(nodeSource, nodeEffect, nodeTarget)
-	local sSource, sEffect, sTarget = getAuraTrackerPaths(nodeSource, nodeEffect, nodeTarget)
+	local sSource, sEffect, sTarget = AuraTracker.getAuraTrackerPaths(nodeSource, nodeEffect, nodeTarget)
 	local bReturn = false
 	if tAuraOncePerTurn[sTarget] and tAuraOncePerTurn[sTarget][sSource] and tAuraOncePerTurn[sTarget][sSource][sEffect] then
 		bReturn = true
