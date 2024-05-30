@@ -7,18 +7,18 @@ local tImages = {}
 local linkToken = nil
 
 function add(nodeCT)
-	onAdd(CombatManager.getTokenFromCT(nodeCT))
+	AuraToken.onAdd(CombatManager.getTokenFromCT(nodeCT))
 end
 
 function delete(nodeCT)
-	onDelete(CombatManager.getTokenFromCT(nodeCT))
+	AuraToken.onDelete(CombatManager.getTokenFromCT(nodeCT))
 end
 
 -- Workaround because Token.onAdd, the token isn't linked to the CT node yet via FG.
 -- Let FG do its thing they we can track things properly
 function customLinkToken(nodeCT, newTokenInstance)
 	linkToken(nodeCT, newTokenInstance)
-	onAdd(CombatManager.getTokenFromCT(nodeCT))
+	AuraToken.onAdd(CombatManager.getTokenFromCT(nodeCT))
 end
 
 function onAdd(token)
@@ -61,7 +61,7 @@ function isMovedFilter(sNodeCT, token)
 	local nodeImage = token.getContainerNode()
 	local sImagePath = DB.getPath(nodeImage)
 	if not tImages[sImagePath] or not tImages[sImagePath].tTokens[sNodeCT] then
-		onAdd(token)
+		AuraToken.onAdd(token)
 	end
 
 	if tImages[sImagePath] and sNodeCT then

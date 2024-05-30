@@ -43,7 +43,7 @@ function updateAurasForActor(nodeCT, windowFilter, effectFilter, rMoved)
 	end
 	for _, nodeEffect in ipairs(aEffectList) do
 		if not effectFilter and nodeEffect ~= effectFilter then
-			updateAurasForEffect(nodeEffect, rMoved)
+			AuraEffectTriggers.updateAurasForEffect(nodeEffect, rMoved)
 		end
 	end
 end
@@ -62,14 +62,14 @@ function updateAurasForMap(window, rMoved)
 			local nodeCT = DB.findNode(sSourceNode)
 			local _, winImage = ImageManager.getImageControl(CombatManager.getTokenFromCT(nodeCT))
 			if winImage == window then
-				updateAurasForActor(nodeCT, winImage, nil, rMoved)
+				AuraEffectTriggers.updateAurasForActor(nodeCT, winImage, nil, rMoved)
 			end
 		end
 	else
 		for _, nodeCT in ipairs(DB.getChildList(CombatManager.CT_LIST)) do
 			local _, winImage = ImageManager.getImageControl(CombatManager.getTokenFromCT(nodeCT))
 			if winImage == window then
-				updateAurasForActor(nodeCT, winImage)
+				AuraEffectTriggers.updateAurasForActor(nodeCT, winImage)
 			end
 		end
 	end
@@ -86,7 +86,7 @@ function updateAurasForTurnStart(nodeCTStart)
 		local nodeCT = DB.findNode(sSourceNode)
 		local _, winImage = ImageManager.getImageControl(CombatManager.getTokenFromCT(nodeCT))
 		if winImage == window then
-			updateAurasForActor(nodeCT, winImage, nil, rNodeStart)
+			AuraEffectTriggers.updateAurasForActor(nodeCT, winImage, nil, rNodeStart)
 		end
 	end
 end
@@ -109,7 +109,7 @@ function tokenMovement(token)
 	end
 
 	if AuraToken.isMovedFilter(rNodeStart.sCTNode, token) then
-		updateAurasForMap(winImage, rNodeStart)
+		AuraEffectTriggers.updateAurasForMap(winImage, rNodeStart)
 		if bDebugPerformance then
 			sTime = string.format('%s%s,', sTime, tostring(os.clock() - time1))
 			Debug.console(sTime)
@@ -118,7 +118,7 @@ function tokenMovement(token)
 end
 
 local function onMove(token)
-	tokenMovement(token)
+	AuraEffectTriggers.tokenMovement(token)
 end
 
 local linkToken_old
@@ -144,7 +144,7 @@ local function onWindowOpened_new(window, ...)
 	if onWindowOpened_old then
 		onWindowOpened_old(window, ...)
 	end
-	updateAurasForMap(window)
+	AuraEffectTriggers.updateAurasForMap(window)
 end
 
 -- Recalculate auras when adding tokens
@@ -153,7 +153,7 @@ local function handleStandardCombatAddPlacement_new(tCustom, ...)
 	if handleStandardCombatAddPlacement_old then
 		handleStandardCombatAddPlacement_old(tCustom, ...)
 	end
-	updateAurasForActor(tCustom.nodeCT)
+	AuraEffectTriggers.updateAurasForActor(tCustom.nodeCT)
 end
 
 ---	Recalculate auras when effect text is changed to facilitate conditionals before aura effects
@@ -172,7 +172,7 @@ local function onEffectChanged(nodeLabel)
 	if sEffect == '' or string.match(sEffect, 'AURA[:;]') then
 		return
 	end -- don't recalculate when changing aura or fromaura
-	updateAurasForActor(DB.getChild(nodeEffect, '...'))
+	AuraEffectTriggers.updateAurasForActor(DB.getChild(nodeEffect, '...'))
 end
 
 ---	Remove fromaura effects just before source aura is removed
@@ -209,7 +209,7 @@ function addEffect_new(sUser, sIdentity, nodeCT, rNewEffect, bShowMsg)
 			if rEffectComp.type:upper() == 'AURA' then
 				local _, winImage = ImageManager.getImageControl(CombatManager.getTokenFromCT(nodeCT))
 				local rNodeStart = ActorManager.resolveActor(nodeCT)
-				updateAurasForMap(winImage, rNodeStart)
+				AuraEffectTriggers.updateAurasForMap(winImage, rNodeStart)
 				break
 			end
 		end
@@ -243,11 +243,11 @@ end
 
 ---	Recalculate auras after effects are removed to ensure conditionals before aura are respected
 local function onEffectRemoved(nodeEffects)
-	updateAurasForActor(DB.getParent(nodeEffects))
+	AuraEffectTriggers.updateAurasForActor(DB.getParent(nodeEffects))
 end
 
 function onInit()
-	tExtensions = getExtensions()
+	tExtensions = AuraEffectTriggers.getExtensions()
 	-- all handlers should be created on GM machine
 	if not Session.IsHost then
 		return
