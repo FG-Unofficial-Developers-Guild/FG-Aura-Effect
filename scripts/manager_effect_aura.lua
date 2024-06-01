@@ -16,6 +16,8 @@ local aReservedDetails = {
 	'bOnce',
 	'bPoint',
 	'bDying',
+	'bSelf',
+	'bLegacy',
 	'nRange',
 	'sEffect',
 	'sSource',
@@ -35,6 +37,8 @@ local rBaseDetails = {
 	bOnce = false,
 	bPoint = false,
 	bDying =  false,
+	bSelf = true,
+	bLegacy = true,
 	nRange = 0,
 	sEffect = '',
 	sSource = '',
@@ -72,7 +76,7 @@ local aAuraAlignment = {
 local aAuraCreatureType = {}
 local aAuraCreatureSize = {}
 local aAuraFactions = { 'ally', 'enemy', 'friend', 'foe', 'all', 'neutral', 'none' }
-local aDefinedDescriptors = { 'dying' } -- Other descriptors aura uses but don't need to be grouped
+local aDefinedDescriptors = { 'dying', 'self', 'notself' } -- Other descriptors aura uses but don't need to be grouped
 
 -- Checks AURA effect string common needed information
 function getAuraDetails(nodeEffect)
@@ -109,6 +113,9 @@ function getAuraDetails(nodeEffect)
 						table.insert(rAuraDetails.aFactions, sFilter)
 					elseif StringManager.contains(aDefinedDescriptors, sFilterCheck) then
 						table.insert(rAuraDetails.aDefined, sFilter)
+						if (sFilterCheck == 'self' and bNot) or (sFilterCheck == 'notself' and not bNot) then
+							rAuraDetails.bSelf = false
+						end
 					elseif StringManager.contains(aAuraAlignment, sFilterCheck) then
 						table.insert(rAuraDetails.aAlignment, sFilter)
 					elseif StringManager.contains(aAuraCreatureType, sFilterCheck) then
@@ -138,21 +145,60 @@ function getAuraDetails(nodeEffect)
 end
 
 -- Sets up FROMAURA rEffect based on supplied AURA nodeEffect.
-local function buildFromAura(nodeEffect)
+local function buildFromAura(rAuraDetails, nodeEffect)
+	if rAuraDetails.rEffect then
+		return rAuraDetails.rEffect;
+	end
 	local applyLabel = string.match(DB.getValue(nodeEffect, 'label', ''), auraString .. '.-;%s*(.*)$')
 	if not applyLabel then
+		rAuraDetails.bLegacy = false
 		return nil
 	end
 
-	local rEffect = {}
-	rEffect.nDuration = 0
-	rEffect.nGMOnly = DB.getValue(nodeEffect, 'isgmonly', 0)
-	rEffect.nInit = DB.getValue(nodeEffect, 'init', 0)
-	rEffect.sName = applyLabel
-	rEffect.sSource = DB.getPath(DB.getChild(nodeEffect, '...'))
-	rEffect.sAuraSource = DB.getPath(nodeEffect)
-	rEffect.sUnits = DB.getValue(nodeEffect, 'unit', '')
-	return rEffect
+	rAuraDetails.rEffect = {}
+	rAuraDetails.rEffect.nDuration = 0
+	rAuraDetails.rEffect.nGMOnly = DB.getValue(nodeEffect, 'isgmonly', 0)
+	rAuraDetails.rEffect.nInit = DB.getValue(nodeEffect, 'init', 0)
+	rAuraDetails.rEffect.sName = applyLabel
+	rAuraDetails.rEffect.sSource = DB.getPath(DB.getChild(nodeEffect, '...'))
+	rAuraDetails.rEffect.sAuraSource = DB.getPath(nodeEffect)
+	rAuraDetails.rEffect.sUnits = DB.getValue(nodeEffect, 'unit', '')
+	return rAuraDetails.rEffect
+end
+
+local function getAppliedAuraFromCustomEffects(rAuraDetails, nodeEffect)
+	-- If we found and search, don't search again
+	if rAuraDetails.rEffect then
+		return rAuraDetails.rEffect
+	end
+
+	-- If we have BCE/BCEG grab the effect from the binary search for efficiency reasons
+	local rEffect
+	if  BCEManager then
+		for _, sEffect in ipairs(rAuraDetails.aOther) do
+			rEffect = BCEManager.matchEffect(sEffect)
+			if next(rEffect) then
+				rEffect.sAuraSource = DB.getPath(nodeEffect)
+				rEffect.sSource = DB.getPath(DB.getChild(nodeEffect, '...'))
+				rAuraDetails.rEffect = rEffect
+				break
+			end
+		end
+	else
+		for _, nodeSearchEffect in pairs(DB.getChildrenGlobal('effects')) do
+			local aEffectComps = EffectManager.parseEffect(DB.getValue(nodeSearchEffect, 'label', ''):lower())
+			if next(aEffectComps) then
+				if StringManager.contains(rAuraDetails.aOther, aEffectComps[1]) then
+					rEffect = EffectManager.getEffect(nodeSearchEffect)
+					rEffect.sAuraSource = DB.getPath(nodeEffect)
+					rEffect.sSource = DB.getPath(DB.getChild(nodeEffect, '...'))
+					rAuraDetails.rEffect = rEffect
+					break
+				end
+			end
+		end
+	end
+	return rAuraDetails.rEffect
 end
 
 -- Check effect nodes of nodeSource to see if they are children of nodeEffect
@@ -184,15 +230,21 @@ function addAura(nodeEffect, nodeTarget, rAuraDetails)
 		if not nodeSource or not nodeTarget or not nodeEffect then
 			return
 		end
-		AuraTracker.addTrackedFromAura(rAuraDetails.sSource, rAuraDetails.sAuraNode, DB.getPath(nodeTarget))
 		if hasFromAura(nodeEffect, nodeTarget) then
 			return
 		end
-		local rEffectAura = buildFromAura(nodeEffect)
+		local rEffectAura = buildFromAura(rAuraDetails, nodeEffect)
 		if not rEffectAura then
-			return
+			rEffectAura = getAppliedAuraFromCustomEffects(rAuraDetails, nodeEffect)
+			if not rEffectAura then
+				return -- not found
+			end
 		end
-		AuraEffectSilencer.notifyApply(rEffectAura, DB.getPath(nodeTarget))
+		local sNodeTarget = DB.getPath(nodeTarget)
+		if sNodeTarget ~= rAuraDetails.sSource or (rAuraDetails.bSelf and not rAuraDetails.bLegacy) then
+			AuraTracker.addTrackedFromAura(rAuraDetails.sSource, rAuraDetails.sAuraNode, sNodeTarget)
+			AuraEffectSilencer.notifyApply(rEffectAura,sNodeTarget)
+		end
 	end
 end
 
@@ -203,6 +255,9 @@ function removeAura(nodeEffect, nodeTarget, rAuraDetails)
 		return
 	end
 	local sNodeTarget = DB.getPath(nodeTarget)
+	if sNodeTarget == '' then
+		sNodeTarget = rAuraDetails.sSource
+	end
 	for _, nodeTargetEffect in ipairs(DB.getChildList(nodeTarget, 'effects')) do
 		if DB.getValue(nodeTargetEffect, 'isactive', 0) == 1 and DB.getValue(nodeTargetEffect, 'source_aura', '') == rAuraDetails.sAuraNode then
 			if not rAuraDetails.bSticky then
@@ -352,9 +407,9 @@ function isAuraApplicable(nodeEffect, rSource, rTarget, rAuraDetails)
 		aCondHelper = aConditions
 	end
 
+	-- self check moved futher down the pipeline
 	if
-		rTarget ~= rSource
-		and DB.getValue(nodeEffect, 'isactive', 0) == 1
+		DB.getValue(nodeEffect, 'isactive', 0) == 1
 		and checkConditionalBeforeAura(nodeEffect, rSource, rTarget)
 		and AuraFactionConditional.DetectedEffectManager.checkConditional(rAuraSource, nodeEffect, aCondHelper, rTarget)
 		and AuraEffect.checkDying(rAuraDetails)
@@ -378,9 +433,9 @@ function updateAura(tokenSource, nodeEffect, rAuraDetails, rMoved)
 	local tAdd, tRemove = {}, {}
 	-- compile lists
 	local rSource = ActorManager.resolveActor(DB.findNode(rAuraDetails.sSource))
-	rAuraDetails.bDying = ActorHealthManager.isDyingOrDead(rSource)
 	local aTokens
 	local aFromAuraNodes = AuraTracker.getTrackedFromAuras(rAuraDetails.sSource, rAuraDetails.sAuraNode)
+	rAuraDetails.bDying = ActorHealthManager.isDyingOrDead(rSource)
 	if rAuraDetails.bCube then
 		aTokens = AuraToken.getTokensWithinCube(tokenSource, rAuraDetails.nRange)
 	else
@@ -390,8 +445,8 @@ function updateAura(tokenSource, nodeEffect, rAuraDetails, rMoved)
 		else
 			aTokens = imageControl.getTokensWithinDistance(tokenSource, rAuraDetails.nRange)
 		end
+		table.insert(aTokens,tokenSource)
 	end
-
 	for _, token in pairs(aTokens) do
 		local nodeCTToken = CombatManager.getCTFromToken(token)
 		if nodeCTToken then -- Guard against non-CT linked tokens
