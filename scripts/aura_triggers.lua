@@ -6,6 +6,7 @@
 -- luacheck: globals updateAurasForMap updateAurasForActor updateAurasForEffect addEffect_new
 -- luacheck: globals updateAurasForTurnStart AuraEffect.clearOncePerTurn AuraTracker AuraToken
 -- luacheck: globals AuraFactionConditional.DetectedEffectManager.parseEffectComp hasExtension
+-- luacheck: globals linkToken_new onTokenDelete_new
 
 bDebug = false
 bDebugPerformance = false
@@ -118,6 +119,23 @@ end
 
 local function onMove(token)
 	tokenMovement(token)
+end
+
+local linkToken_old
+local function linkToken_new(nodeCT, newTokenInstance)
+	local _, winImage = ImageManager.getImageControl(newTokenInstance)
+	linkToken_old(nodeCT, newTokenInstance)
+	updateAurasForActor(nodeCT, winImage)
+end
+
+local onTokenDelete_old
+local function onTokenDelete_new(token)
+	local nodeCT = CombatManager.getCTFromToken(token)
+	local aEffectList = DB.getChildList(nodeCT, 'effects')
+	for _, nodeEffect in ipairs(aEffectList) do
+		AuraEffect.removeAllFromAuras(nodeEffect)
+	end
+	onTokenDelete_old(token)
 end
 
 -- Recalculate auras when opening images
@@ -241,6 +259,13 @@ function onInit()
 
 	-- create the proxy function to trigger aura calculation on token movement.
 	Token.addEventHandler('onMove', onMove)
+
+	-- Handle add/delete of tokens
+	onTokenDelete_old = CombatManager.onTokenDelete
+	CombatManager.onTokenDelete = onTokenDelete_new
+
+	linkToken_old = TokenManager.linkToken
+	TokenManager.linkToken = linkToken_new
 
 	-- create proxy function to recalculate auras when adding tokens
 	handleStandardCombatAddPlacement_old = CombatRecordManager.handleStandardCombatAddPlacement
