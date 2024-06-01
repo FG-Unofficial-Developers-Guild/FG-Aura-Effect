@@ -123,9 +123,9 @@ end
 
 local linkToken_old
 local function linkToken_new(nodeCT, newTokenInstance)
-	local _, winImage = ImageManager.getImageControl(newTokenInstance)
 	linkToken_old(nodeCT, newTokenInstance)
-	updateAurasForActor(nodeCT, winImage)
+	local _, winImage = ImageManager.getImageControl(newTokenInstance)
+	AuraEffectTriggers.updateAurasForMap(winImage)
 end
 
 local onTokenDelete_old
