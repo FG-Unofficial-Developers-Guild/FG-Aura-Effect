@@ -47,6 +47,20 @@ local rBaseDetails = {
 	aOther = {}
 }
 
+local rBaseDetails = {
+	bSingle = false,
+	bCube = false,
+	bSticky = false,
+	bOnce = false,
+	bPoint = false,
+	nRange = 0,
+	sEffect = '',
+	sSource = '',
+	sAuraNode = '',
+	aFactions = {},
+	aDefined = {},
+	aOther = {}
+}
 auraString = 'AURA: %d+'
 
 local aAuraAlignment = {
