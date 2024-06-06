@@ -101,7 +101,6 @@ function tokenMovement(token)
 		time1 = os.clock()
 	end
 
-	local _, winImage = ImageManager.getImageControl(token)
 	local nodeCT = CombatManager.getCTFromToken(token)
 	local rNodeStart = ActorManager.resolveActor(nodeCT)
 	if not rNodeStart then
@@ -109,6 +108,7 @@ function tokenMovement(token)
 	end
 
 	if AuraToken.isMovedFilter(rNodeStart.sCTNode, token) then
+		local _, winImage = ImageManager.getImageControl(token)
 		AuraEffectTriggers.updateAurasForMap(winImage, rNodeStart)
 		if bDebugPerformance then
 			sTime = string.format('%s%s,', sTime, tostring(os.clock() - time1))
