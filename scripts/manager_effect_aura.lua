@@ -186,7 +186,7 @@ local function checkConditionalBeforeAura(nodeEffect, rSource, rTarget)
 end
 
 -- Should auras in range be added to this target?
-function isAuraApplicable(nodeEffect, rSource, rTarget, aFactions)
+function isAuraApplicable(nodeEffect, rSource, rTarget, rAuraDetails)
 	local rAuraSource
 
 	local sSourcePath = DB.getValue(nodeEffect, 'source_name', '')
@@ -196,7 +196,7 @@ function isAuraApplicable(nodeEffect, rSource, rTarget, aFactions)
 		rAuraSource = ActorManager.resolveActor(DB.findNode(DB.getPath(DB.getChild(nodeEffect, '...'))))
 	end
 
-	local aConditions = { 'FACTION(' .. table.concat(aFactions, ',') .. ')' }
+	local aConditions = { 'FACTION(' .. table.concat(rAuraDetails.aFactions, ',') .. ')' }
 	local aCondHelper = {}
 	if EffectManager4E then
 		aCondHelper.remainder = aConditions
@@ -243,7 +243,7 @@ function updateAura(tokenSource, nodeEffect, rAuraDetails, rMoved)
 		if nodeCTToken then -- Guard against non-CT linked tokens
 			local rTarget = ActorManager.resolveActor(nodeCTToken)
 			aFromAuraNodes[rTarget.sCTNode] = nil -- Processed so mark as such
-			if AuraEffect.isAuraApplicable(nodeEffect, rSource, rTarget, rAuraDetails.aFactions) then
+			if AuraEffect.isAuraApplicable(nodeEffect, rSource, rTarget, rAuraDetails) then
 				if rAuraDetails.bSingle or rAuraDetails.bOnce then
 					if
 						not AuraTracker.checkOncePerTurn(rAuraDetails.sSource, rAuraDetails.sAuraNode, rTarget.sCTNode)
