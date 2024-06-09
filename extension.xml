@@ -39,6 +39,7 @@
 		<script name="AuraFactionConditional" file="scripts/faction_conditional.lua" />
 		<script name="AuraToken" file="scripts/manager_token_aura.lua" />
 		<script name="AuraTracker" file="scripts/manager_aura_tracker.lua" />
+		<script name="AuraAPI" file="scripts/manager_aura_api.lua" />
 
 		<icon name="aura_icon" file="graphics/aura_icon.png" />
 

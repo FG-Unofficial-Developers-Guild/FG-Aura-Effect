@@ -1,7 +1,8 @@
 --
 --	Please see the LICENSE.md file included with this distribution for attribution and copyright information.
 --
--- luacheck: globals bDebug getRelationship DetectedEffectManager hasFaction customCheckConditional customParseWords
+-- luacheck: globals AuraFactionConditional bDebug getRelationship DetectedEffectManager hasFaction customCheckConditional
+-- luacheck: globals customParseWords isNot
 bDebug = false
 
 DetectedEffectManager = nil
@@ -26,9 +27,19 @@ function getRelationship(rActor, rTarget)
 	end
 end
 
+function isNot(sString)
+	local bReturn
+	local sReturn = sString
+	if StringManager.startsWith(sString, '!') or StringManager.startsWith(sString, '~') then
+		sReturn = sString:sub(2)
+		bReturn = true
+	end
+	return bReturn, sReturn
+end
+
 function hasFaction(rActor, sFaction, rTarget, nodeEffect)
 	local bReturn = false
-	local bNegate = false
+	local bNegate
 	local sTargetFaction
 	local sTargetNode
 	local aFactions = StringManager.splitByPattern(sFaction, '%s*,%s*', true)
@@ -45,10 +56,8 @@ function hasFaction(rActor, sFaction, rTarget, nodeEffect)
 		sTargetFaction = ActorManager.getFaction(rActor)
 	end
 	for _, sFactionElement in ipairs(aFactions) do
-		if StringManager.startsWith(sFactionElement, '!') or StringManager.startsWith(sFactionElement, '~') then
-			sFactionElement = sFactionElement:sub(2)
-			bNegate = true
-		end
+
+		bNegate, sFactionElement = AuraFactionConditional.isNot(sFactionElement)
 		if sFactionElement == 'all' then
 			bReturn = true
 			break
@@ -96,12 +105,7 @@ function customCheckConditional(rActor, nodeEffect, aConditions, rTarget, aIgnor
 		end
 
 		for _, v in ipairs(aCondHelper) do
-			local sLower = v:lower()
-			local bNegate = false
-			if StringManager.startsWith(sLower, '!') or StringManager.startsWith(sLower, '~') then
-				sLower = sLower:sub(2)
-				bNegate = true
-			end
+			local bNegate, sLower = AuraFactionConditional.isNot(v:lower())
 			local sFaction = sLower:match('^faction%s*%(([^)]+)%)$')
 
 			if sFaction then

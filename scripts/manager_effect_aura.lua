@@ -2,31 +2,51 @@
 --	Please see the LICENSE.md file included with this distribution for attribution and copyright information.
 --
 -- luacheck: globals bDebug updateAura addAura removeAura removeAllFromAuras isAuraApplicable
--- luacheck: globals auraString getAuraDetails
+-- luacheck: globals auraString getAuraDetails AuraFactionConditional.isNot
 -- luacheck: globals AuraFactionConditional.DetectedEffectManager.parseEffectComp AuraFactionConditional.DetectedEffectManager.checkConditional
--- luacheck: globals AuraTracker AuraToken getPathsOncePerTurn
+-- luacheck: globals AuraTracker AuraAPI AuraToken getPathsOncePerTurn isBaseDetail
 bDebug = false
 
 OOB_MSGTYPE_AURATOKENMOVE = 'aurasontokenmove'
+-- Tracks rDetails, reserved fields so they don't get overwritten by API. Keep up to date
+local aReservedDetails = {
+	'bSingle',
+	'bCube',
+	'bSticky',
+	'bOnce',
+	'bPoint',
+	'nRange',
+	'sEffect',
+	'sSource',
+	'sAuraNode',
+	'aFactions',
+	'aDefined',
+	'aOther'
+}
 
+local rBaseDetails = {
+	bSingle = false,
+	bCube = false,
+	bSticky = false,
+	bOnce = false,
+	bPoint = false,
+	nRange = 0,
+	sEffect = '',
+	sSource = '',
+	sAuraNode = '',
+	aFactions = {},
+	aDefined = {},
+	aOther = {}
+}
 auraString = 'AURA: %d+'
 
 local aAuraFactions = { 'ally', 'enemy', 'friend', 'foe', 'all', 'neutral', 'none' }
+local aDefinedDescriptors = { } -- Other descriptors aura uses but don't need to be grouped
 
 -- Checks AURA effect string common needed information
 function getAuraDetails(nodeEffect)
-	local rDetails = {
-		bSingle = false,
-		bCube = false,
-		bSticky = false,
-		bOnce = false,
-		bPoint = false,
-		nRange = 0,
-		sEffect = '',
-		sSource = '',
-		sAuraNode = '',
-		aFactions = {},
-	}
+	local rDetails = UtilityManager.copyDeep(rBaseDetails)
+
 	if not AuraFactionConditional.DetectedEffectManager.parseEffectComp then
 		return rDetails
 	end
@@ -41,23 +61,33 @@ function getAuraDetails(nodeEffect)
 			AuraTracker.addTrackedAura(rDetails.sSource, rDetails.sAuraNode)
 			rDetails.nRange = rEffectComp.mod
 			for _, sFilter in ipairs(rEffectComp.remainder) do
-				local sFilterCheck = sFilter:lower()
-				if sFilterCheck == 'single' then
+				sFilter = sFilter:lower()
+				if sFilter == 'single' then
 					rDetails.bSingle = true
-				elseif sFilterCheck == 'cube' then
+				elseif sFilter == 'cube' then
 					rDetails.bCube = true
-				elseif sFilterCheck == 'sticky' then
+				elseif sFilter == 'sticky' then
 					rDetails.bSticky = true
-				elseif sFilterCheck == 'once' then
+				elseif sFilter == 'once' then
 					rDetails.bOnce = true
-				elseif sFilterCheck == 'point' then
+				elseif sFilter == 'point' then
 					rDetails.bPoint = true
 				else
-					if StringManager.startsWith(sFilter, '!') or StringManager.startsWith(sFilter, '~') then
-						sFilterCheck = sFilter:sub(2)
-					end
+					local bNot, sFilterCheck = AuraFactionConditional.isNot(sFilter)
 					if StringManager.contains(aAuraFactions, sFilterCheck) then
-						table.insert(rDetails.aFactions, sFilter:lower())
+						table.insert(rDetails.aFactions, sFilter)
+					elseif StringManager.contains(aDefinedDescriptors, sFilterCheck) then
+						table.insert(rDetails.aDefined, sFilter)
+					else
+						local sKey = AuraAPI.processDescriptor(sFilterCheck, bNot)
+						if sKey then
+							if not rDetails[sKey] then
+								rDetails[sKey] = {}
+							end
+							table.insert(rDetails[sKey], sFilter)
+						else
+							table.insert(rDetails.aOther, sFilter)
+						end
 					end
 				end
 			end
@@ -99,6 +129,14 @@ local function hasFromAura(nodeEffect, nodeSource)
 		end
 	end
 	return false
+end
+
+function isBaseDetail(sName)
+	local bReturn = false
+	if sName and StringManager.contains(aReservedDetails, sName) then
+		bReturn = true
+	end
+	return bReturn
 end
 
 -- Add AURA in nodeEffect to targetToken actor if not already present.
@@ -209,6 +247,7 @@ function isAuraApplicable(nodeEffect, rSource, rTarget, rAuraDetails)
 		and DB.getValue(nodeEffect, 'isactive', 0) == 1
 		and checkConditionalBeforeAura(nodeEffect, rSource, rTarget)
 		and AuraFactionConditional.DetectedEffectManager.checkConditional(rAuraSource, nodeEffect, aCondHelper, rTarget)
+		and AuraAPI.isAuraApplicable(nodeEffect, rSource, rTarget, rAuraDetails)
 	then
 		return true
 	end
