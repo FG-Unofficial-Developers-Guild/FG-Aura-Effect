@@ -92,20 +92,19 @@ end
 
 function getTokensWithinCube(tokenSource, nSideLength)
 	local aReturn = {}
-	local nSize = math.sqrt(2 * nSideLength * nSideLength) / 2 -- Radius of a sphere that fits the cube
 	local imageCtl = ImageManager.getImageControl(tokenSource)
 	local nodeImage = tokenSource.getContainerNode()
 	local nX, nY = tokenSource.getPosition()
 	local nZ = tokenSource.getHeight()
-	local nSideLengthPx = (Image.getGridSize(nodeImage) / Image.getDistanceBaseUnits(nodeImage)) * nSideLength / 2
+	local nSideLengthPx = math.max(Image.getGridSize(nodeImage) / Image.getDistanceBaseUnits(nodeImage)) * math.max(nSideLength / 2)
 	local aX = { nX1 = nX + nSideLengthPx, nX2 = nX - nSideLengthPx }
 	local aY = { nY1 = nY + nSideLengthPx, nY2 = nY - nSideLengthPx }
 	local aZ = { nZ1 = nZ + nSideLengthPx, nZ2 = nZ - nSideLengthPx }
-	for _, token in pairs(imageCtl.getTokensWithinDistance(tokenSource, nSize)) do
+	for _, token in pairs(imageCtl.getTokensWithinDistance(tokenSource, nSideLength)) do
 		local nTokenX, nTokenY = token.getPosition()
 		local nTokenZ = token.getHeight()
 
-		if nTokenX < aX.nX1 and nTokenX > aX.nX2 and nTokenY < aY.nY1 and nTokenY > aY.nY2 and nTokenZ < aZ.nZ1 and nTokenZ > aZ.nZ2 then
+		if nTokenX <= aX.nX1 and nTokenX >= aX.nX2 and nTokenY <= aY.nY1 and nTokenY >= aY.nY2 and nTokenZ <= aZ.nZ1 and nTokenZ >= aZ.nZ2 then
 			table.insert(aReturn, token)
 		end
 	end
@@ -119,7 +118,7 @@ function getTokensWithinSphere(tokenSource, nRadius, bPoint)
 	local aReturn = {}
 	local imageCtl = ImageManager.getImageControl(tokenSource)
 	local nodeImage = tokenSource.getContainerNode()
-	local nRadiusPx = (Image.getGridSize(nodeImage) / Image.getDistanceBaseUnits(nodeImage)) * nRadius
+	local nRadiusPx = Image.getGridSize(nodeImage) / Image.getDistanceBaseUnits(nodeImage) * nRadius
 	local aTokens
 	local nX, nY = tokenSource.getPosition()
 	local nZ = tokenSource.getHeight()
