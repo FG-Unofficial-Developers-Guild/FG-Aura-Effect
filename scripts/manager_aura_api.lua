@@ -32,14 +32,14 @@ function registerDescriptorMatch(sIdentifier, fCustomMatch)
 end
 
 -- Register custom isApplicable function. Used to determine if an applied aura should be applied
--- to rTarget. Descriptors that match what was registered for are available in rDetails.<sIdentifier>
+-- to rTarget. Descriptors that match what was registered for are available in rAuraDetails.<sIdentifier>
 -- where <sIdentifier> is the identifier used to register custom descriptors
 
--- fCustomApplicable(nodeEffect, rSource, rTarget, rDetails)
+-- fCustomApplicable(nodeEffect, rSource, rTarget, rAuraDetails)
 --    nodeEffect - DB node of the AURA effect
 --    rSource -- Actor nodeEffect is on
 --    rTarget -- Actor to determine if an applied effect should be added
---    rDetails - Metadata about the AURA. Descriptors that match what was registered for are available in rDetails.<sIdentifier>
+--    rAuraDetails - Metadata about the AURA. Descriptors that match what was registered for are available in rAuraDetails.<sIdentifier>
 --               where <sIdentifier> is the identifier used to register custom descriptors
 --     Return false if the applied aura should NOT be applied to rTarget else return true
 function registerIsApplicable(sIdentifier, fCustomApplicable)
@@ -87,10 +87,10 @@ end
 
 
 -- Internal. Used  to process custom isApplicable
-function isAuraApplicable(nodeEffect, rSource, rTarget, rDetails)
+function isAuraApplicable(nodeEffect, rSource, rTarget, rAuraDetails)
     local bReturn = true
     for _, rTable in pairs(aCustomDescriptors) do
-        if rTable.fCustomApplicable and not rTable.fCustomApplicable(nodeEffect, rSource, rTarget, rDetails) then
+        if rTable.fCustomApplicable and not rTable.fCustomApplicable(nodeEffect, rSource, rTarget, rAuraDetails) then
             bReturn = false
             break
         end

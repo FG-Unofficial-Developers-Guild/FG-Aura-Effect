@@ -8,7 +8,7 @@
 bDebug = false
 
 OOB_MSGTYPE_AURATOKENMOVE = 'aurasontokenmove'
--- Tracks rDetails, reserved fields so they don't get overwritten by API. Keep up to date
+-- Tracks rAuraDetails, reserved fields so they don't get overwritten by API. Keep up to date
 local aReservedDetails = {
 	'bSingle',
 	'bCube',
@@ -76,54 +76,54 @@ local aDefinedDescriptors = { 'dying' } -- Other descriptors aura uses but don't
 
 -- Checks AURA effect string common needed information
 function getAuraDetails(nodeEffect)
-	local rDetails = UtilityManager.copyDeep(rBaseDetails)
+	local rAuraDetails = UtilityManager.copyDeep(rBaseDetails)
 
 	if not AuraFactionConditional.DetectedEffectManager.parseEffectComp then
-		return rDetails
+		return rAuraDetails
 	end
 
-	rDetails.sEffect = DB.getValue(nodeEffect, 'label', '')
-	for _, sEffectComp in ipairs(EffectManager.parseEffect(rDetails.sEffect)) do
+	rAuraDetails.sEffect = DB.getValue(nodeEffect, 'label', '')
+	for _, sEffectComp in ipairs(EffectManager.parseEffect(rAuraDetails.sEffect)) do
 		local rEffectComp = AuraFactionConditional.DetectedEffectManager.parseEffectComp(sEffectComp)
 
 		if rEffectComp.type:upper() == 'AURA' then
-			rDetails.sSource = DB.getPath(DB.getChild(nodeEffect, '...'))
-			rDetails.sAuraNode = DB.getPath(nodeEffect)
-			AuraTracker.addTrackedAura(rDetails.sSource, rDetails.sAuraNode)
-			rDetails.nRange = rEffectComp.mod
+			rAuraDetails.sSource = DB.getPath(DB.getChild(nodeEffect, '...'))
+			rAuraDetails.sAuraNode = DB.getPath(nodeEffect)
+			AuraTracker.addTrackedAura(rAuraDetails.sSource, rAuraDetails.sAuraNode)
+			rAuraDetails.nRange = rEffectComp.mod
 			for _, sFilter in ipairs(rEffectComp.remainder) do
 				sFilter = sFilter:lower()
 				if sFilter == 'single' then
-					rDetails.bSingle = true
+					rAuraDetails.bSingle = true
 				elseif sFilter == 'cube' then
-					rDetails.bCube = true
+					rAuraDetails.bCube = true
 				elseif sFilter == 'sticky' then
-					rDetails.bSticky = true
+					rAuraDetails.bSticky = true
 				elseif sFilter == 'once' then
-					rDetails.bOnce = true
+					rAuraDetails.bOnce = true
 				elseif sFilter == 'point' then
-					rDetails.bPoint = true
+					rAuraDetails.bPoint = true
 				else
 					local bNot, sFilterCheck = AuraFactionConditional.isNot(sFilter)
 					if StringManager.contains(aAuraFactions, sFilterCheck) then
-						table.insert(rDetails.aFactions, sFilter)
+						table.insert(rAuraDetails.aFactions, sFilter)
 					elseif StringManager.contains(aDefinedDescriptors, sFilterCheck) then
-						table.insert(rDetails.aDefined, sFilter)
+						table.insert(rAuraDetails.aDefined, sFilter)
 					elseif StringManager.contains(aAuraAlignment, sFilterCheck) then
-						table.insert(rDetails.aAlignment, sFilter)
+						table.insert(rAuraDetails.aAlignment, sFilter)
 					elseif StringManager.contains(aAuraCreatureType, sFilterCheck) then
-						table.insert(rDetails.aCreatureType, sFilter)
+						table.insert(rAuraDetails.aCreatureType, sFilter)
 					elseif StringManager.contains(aAuraCreatureSize, sFilterCheck) then
-						table.insert(rDetails.aCreatureSize, sFilter)
+						table.insert(rAuraDetails.aCreatureSize, sFilter)
 					else
 						local sKey = AuraAPI.processDescriptor(sFilterCheck, bNot)
 						if sKey then
-							if not rDetails[sKey] then
-								rDetails[sKey] = {}
+							if not rAuraDetails[sKey] then
+								rAuraDetails[sKey] = {}
 							end
-							table.insert(rDetails[sKey], sFilter)
+							table.insert(rAuraDetails[sKey], sFilter)
 						else
-							table.insert(rDetails.aOther, sFilter)
+							table.insert(rAuraDetails.aOther, sFilter)
 						end
 					end
 				end
@@ -131,10 +131,10 @@ function getAuraDetails(nodeEffect)
 			break
 		end
 	end
-	if not next(rDetails.aFactions) then
-		table.insert(rDetails.aFactions, 'all')
+	if not next(rAuraDetails.aFactions) then
+		table.insert(rAuraDetails.aFactions, 'all')
 	end
-	return rDetails
+	return rAuraDetails
 end
 
 -- Sets up FROMAURA rEffect based on supplied AURA nodeEffect.
