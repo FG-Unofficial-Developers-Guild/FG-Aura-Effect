@@ -14,7 +14,7 @@ Mattekure's [Complete Offensive Package Aura Extension](https://forge.fantasygro
 
 ### AURA Effect
 
-```AURA: 10 friend; Aura of Protection; SAVE: 5```
+```AURA: 10 ally; Aura of Protection; SAVE: 5```
 
 This will add a 10 foot aura around the person who has this effect.
 
@@ -24,9 +24,13 @@ While a name (such as 'Aura of Protection' in the above example) is not required
 
 If IF/IFT conditions are included *before* the "AURA" effect, they will act to enable/disable parsing of the aura such as for auras that occur automatically when some conditions are met. If IF/IFT conditions are included after the aura, they will be copied to the recipients.
 
-The bearer of the AURA effect will also receive its benefits. If this is not desired, see below.
+The bearer of the AURA effect will also receive its benefits. If this is not desired, see FACTION() below.
 
-The following faction types are available:
+The following descriptor types are available to determine if an aura applies to an actor. They can be combined and all must be true (logical and) for an aura to apply.
+
+**Note**: You can also use the "!" or "~" operators to reverse the results such as "!friend", or "~ally" for all the following descriptors.
+
+#### Faction
 
 * **all** - applies aura to all. if not specified, all is assumed.
 * **ally** - applies aura to actors whose faction matches the effect source's faction
@@ -36,7 +40,31 @@ The following faction types are available:
 * **neutral** - applies aura to actors whose faction is "neutral"
 * **none** - applies aura to actors whose faction is "none" or blank
 
-You can also use the "!" or "~" operators to reverse the results such as "!friend", or "~ally".
+#### Alignment
+
+* **Supported Rulesets**: lawful, chaotic, good, evil, l, c, g, e, n, lg, ln, le, ng, ne, cg, cn, ce
+
+**Note**: neutral is checked against faction. 'n' should be when specifying neutral alignment
+
+#### Size
+
+* **5E**: tiny, small, medium, large, huge, gargantuan
+* **4E**: tiny, small, medium, large, huge, gargantuan
+* **3.5E/PFRPG**: fine, diminutive, tiny, small, medium, large, huge, gargantuan, colossal
+* **PFRPG2**: fine, diminutive, tiny, small, medium, large, huge, gargantuan, colossal
+* **SFRPG**: fine, diminutive, tiny, small, medium, large, huge, gargantuan, colossal
+
+#### Type
+
+* **5E**: aberration, beast, celestial, construct, dragon, elemental, fey, fiend, giant, humanoid, monstrosity, ooze, plant, undead, living construct, aarakocra, bullywug, demon, devil, dragonborn, dwarf, elf, gith, gnoll, gnome, goblinoid, grimlock, halfling, human, kenku, kuo-toa, kobold, lizardfolk, merfolk, orc, quaggoth, sahuagin, shapechanger, thri-kreen, titan, troglodyte, yuan-ti, yugoloth
+* **4E**: magical beast, animate, beast, humanoid, living construct, air, angel, aquatic, cold, construct, demon, devil, dragon, earth, fire, giant, homunculus, mount, ooze, plant, reptile, shapechanger, spider, swarm, undead, water
+* **3.5E/PFRPG**: magical beast, monstrous humanoid, aberration, animal, construct, dragon, elemental, fey, giant, humanoid, ooze, outsider, plant, undead, vermin, living construct, air, angel, aquatic, archon, augmented, cold, demon, devil, earth, extraplanar, fire, incorporeal, native, psionic, shapechanger, swarm, water, dwarf, elf, gnoll, gnome, goblinoid, gnoll, halfling, human, orc, reptilian
+* **PFRPG2**: aberration, animal, beast, celestial, construct, dragon, elemental, fey, fiend, fungus, humanoid, monitor, ooze, plant, undead, adlet, aeon, agathion, air, angel, aquatic, archon, asura, augmented, azata, behemoth, catfolk, clockwork, cold, colossus, daemon, dark folk, demodand, demon, devil, div, dwarf, earth, elemental, elf, extraplanar, fire, giant, gnome, goblinoid, godspawn, great old one, halfling, herald, human, incorporeal, inevitable, kaiju, kami, kasatha, kitsune, kyton, leshy, living construct, mythic, native, nightshade, oni, orc, protean, psychopomp, qlippoth, rakshasa, ratfolk, reptilian, robot, samsaran, sasquatch, shapechanger, swarm, troop, udaeus, unbreathing, vanara, vishkanya, water
+* **SFRPG**: magical beast, monstrous humanoid, aberration, animal, companion, construct, dragon, fey, giant, humanoid, ooze, outsider, plant, undead, vermin,living construct, aeon, agathion, air, angel, aquatic, archon, augmented, cold, demon, devil, earth, extraplanar, fire, incorporeal, native, psionic, shapechanger, swarm, water, dwarf, elf, gnoll, gnome, goblinoid, halfling, human, orc, reptilian
+
+#### Dying
+
+When the descriptor dying is used, the actor with AURA will only apply the aura effect when dying, or at 0 HP. Conversely !dying will only apply the aura effect when not dying (HP > 0)
 
 #### Exceptions
 
@@ -122,3 +150,7 @@ As long as the GM is holding shift, Aura calcuations will be disabled. This allo
 ## Video Demonstration (click for video)
 
 [<img src="https://i.ytimg.com/vi_webp/e2JQzf5HI6I/hqdefault.webp">](https://www.youtube.com/watch?v=e2JQzf5HI6I)
+
+## API
+
+An API has been added for those developers who wish to interact with this extension more closely. Documentation is found in the code. [Aura API](https://github.com/FG-Unofficial-Developers-Guild/FG-Aura-Effect/blob/main/scripts/manager_aura_api.lua)
