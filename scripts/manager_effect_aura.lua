@@ -46,7 +46,6 @@ local rBaseDetails = {
 	aDefined = {},
 	aOther = {}
 }
-
 auraString = 'AURA: %d+'
 
 local aAuraAlignment = {

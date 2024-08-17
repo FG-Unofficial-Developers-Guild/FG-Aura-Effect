@@ -6,7 +6,7 @@ This extension accommodates auras and area-of-effect buffs/debuffs by adding/rem
 
 ## Compatibility and Instructions
 
-This extension has been tested with [FantasyGrounds Unity](https://www.fantasygrounds.com/home/FantasyGroundsUnity.php) v4.4.3(2023-09-30).
+This extension has been tested with [FantasyGrounds Unity](https://www.fantasygrounds.com/home/FantasyGroundsUnity.php) v4.5.10 (2024-08-13).
 
 It works with the 3.5E, 4E, 5E, PFRPG, PFRPG2, and SFRPG rulesets.
 
