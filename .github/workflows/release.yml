@@ -10,7 +10,7 @@ permissions: write-all
 
 env:
   EXTENSION: ${{ vars.FORGE_EXTENSION }}
-  IS_PRERELEASE: ${{ contains(github.ref_name,'-rc') }} && ${{ contains(github.ref_name,'-test') }}
+  IS_PRERELEASE: ${{ contains(github.ref_name,'-rc') }} && ${{ contains(github.ref_name,'-beta') }} && ${{ contains(github.ref_name,'-test') }}
 
 jobs:
   build:
@@ -38,7 +38,7 @@ jobs:
       with:
         name: ${{ github.event.repository.name }}${{ env.EXTENSION }}
         path: ${{ github.event.repository.name }}${{ env.EXTENSION }}
-        
+
   upload:
     name: Upload to Forge
     runs-on: ubuntu-latest
