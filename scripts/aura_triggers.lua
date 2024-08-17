@@ -6,7 +6,7 @@
 -- luacheck: globals updateAurasForMap updateAurasForActor updateAurasForEffect addEffect_new
 -- luacheck: globals updateAurasForTurnStart AuraEffect.clearOncePerTurn AuraTracker AuraToken
 -- luacheck: globals AuraFactionConditional.DetectedEffectManager.parseEffectComp hasExtension
--- luacheck: globals linkToken_new onTokenDelete_new initTracker onTabletopInit
+-- luacheck: globals linkToken_new onTokenDelete_new onHeathUpdate initTracker onTabletopInit
 
 bDebug = false
 bDebugPerformance = false
@@ -265,6 +265,13 @@ local function onEffectRemoved(nodeEffects)
 	AuraEffectTriggers.updateAurasForActor(DB.getParent(nodeEffects))
 end
 
+local function onHealthUpdate(nodeHP)
+	local nodeActor = DB.getParent(nodeHP)
+	local _, window = ImageManager.getImageControl(CombatManager.getTokenFromCT(DB.getParent(nodeHP)))
+
+	updateAurasForActor(nodeActor, window)
+end
+
 function onTabletopInit()
 	if Session.IsHost then
 		AuraEffectTriggers.initTracker()
@@ -281,6 +288,7 @@ function onInit()
 	DB.addHandler(DB.getPath(CombatManager.CT_LIST .. '.*.effects.*.isactive'), 'onUpdate', onEffectChanged)
 	DB.addHandler(DB.getPath(CombatManager.CT_LIST .. '.*.effects.*'), 'onDelete', onEffectToBeRemoved)
 	DB.addHandler(DB.getPath(CombatManager.CT_LIST .. '.*.effects'), 'onChildDeleted', onEffectRemoved)
+	DB.addHandler(DB.getPath(CombatManager.CT_LIST .. '.*.wounds'), 'onUpdate', onHealthUpdate)
 
 	-- create the proxy function to trigger aura calculation on token movement.
 	Token.addEventHandler('onMove', onMove)
