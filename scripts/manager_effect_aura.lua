@@ -1,10 +1,12 @@
 --
 --	Please see the LICENSE.md file included with this distribution for attribution and copyright information.
 --
+
 -- luacheck: globals bDebug AuraEffect updateAura addAura removeAura removeAllFromAuras isAuraApplicable
 -- luacheck: globals auraString getAuraDetails AuraFactionConditional.isNot
 -- luacheck: globals AuraFactionConditional.DetectedEffectManager.parseEffectComp AuraFactionConditional.DetectedEffectManager.checkConditional
 -- luacheck: globals AuraTracker AuraAPI AuraToken getPathsOncePerTurn isBaseDetail checkDying isCreatureSize isCreatureType isAlignment
+
 bDebug = false
 
 OOB_MSGTYPE_AURATOKENMOVE = 'aurasontokenmove'
@@ -389,12 +391,14 @@ function updateAura(tokenSource, nodeEffect, rAuraDetails, rMoved)
 	if not imageControl then
 		return
 	end -- only process if effect parent is on an opened map
+
 	local tAdd, tRemove = {}, {}
+
 	-- compile lists
 	local rSource = ActorManager.resolveActor(DB.findNode(rAuraDetails.sSource))
 	rAuraDetails.bDying = ActorHealthManager.isDyingOrDead(rSource)
+
 	local aTokens
-	local aFromAuraNodes = AuraTracker.getTrackedFromAuras(rAuraDetails.sSource, rAuraDetails.sAuraNode)
 	if rAuraDetails.bCube then
 		aTokens = AuraToken.getTokensWithinCube(tokenSource, rAuraDetails.nRange)
 	else
@@ -406,6 +410,7 @@ function updateAura(tokenSource, nodeEffect, rAuraDetails, rMoved)
 		end
 	end
 
+	local aFromAuraNodes = AuraTracker.getTrackedFromAuras(rAuraDetails.sSource, rAuraDetails.sAuraNode)
 	for _, token in pairs(aTokens) do
 		local nodeCTToken = CombatManager.getCTFromToken(token)
 		if nodeCTToken then -- Guard against non-CT linked tokens
