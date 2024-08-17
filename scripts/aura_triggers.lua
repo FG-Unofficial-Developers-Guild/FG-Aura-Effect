@@ -65,12 +65,13 @@ function updateAurasForMap(window, rMoved)
 				AuraEffectTriggers.updateAurasForActor(nodeCT, winImage, nil, rMoved)
 			end
 		end
-	else
-		for _, nodeCT in ipairs(DB.getChildList(CombatManager.CT_LIST)) do
-			local _, winImage = ImageManager.getImageControl(CombatManager.getTokenFromCT(nodeCT))
-			if winImage == window then
-				AuraEffectTriggers.updateAurasForActor(nodeCT, winImage)
-			end
+		return
+	end
+
+	for _, nodeCT in ipairs(DB.getChildList(CombatManager.CT_LIST)) do
+		local _, winImage = ImageManager.getImageControl(CombatManager.getTokenFromCT(nodeCT))
+		if winImage == window then
+			AuraEffectTriggers.updateAurasForActor(nodeCT, winImage)
 		end
 	end
 end
@@ -275,7 +276,7 @@ local function onHealthUpdate(nodeHP)
 	local nodeActor = DB.getParent(nodeHP)
 	local _, window = ImageManager.getImageControl(CombatManager.getTokenFromCT(DB.getParent(nodeHP)))
 
-	updateAurasForActor(nodeActor, window)
+	AuraEffectTriggers.updateAurasForActor(nodeActor, window)
 end
 
 function onInit()
