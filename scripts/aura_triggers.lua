@@ -271,7 +271,7 @@ local function onHealthUpdate(nodeHP)
 
 	updateAurasForActor(nodeActor, window)
 end
-  
+
 function onTabletopInit()
 	if Session.IsHost then
 		AuraEffectTriggers.initTracker()
