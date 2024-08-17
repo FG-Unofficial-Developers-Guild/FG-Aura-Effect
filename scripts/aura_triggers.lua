@@ -2,11 +2,11 @@
 --	Please see the LICENSE.md file included with this distribution for attribution and copyright information.
 --
 
--- luacheck: globals bDebug bDebugPerformance tokenMovement getExtensions
+-- luacheck: globals bDebug bDebugPerformance tokenMovement getExtensions AuraEffectTriggers
 -- luacheck: globals updateAurasForMap updateAurasForActor updateAurasForEffect addEffect_new
 -- luacheck: globals updateAurasForTurnStart AuraEffect.clearOncePerTurn AuraTracker AuraToken
 -- luacheck: globals AuraFactionConditional.DetectedEffectManager.parseEffectComp hasExtension
--- luacheck: globals linkToken_new onTokenDelete_new
+-- luacheck: globals linkToken_new onTokenDelete_new initTracker onTabletopInit
 
 bDebug = false
 bDebugPerformance = false
@@ -216,6 +216,25 @@ function addEffect_new(sUser, sIdentity, nodeCT, rNewEffect, bShowMsg)
 	end
 end
 
+function initTracker()
+    local ctEntries = CombatManager.getCombatantNodes();
+    for _, nodeCT in pairs(ctEntries) do
+		local bUpdate = false
+        -- Effects
+        for _, nodeEffect in pairs(DB.getChildren(nodeCT, 'effects')) do
+			local sEffect = DB.getValue(nodeEffect, 'label', '')
+			if string.match(sEffect, 'AURA[:;]') then
+				local sAuraEffect = DB.getPath(nodeEffect)
+				AuraTracker.addTrackedAura(nodeCT, sAuraEffect)
+				bUpdate = true;
+			end
+		end
+		if bUpdate then
+			AuraEffectTriggers.updateAurasForActor(nodeCT)
+		end
+	end
+end
+
 function getExtensions()
 	local tReturn = {}
 	for _, sName in pairs(Extension.getExtensions()) do
@@ -244,6 +263,12 @@ end
 ---	Recalculate auras after effects are removed to ensure conditionals before aura are respected
 local function onEffectRemoved(nodeEffects)
 	AuraEffectTriggers.updateAurasForActor(DB.getParent(nodeEffects))
+end
+
+function onTabletopInit()
+	if Session.IsHost then
+		AuraEffectTriggers.initTracker()
+	end
 end
 
 function onInit()
