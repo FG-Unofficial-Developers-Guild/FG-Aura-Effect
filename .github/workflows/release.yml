@@ -10,7 +10,7 @@ permissions: write-all
 
 env:
   EXTENSION: ${{ vars.FORGE_EXTENSION }}
-  IS_PRERELEASE: ${{ contains(github.ref_name,'-rc') }} && ${{ contains(github.ref_name,'-beta') }}
+  IS_PRERELEASE: ${{ contains(github.ref_name,'-rc') }} && ${{ contains(github.ref_name,'-test') }}
 
 jobs:
   build:
