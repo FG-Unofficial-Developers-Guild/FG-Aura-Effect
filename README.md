@@ -130,6 +130,10 @@ By default the sphere aura distance is calcuated from the outside of the token t
 
 As long as the GM is holding shift, Aura calcuations will be disabled. This allows the GM to move a token through an aura without the Aura affecting the token.
 
+### Special Condition Object
+
+If an actor has the Condition ```Object```. the Aura will not be applied to that actor.
+
 ### Option for Disabling Aura Effect Chat Messages
 
 "Silence Notifications for Aura Types" can be used to hide aura apply/removal chat messages for a particular faction, relationship, or all.

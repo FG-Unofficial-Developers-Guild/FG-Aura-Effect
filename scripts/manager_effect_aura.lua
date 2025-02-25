@@ -378,6 +378,8 @@ function isAuraApplicable(nodeEffect, rSource, rTarget, rAuraDetails)
 		and AuraEffect.isCreatureSize(rAuraDetails, rTarget)
 		and AuraEffect.isCreatureType(rAuraDetails, rTarget)
 		and AuraAPI.isAuraApplicable(nodeEffect, rSource, rTarget, rAuraDetails)
+		and not AuraFactionConditional.DetectedEffectManager.hasEffectCondition(rTarget, 'Object')
+
 	then
 		return true
 	end
