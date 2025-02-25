@@ -6,7 +6,7 @@
 -- luacheck: globals auraString getAuraDetails AuraFactionConditional.isNot
 -- luacheck: globals AuraFactionConditional.DetectedEffectManager.parseEffectComp AuraFactionConditional.DetectedEffectManager.checkConditional
 -- luacheck: globals AuraTracker AuraAPI AuraToken getPathsOncePerTurn isBaseDetail checkDying isCreatureSize isCreatureType isAlignment
-
+-- luacheck: globals AuraFactionConditional.DetectedEffectManager.checkConditional
 bDebug = false
 
 OOB_MSGTYPE_AURATOKENMOVE = 'aurasontokenmove'
@@ -49,20 +49,6 @@ local rBaseDetails = {
 	aOther = {}
 }
 
-local rBaseDetails = {
-	bSingle = false,
-	bCube = false,
-	bSticky = false,
-	bOnce = false,
-	bPoint = false,
-	nRange = 0,
-	sEffect = '',
-	sSource = '',
-	sAuraNode = '',
-	aFactions = {},
-	aDefined = {},
-	aOther = {}
-}
 auraString = 'AURA: %d+'
 
 local aAuraAlignment = {
