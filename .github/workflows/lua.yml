@@ -3,20 +3,36 @@ on:
     paths:
       - '**.lua' # Run if pushed commits include a change to a Lua (.lua) file.
       - 'extension.xml' # Run if pushed commits include a change to extension.xml.
-      - '.github/workflows/luacheck.yml' # Run if pushed commits change this workflow.
+      - '.stylua' # Run if pushed commits include a change to .stylua.
+      - '.github/workflows/lua.yml' # Run if pushed commits change this workflow.
   pull_request:
     paths:
       - '**.lua' # Run if pull request includes a change to a Lua (.lua) file.
       - 'extension.xml' # Run if pull request includes a change to extension.xml.
+      - '.stylua' # Run if pushed commits include a change to .stylua.
+  schedule:
+      - cron:  '0 9 * * 1'
   workflow_dispatch:
 
-name: Run Luacheck
+name: Check Lua Code
 
 jobs:
-  getnames:
+  stylua:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - uses: JohnnyMorganz/stylua-action@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          version: latest
+          args: --config-path .stylua.toml --check .
+
+  luacheck:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout default branch
         uses: actions/checkout@v4
 
       # Determine extension name
@@ -117,27 +133,22 @@ jobs:
         with:
           string: ${{ steps.removeauthorspaces.outputs.value }}
 
-    outputs:
-      extension: ${{ steps.namelowercase.outputs.lowercase }}
-      author: ${{ steps.authorlowercase.outputs.lowercase }}
-
-  luacheck:
-    runs-on: ubuntu-latest
-    needs: getnames
-    steps:
-      - name: Checkout default branch
-        uses: actions/checkout@v4
-
       - name: Install Lua/LuaJIT
         uses: leafo/gh-actions-lua@v10
         with:
           luaVersion: 5.1
 
-    # Process extension code
+      - id: cache-luacheck
+        uses: actions/cache@v4
+        with:
+          path: ~/.config/luacheck
+          key: luacheck
+
+      # Process extension code
       - name: Running luacheck
         uses: nebularg/actions-luacheck@v1
         with:
           files: '.'
-          config: https://raw.githubusercontent.com/bmos/FG-luacheck/main/.luacheckrc
-          args: '--no-color --std +${{ needs.getnames.outputs.extension }}${{ needs.getnames.outputs.author }} --exclude-files .install/*'
+          config: https://raw.githubusercontent.com/FG-Unofficial-Developers-Guild/FG-luacheck/main/.luacheckrc
+          args: '--no-color --std +${{ steps.namelowercase.outputs.lowercase }}${{ steps.authorlowercase.outputs.lowercase }} --exclude-files .install/*'
           annotate: 'warning'
