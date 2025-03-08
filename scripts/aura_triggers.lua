@@ -217,16 +217,16 @@ function addEffect_new(sUser, sIdentity, nodeCT, rNewEffect, bShowMsg)
 end
 
 function initTracker()
-    local ctEntries = CombatManager.getCombatantNodes();
-    for _, nodeCT in pairs(ctEntries) do
+	local ctEntries = CombatManager.getCombatantNodes()
+	for _, nodeCT in pairs(ctEntries) do
 		local bUpdate = false
-        -- Effects
-        for _, nodeEffect in pairs(DB.getChildren(nodeCT, 'effects')) do
+		-- Effects
+		for _, nodeEffect in pairs(DB.getChildren(nodeCT, 'effects')) do
 			local sEffect = DB.getValue(nodeEffect, 'label', '')
 			if string.match(sEffect, 'AURA[:;]') then
 				local sAuraEffect = DB.getPath(nodeEffect)
 				AuraTracker.addTrackedAura(nodeCT, sAuraEffect)
-				bUpdate = true;
+				bUpdate = true
 			end
 		end
 		if bUpdate then

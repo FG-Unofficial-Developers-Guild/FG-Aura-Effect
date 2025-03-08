@@ -53,7 +53,9 @@ function hasFaction(rActor, sFaction, rTarget, nodeEffect)
 			bReturn = true
 			break
 		end
-		if sFactionElement == 'notself' and ((not bNegate and sTargetNode ~= sNodeEffectSource) or (bNegate and sTargetNode == sNodeEffectSource)) then
+		if
+			sFactionElement == 'notself' and ((not bNegate and sTargetNode ~= sNodeEffectSource) or (bNegate and sTargetNode == sNodeEffectSource))
+		then
 			bReturn = true
 			break
 		end
