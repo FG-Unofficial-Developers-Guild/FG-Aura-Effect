@@ -6,7 +6,7 @@ on:
 
 name: Release Build
 
-permissions: write-all
+permissions: read-all
 
 env:
   EXTENSION: ${{ vars.FORGE_EXTENSION }}
@@ -16,6 +16,11 @@ jobs:
   build:
     name: Create Release
     runs-on: ubuntu-latest
+
+    permissions:
+      attestations: write
+      contents: write
+
     steps:
     - name: Checkout Repo Assets
       uses: actions/checkout@v4
@@ -42,41 +47,34 @@ jobs:
   upload:
     name: Upload to Forge
     runs-on: ubuntu-latest
+    
     needs: build
     if: ${{ vars.FORGE_ITEM_ID != '' }}
+
+    permissions:
+      attestations: write
+      contents: write
+
     steps:
       - name: Checkout FG-Forge-Updater repository
         uses: actions/checkout@v4
         with:
           repository: 'bmos/FG-Forge-Updater'
-          ref: 'v1.1'
+          ref: 'v1.3'
 
-      - name: Set up python 3.12
+      - name: Set up python 3.13
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: "3.13"
           cache: 'pip'
 
       - name: Install uv and create venv
         run: |
           pip install -U pip uv
-          uv venv
-
-      - name: Enable macOS/Linux venv
-        if: runner.os != 'Windows'
-        run: |
-          source .venv/bin/activate
-          echo $PATH >> $GITHUB_PATH
-
-      - name: Enable Windows venv
-        if: runner.os == 'Windows'
-        run: |
-          .venv\Scripts\activate
-          echo $env:path >> $ENV:GITHUB_PATH
 
       - name: Install dependencies
         run: |
-          uv pip install -e .
+          uv pip install --system -e .
 
       - uses: actions/download-artifact@v4
         with:
