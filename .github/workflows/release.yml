@@ -10,7 +10,7 @@ permissions: read-all
 
 env:
   EXTENSION: ${{ vars.FORGE_EXTENSION }}
-  IS_PRERELEASE: ${{ contains(github.ref_name,'-rc') }} && ${{ contains(github.ref_name,'-beta') }} && ${{ contains(github.ref_name,'-test') }}
+  IS_PRERELEASE: ${{ contains(github.ref_name,'-rc') || contains(github.ref_name,'-beta') || contains(github.ref_name,'-test') }}
 
 jobs:
   build:
@@ -43,7 +43,7 @@ jobs:
       with:
         name: ${{ github.event.repository.name }}${{ env.EXTENSION }}
         path: ${{ github.event.repository.name }}${{ env.EXTENSION }}
-
+        
   upload:
     name: Upload to Forge
     runs-on: ubuntu-latest
@@ -82,7 +82,7 @@ jobs:
 
       - name: Upload ${{ env.EXTENSION }} file to live channel
         id: upload-live
-        if: ${{ env.IS_PRERELEASE == 'false && false' }}
+        if: ${{ env.IS_PRERELEASE == 'false' }}
         env:
           FG_RELEASE_CHANNEL: Live
           FG_ITEM_ID: ${{ vars.FORGE_ITEM_ID }}
@@ -97,7 +97,7 @@ jobs:
 
       - name: Upload ${{ env.EXTENSION }} file to test channel
         id: upload-test
-        if: ${{ env.IS_PRERELEASE != 'false && false' }}
+        if: ${{ env.IS_PRERELEASE == 'true' }}
         env:
           FG_RELEASE_CHANNEL: Test
           FG_ITEM_ID: ${{ vars.FORGE_ITEM_ID }}
