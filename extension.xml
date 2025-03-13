@@ -3,7 +3,7 @@
 <root version="3.0" >
 	<properties>
 		<name>Feature: Aura Effects</name>
-		<version>3.5</version>
+		<version>3.6</version>
 		<author>Kent McCullough</author>
 		<description>Adds and removes effects based on proximity.</description>
 		<loadorder>999</loadorder>
@@ -33,7 +33,7 @@
 		</ruleset>
 	</properties>
 
-	<announcement text="https://www.fantasygrounds.com/forums/showthread.php?57417-5E-Aura-Effects\rAura Effects v3.5\rCreated by Kent McCullough, SoxMax, bmos, GKEnialb, rhagelstrom and with icon suggested by JustinFreitas." font="emotefont" icon="aura_icon" />
+	<announcement text="https://www.fantasygrounds.com/forums/showthread.php?57417-5E-Aura-Effects\rAura Effects v3.6\rCreated by Kent McCullough, SoxMax, bmos, GKEnialb, rhagelstrom and with icon suggested by JustinFreitas." font="emotefont" icon="aura_icon" />
 
 	<base>
 		<script name="AuraEffect" file="scripts/manager_effect_aura.lua" />
