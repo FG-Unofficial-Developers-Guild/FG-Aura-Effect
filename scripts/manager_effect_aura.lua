@@ -27,7 +27,7 @@ local aReservedDetails = {
 	'aCreatureType',
 	'aCreatureSize',
 	'aDefined',
-	'aOther'
+	'aOther',
 }
 
 local rBaseDetails = {
@@ -36,7 +36,7 @@ local rBaseDetails = {
 	bSticky = false,
 	bOnce = false,
 	bPoint = false,
-	bDying =  false,
+	bDying = false,
 	nRange = 0,
 	sEffect = '',
 	sSource = '',
@@ -46,7 +46,7 @@ local rBaseDetails = {
 	aCreatureType = {},
 	aCreatureSize = {},
 	aDefined = {},
-	aOther = {}
+	aOther = {},
 }
 
 auraString = 'AURA: %d+'
@@ -68,7 +68,7 @@ local aAuraAlignment = {
 	'ne',
 	'cg',
 	'cn',
-	'ce'
+	'ce',
 }
 
 local aAuraCreatureType = {}
@@ -265,11 +265,11 @@ end
 function isCreatureSize(rAuraDetails, rTarget)
 	local bReturn = true
 	if next(rAuraDetails.aCreatureSize) and rTarget then
-		local a5Ruleset = {'5E', 'SFRPG', 'DCC', 'MCC'}
-		local a3Ruleset = {'PFRPG', '3.5E', '4E', '13A', 'd20Modern'}
-		local sRuleset =  User.getRulesetName()
+		local a5Ruleset = { '5E', 'SFRPG', 'DCC', 'MCC' }
+		local a3Ruleset = { 'PFRPG', '3.5E', '4E', '13A', 'd20Modern' }
+		local sRuleset = User.getRulesetName()
 		bReturn = false
-		for _,sDescriptor in ipairs(rAuraDetails.aCreatureSize) do
+		for _, sDescriptor in ipairs(rAuraDetails.aCreatureSize) do
 			local bNot, sSize = AuraFactionConditional.isNot(sDescriptor)
 			local bSize
 			if StringManager.contains(a5Ruleset, sRuleset) then
@@ -293,7 +293,7 @@ function isCreatureType(rAuraDetails, rTarget)
 	local bReturn = true
 	if next(rAuraDetails.aCreatureType) and rTarget then
 		bReturn = false
-		for _,sDescriptor in ipairs(rAuraDetails.aCreatureType) do
+		for _, sDescriptor in ipairs(rAuraDetails.aCreatureType) do
 			local bNot, sType = AuraFactionConditional.isNot(sDescriptor)
 			local bType = ActorCommonManager.isCreatureTypeDnD(rTarget, sType)
 			if (not bNot and bType) or (not bType and bNot) then
@@ -307,7 +307,7 @@ end
 function isAlignment(rAuraDetails, rTarget)
 	local bReturn = true
 	if next(rAuraDetails.aAlignment) and rTarget then
-		for _,sDescriptor in ipairs(rAuraDetails.aAlignment) do
+		for _, sDescriptor in ipairs(rAuraDetails.aAlignment) do
 			local bNot, sAlignment = AuraFactionConditional.isNot(sDescriptor)
 			local bAlign = ActorCommonManager.isCreatureAlignmentDnD(rTarget, sAlignment)
 			if (bNot and bAlign) or (not bAlign and not bNot) then
@@ -321,11 +321,11 @@ end
 
 function checkDying(rAuraDetails)
 	local bReturn = true
-	if next(rAuraDetails.aDefined)then
+	if next(rAuraDetails.aDefined) then
 		local bFilterDying = StringManager.contains(rAuraDetails.aDefined, 'dying')
 		local bFilterNotDying = StringManager.contains(rAuraDetails.aDefined, '!dying') or StringManager.contains(rAuraDetails.aDefined, '~dying')
 
-		if  bFilterDying or bFilterNotDying then
+		if bFilterDying or bFilterNotDying then
 			if (not rAuraDetails.bDying and bFilterDying) or (rAuraDetails.bDying and bFilterNotDying) then
 				bReturn = false
 			end
@@ -365,7 +365,6 @@ function isAuraApplicable(nodeEffect, rSource, rTarget, rAuraDetails)
 		and AuraEffect.isCreatureType(rAuraDetails, rTarget)
 		and AuraAPI.isAuraApplicable(nodeEffect, rSource, rTarget, rAuraDetails)
 		and not AuraFactionConditional.DetectedEffectManager.hasEffectCondition(rTarget, 'Object')
-
 	then
 		return true
 	end
@@ -457,14 +456,14 @@ function onInit()
 			aAuraCreatureType = UtilityManager.copyDeep(DataCommon.creaturetype)
 		end
 		if DataCommon.creaturesubtype then
-			for _,sSubType in ipairs(DataCommon.creaturesubtype) do
+			for _, sSubType in ipairs(DataCommon.creaturesubtype) do
 				table.insert(aAuraCreatureType, sSubType)
 			end
 		end
 		table.insert(aAuraCreatureType, 'humanoid')
 		table.insert(aAuraCreatureType, 'human')
 		if DataCommon.creaturesize then
-			for sSize,_ in pairs(DataCommon.creaturesize) do
+			for sSize, _ in pairs(DataCommon.creaturesize) do
 				if sSize:len() > 1 then
 					table.insert(aAuraCreatureSize, sSize)
 				end

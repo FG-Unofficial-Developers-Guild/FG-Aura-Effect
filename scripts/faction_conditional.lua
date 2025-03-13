@@ -56,7 +56,6 @@ function hasFaction(rActor, sFaction, rTarget, nodeEffect)
 		sTargetFaction = ActorManager.getFaction(rActor)
 	end
 	for _, sFactionElement in ipairs(aFactions) do
-
 		bNegate, sFactionElement = AuraFactionConditional.isNot(sFactionElement)
 		if sFactionElement == 'all' then
 			bReturn = true
