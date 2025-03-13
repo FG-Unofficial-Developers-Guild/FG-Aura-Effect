@@ -1,5 +1,7 @@
 on:
   push:
+    branches:
+      - 'main'
     paths:
       - '**.lua' # Run if pushed commits include a change to a Lua (.lua) file.
       - 'extension.xml' # Run if pushed commits include a change to extension.xml.
