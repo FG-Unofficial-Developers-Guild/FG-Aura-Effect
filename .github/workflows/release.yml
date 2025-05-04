@@ -35,7 +35,7 @@ jobs:
       uses: ncipollo/release-action@v1
       with:
         artifacts: ${{ github.event.repository.name }}${{ env.EXTENSION }}
-        prerelease: ${{ env.IS_PRERELEASE != 'false && false' }}
+        prerelease: ${{ env.IS_PRERELEASE == 'true' }}
         allowUpdates: true
         generateReleaseNotes: true
 
