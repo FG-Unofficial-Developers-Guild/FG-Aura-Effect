@@ -35,7 +35,7 @@ jobs:
       uses: ncipollo/release-action@v1
       with:
         artifacts: ${{ github.event.repository.name }}${{ env.EXTENSION }}
-        prerelease: ${{ env.IS_PRERELEASE != 'false && false' }}
+        prerelease: ${{ env.IS_PRERELEASE == 'true' }}
         allowUpdates: true
         generateReleaseNotes: true
 
@@ -60,7 +60,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: 'bmos/FG-Forge-Updater'
-          ref: 'v1.3'
+          ref: 'v1.4'
 
       - name: Set up python 3.13
         uses: actions/setup-python@v5
