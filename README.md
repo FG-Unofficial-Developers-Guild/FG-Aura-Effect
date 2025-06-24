@@ -1,5 +1,5 @@
-[![Build FG-Usable File](https://github.com/FG-Unofficial-Developers-Guild/FG-Aura-Effect/actions/workflows/release.yml/badge.svg)](https://github.com/FG-Unofficial-Developers-Guild/FG-Aura-Effect/actions/workflows/release.yml)
-[![Luacheck](https://github.com/FG-Unofficial-Developers-Guild/FG-Aura-Effect/actions/workflows/luacheck.yml/badge.svg)](https://github.com/FG-Unofficial-Developers-Guild/FG-Aura-Effect/actions/workflows/luacheck.yml)
+[![Release Build](https://github.com/FG-Unofficial-Developers-Guild/FG-Aura-Effect/actions/workflows/release.yml/badge.svg)](https://github.com/FG-Unofficial-Developers-Guild/FG-Aura-Effect/actions/workflows/release.yml)
+[![Check Lua Code](https://github.com/FG-Unofficial-Developers-Guild/FG-Aura-Effect/actions/workflows/lua.yml/badge.svg)](https://github.com/FG-Unofficial-Developers-Guild/FG-Aura-Effect/actions/workflows/lua.yml)
 
 # Aura Effect Extension
 
