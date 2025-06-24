@@ -91,7 +91,7 @@ jobs:
           FG_UL_FILE: ${{ github.event.repository.name }}${{ env.EXTENSION }}
           FG_README_UPDATE: "TRUE"
           FG_UPLOAD_BUILD: "TRUE"
-          FG_GRAPH_SALES: "TRUE"
+          FG_GRAPH_SALES: "FALSE"
         run: |
           python -m src.main
 
@@ -106,7 +106,7 @@ jobs:
           FG_UL_FILE: ${{ github.event.repository.name }}${{ env.EXTENSION }}
           FG_README_UPDATE: "FALSE"
           FG_UPLOAD_BUILD: "TRUE"
-          FG_GRAPH_SALES: "TRUE"
+          FG_GRAPH_SALES: "FALSE"
         run: |
           python -m src.main
 
