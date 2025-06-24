@@ -178,6 +178,9 @@ end
 
 ---	Remove fromaura effects just before source aura is removed
 local function onEffectToBeRemoved(nodeEffect)
+	if not nodeEffect or type(nodeEffect) ~= 'databasenode' then
+		return
+	end
 	local sEffect = DB.getValue(nodeEffect, 'label', '')
 	if not string.find(sEffect, AuraEffect.auraString) then
 		return
