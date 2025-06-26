@@ -159,6 +159,9 @@ end
 
 ---	Recalculate auras when effect text is changed to facilitate conditionals before aura effects
 local function onEffectChanged(nodeLabel)
+	if not nodeLabel or type(nodeLabel) ~= 'databasenode' then
+		return
+	end
 	local nodeEffect = DB.getParent(nodeLabel)
 	local sEffect = DB.getValue(nodeEffect, 'label', '')
 	if string.match(sEffect, 'AURA[:;]') then
@@ -266,6 +269,9 @@ end
 
 ---	Recalculate auras after effects are removed to ensure conditionals before aura are respected
 local function onEffectRemoved(nodeEffects)
+	if not nodeEffects or type(nodeEffects) ~= 'databasenode' then
+		return
+	end
 	AuraEffectTriggers.updateAurasForActor(DB.getParent(nodeEffects))
 end
 
@@ -276,6 +282,9 @@ function onTabletopInit()
 end
 
 local function onHealthUpdate(nodeHP)
+	if not nodeHP or type(nodeHP) ~= 'databasenode' then
+		return
+	end
 	local nodeActor = DB.getParent(nodeHP)
 	local _, window = ImageManager.getImageControl(CombatManager.getTokenFromCT(DB.getParent(nodeHP)))
 
