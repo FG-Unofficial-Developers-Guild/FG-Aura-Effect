@@ -113,8 +113,10 @@ end
 function getAuraEffects(nodeCT)
 	local sPath = DB.getPath(nodeCT)
 	local aReturn = {}
-	for sEffectPath, _ in pairs(tActiveAuras[sPath]) do
-		table.insert(aReturn, DB.findNode(sEffectPath))
+	if sPath and tActiveAuras[sPath] then
+		for sEffectPath, _ in pairs(tActiveAuras[sPath]) do
+			table.insert(aReturn, DB.findNode(sEffectPath))
+		end
 	end
 	return aReturn
 end

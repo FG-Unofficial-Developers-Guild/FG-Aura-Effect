@@ -3,7 +3,7 @@
 <root version="3.0" >
 	<properties>
 		<name>Feature: Aura Effects</name>
-		<version>3.8</version>
+		<version>3.9</version>
 		<author>Kent McCullough</author>
 		<description>Adds and removes effects based on proximity.</description>
 		<loadorder>999</loadorder>
