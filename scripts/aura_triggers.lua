@@ -207,15 +207,19 @@ local function onEffectToBeRemoved(nodeEffect)
 	end
 end
 
-local addEffect_old
-function addEffect_new(sUser, sIdentity, nodeCT, rNewEffect, bShowMsg)
-	addEffect_old(sUser, sIdentity, nodeCT, rNewEffect, bShowMsg)
+local addEffectByTable_old
+function addEffectByTable_new(vActor, rEffect, ...)
+	addEffectByTable_old(vActor, rEffect, ...)
+	local rNodeStart = ActorManager.resolveActor(vActor);
+	local nodeCT = DB.findNode(rNodeStart.sCTNode);
 	if AuraFactionConditional.DetectedEffectManager.parseEffectComp then
 		for _, sEffectComp in ipairs(EffectManager.parseEffect(rNewEffect.sName)) do
 			local rEffectComp = AuraFactionConditional.DetectedEffectManager.parseEffectComp(sEffectComp)
 			if rEffectComp.type:upper() == 'AURA' then
 				local _, winImage = ImageManager.getImageControl(CombatManager.getTokenFromCT(nodeCT))
-				local rNodeStart = ActorManager.resolveActor(nodeCT)
+				if not rNodeStart then
+					rNodeStart = ActorManager.resolveActor(nodeCT)
+				end
 				AuraEffectTriggers.updateAurasForMap(winImage, rNodeStart)
 				break
 			end
@@ -323,6 +327,6 @@ function onInit()
 
 	CombatManager.setCustomTurnStart(updateAurasForTurnStart)
 
-	addEffect_old = EffectManager.addEffect
-	EffectManager.addEffect = addEffect_new
+	addEffectByTable_old = EffectManager.addEffectByTable
+	EffectManager.addEffectByTable = addEffectByTable_new
 end
