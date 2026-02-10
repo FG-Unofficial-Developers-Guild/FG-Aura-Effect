@@ -3,7 +3,7 @@
 --
 
 -- luacheck: globals bDebug bDebugPerformance tokenMovement getExtensions AuraEffectTriggers
--- luacheck: globals updateAurasForMap updateAurasForActor updateAurasForEffect addEffect_new
+-- luacheck: globals updateAurasForMap updateAurasForActor updateAurasForEffect addEffectByTable_new
 -- luacheck: globals updateAurasForTurnStart AuraEffect.clearOncePerTurn AuraTracker AuraToken
 -- luacheck: globals AuraFactionConditional.DetectedEffectManager.parseEffectComp hasExtension
 -- luacheck: globals linkToken_new onTokenDelete_new initTracker onTabletopInit onHeathUpdate
@@ -209,22 +209,21 @@ end
 
 local addEffectByTable_old
 function addEffectByTable_new(vActor, rEffect, ...)
-	addEffectByTable_old(vActor, rEffect, ...)
-	local rNodeStart = ActorManager.resolveActor(vActor);
-	local nodeCT = DB.findNode(rNodeStart.sCTNode);
+	local nodeEffect = addEffectByTable_old(vActor, rEffect, ...)
 	if AuraFactionConditional.DetectedEffectManager.parseEffectComp then
-		for _, sEffectComp in ipairs(EffectManager.parseEffect(rNewEffect.sName)) do
+		for _, sEffectComp in ipairs(EffectManager.parseEffect(rEffect.sName)) do
 			local rEffectComp = AuraFactionConditional.DetectedEffectManager.parseEffectComp(sEffectComp)
 			if rEffectComp.type:upper() == 'AURA' then
+				local nodeCT = ActorManager.getCTNode(vActor)
 				local _, winImage = ImageManager.getImageControl(CombatManager.getTokenFromCT(nodeCT))
-				if not rNodeStart then
-					rNodeStart = ActorManager.resolveActor(nodeCT)
-				end
+				local rNodeStart = ActorManager.resolveActor(nodeCT)
 				AuraEffectTriggers.updateAurasForMap(winImage, rNodeStart)
 				break
 			end
 		end
 	end
+
+	return nodeEffect
 end
 
 function initTracker()
