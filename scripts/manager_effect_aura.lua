@@ -17,6 +17,8 @@ local aReservedDetails = {
 	'bSticky',
 	'bOnce',
 	'bPoint',
+	'b3Drect',
+	'bCylinder',
 	'bDying',
 	'nRange',
 	'sEffect',
@@ -28,6 +30,7 @@ local aReservedDetails = {
 	'aCreatureSize',
 	'aDefined',
 	'aOther',
+	'aParameters',
 }
 
 local rBaseDetails = {
@@ -36,6 +39,8 @@ local rBaseDetails = {
 	bSticky = false,
 	bOnce = false,
 	bPoint = false,
+	b3Drect = false,
+	bCylinder = false,
 	bDying = false,
 	nRange = 0,
 	sEffect = '',
@@ -47,6 +52,7 @@ local rBaseDetails = {
 	aCreatureSize = {},
 	aDefined = {},
 	aOther = {},
+	aParameters = {},
 }
 
 auraString = 'AURA: %d+'
@@ -94,7 +100,9 @@ function getAuraDetails(nodeEffect)
 			AuraTracker.addTrackedAura(rAuraDetails.sSource, rAuraDetails.sAuraNode)
 			rAuraDetails.nRange = rEffectComp.mod
 			for _, sFilter in ipairs(rEffectComp.remainder) do
-				sFilter = sFilter:lower()
+				-- break out any | parameter delimiters
+				local aParameters = StringManager.split(sFilter, "|", true);
+				sFilter = aParameters[1]:lower()
 				if sFilter == 'single' then
 					rAuraDetails.bSingle = true
 				elseif sFilter == 'cube' then
@@ -105,6 +113,12 @@ function getAuraDetails(nodeEffect)
 					rAuraDetails.bOnce = true
 				elseif sFilter == 'point' then
 					rAuraDetails.bPoint = true
+				elseif sFilter == '3drect' then
+					rAuraDetails.aParameters = aParameters;
+					rAuraDetails.b3Drect = true
+				elseif sFilter == 'cylinder' then
+					rAuraDetails.aParameters = aParameters;
+					rAuraDetails.bCylinder = true
 				else
 					local bNot, sFilterCheck = AuraFactionConditional.isNot(sFilter)
 					if StringManager.contains(aAuraFactions, sFilterCheck) then
@@ -387,13 +401,40 @@ function updateAura(tokenSource, nodeEffect, rAuraDetails, rMoved)
 
 	local aTokens
 	if rAuraDetails.bCube then
-		aTokens = AuraToken.getTokensWithinCube(tokenSource, rAuraDetails.nRange)
+		-- old implementation had 0 height on their cube so default to this when
+		-- cube is defined though 3drect with same length, width, and height with
+		-- no 0 orientation (orthogonal) is a cube
+		aTokens = AuraToken.getTokensWithinShape(true, 2, tokenSource, rAuraDetails.nRange, rAuraDetails.nRange, 0, 0, 0)
+	-- 3Drectangle (nShape = 2; ngParamA = Length, ngParamB = Width, ngParamC = MinHeight, ngParamD = MaxHeight, ngParamE = orientation)
+	elseif rAuraDetails.b3Drect then
+		aTokens = AuraToken.getTokensWithinShape(
+			rAuraDetails.bPoint,
+			2,
+			tokenSource,
+			rAuraDetails.nRange,
+			tonumber(rAuraDetails.aParameters[2]),
+			tonumber(rAuraDetails.aParameters[3]),
+			tonumber(rAuraDetails.aParameters[4]),
+			tonumber(rAuraDetails.aParameters[5])
+		)
+	-- cyclinder(nShape = 1; ngParamA = Radius, ngParamB = MinHeight, ngParamC = MaxHeight, ngParamD = additional Radius)
+	elseif rAuraDetails.bCylinder then
+		aTokens = AuraToken.getTokensWithinShape(
+			rAuraDetails.bPoint,
+			1,
+			tokenSource,
+			rAuraDetails.nRange,
+			tonumber(rAuraDetails.aParameters[2]),
+			tonumber(rAuraDetails.aParameters[3]),
+			tonumber(rAuraDetails.aParameters[4])
+		)
 	else
+	-- sphere (nShape = 0 (default); ngParamA = Radius)
 		local nCalcFormat = tonumber(OptionsManager.getOption('AURADISTANCE'))
 		if nCalcFormat == 0 or (nCalcFormat > 0 and rAuraDetails.bPoint) then
-			aTokens = AuraToken.getTokensWithinSphere(tokenSource, rAuraDetails.nRange, rAuraDetails.bPoint)
+			aTokens = AuraToken.getTokensWithinShape(false, 0, tokenSource, rAuraDetails.nRange)
 		else
-			aTokens = imageControl.getTokensWithinDistance(tokenSource, rAuraDetails.nRange)
+			aTokens = AuraToken.getTokensWithinShape(true, 0, tokenSource, rAuraDetails.nRange)
 		end
 	end
 
