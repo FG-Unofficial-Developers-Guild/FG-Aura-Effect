@@ -39,7 +39,7 @@ jobs:
         allowUpdates: true
         generateReleaseNotes: true
 
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v6
       with:
         name: ${{ github.event.repository.name }}${{ env.EXTENSION }}
         path: ${{ github.event.repository.name }}${{ env.EXTENSION }}
@@ -57,13 +57,13 @@ jobs:
 
     steps:
       - name: Checkout FG-Forge-Updater repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: 'bmos/FG-Forge-Updater'
-          ref: 'v1.4'
+          ref: 'v2'
 
       - name: Set up python 3.13
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.13"
           cache: 'pip'
@@ -76,7 +76,7 @@ jobs:
         run: |
           uv pip install --system -e .
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v7
         with:
           name: ${{ github.event.repository.name }}${{ env.EXTENSION }}
 
@@ -91,7 +91,6 @@ jobs:
           FG_UL_FILE: ${{ github.event.repository.name }}${{ env.EXTENSION }}
           FG_README_UPDATE: "TRUE"
           FG_UPLOAD_BUILD: "TRUE"
-          FG_GRAPH_SALES: "FALSE"
         run: |
           python -m src.main
 
@@ -106,13 +105,5 @@ jobs:
           FG_UL_FILE: ${{ github.event.repository.name }}${{ env.EXTENSION }}
           FG_README_UPDATE: "FALSE"
           FG_UPLOAD_BUILD: "TRUE"
-          FG_GRAPH_SALES: "FALSE"
         run: |
           python -m src.main
-
-      - name: Add cumulative users graph to release
-        uses: ncipollo/release-action@v1
-        with:
-          body: "![Cumulative Users Graph](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/cumulative_users.png)"
-          artifacts: cumulative_users.png
-          allowUpdates: true
