@@ -3,7 +3,7 @@
 --
 
 -- luacheck: globals bDebug bDebugPerformance tokenMovement getExtensions AuraEffectTriggers
--- luacheck: globals updateAurasForMap updateAurasForActor updateAurasForEffect addEffect_new
+-- luacheck: globals updateAurasForMap updateAurasForActor updateAurasForEffect addEffectByTable_new
 -- luacheck: globals updateAurasForTurnStart AuraEffect.clearOncePerTurn AuraTracker AuraToken
 -- luacheck: globals AuraFactionConditional.DetectedEffectManager.parseEffectComp hasExtension
 -- luacheck: globals linkToken_new onTokenDelete_new initTracker onTabletopInit onHeathUpdate
@@ -207,13 +207,14 @@ local function onEffectToBeRemoved(nodeEffect)
 	end
 end
 
-local addEffect_old
-function addEffect_new(sUser, sIdentity, nodeCT, rNewEffect, bShowMsg)
-	addEffect_old(sUser, sIdentity, nodeCT, rNewEffect, bShowMsg)
+local addEffectByTable_old
+function addEffectByTable_new(vActor, rEffect, ...)
+	local nodeEffect = addEffectByTable_old(vActor, rEffect, ...)
 	if AuraFactionConditional.DetectedEffectManager.parseEffectComp then
-		for _, sEffectComp in ipairs(EffectManager.parseEffect(rNewEffect.sName)) do
+		for _, sEffectComp in ipairs(EffectManager.parseEffect(rEffect.sName)) do
 			local rEffectComp = AuraFactionConditional.DetectedEffectManager.parseEffectComp(sEffectComp)
 			if rEffectComp.type:upper() == 'AURA' then
+				local nodeCT = ActorManager.getCTNode(vActor)
 				local _, winImage = ImageManager.getImageControl(CombatManager.getTokenFromCT(nodeCT))
 				local rNodeStart = ActorManager.resolveActor(nodeCT)
 				AuraEffectTriggers.updateAurasForMap(winImage, rNodeStart)
@@ -221,6 +222,8 @@ function addEffect_new(sUser, sIdentity, nodeCT, rNewEffect, bShowMsg)
 			end
 		end
 	end
+
+	return nodeEffect
 end
 
 function initTracker()
@@ -323,6 +326,6 @@ function onInit()
 
 	CombatManager.setCustomTurnStart(updateAurasForTurnStart)
 
-	addEffect_old = EffectManager.addEffect
-	EffectManager.addEffect = addEffect_new
+	addEffectByTable_old = EffectManager.addEffectByTable
+	EffectManager.addEffectByTable = addEffectByTable_new
 end
