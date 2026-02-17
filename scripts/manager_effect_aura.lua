@@ -101,7 +101,7 @@ function getAuraDetails(nodeEffect)
 			rAuraDetails.nRange = rEffectComp.mod
 			for _, sFilter in ipairs(rEffectComp.remainder) do
 				-- break out any | parameter delimiters
-				local aParameters = StringManager.split(sFilter, "|", true);
+				local aParameters = StringManager.split(sFilter, '|', true)
 				sFilter = aParameters[1]:lower()
 				if sFilter == 'single' then
 					rAuraDetails.bSingle = true
@@ -114,10 +114,10 @@ function getAuraDetails(nodeEffect)
 				elseif sFilter == 'point' then
 					rAuraDetails.bPoint = true
 				elseif sFilter == '3drect' then
-					rAuraDetails.aParameters = aParameters;
+					rAuraDetails.aParameters = aParameters
 					rAuraDetails.b3Drect = true
 				elseif sFilter == 'cylinder' then
-					rAuraDetails.aParameters = aParameters;
+					rAuraDetails.aParameters = aParameters
 					rAuraDetails.bCylinder = true
 				else
 					local bNot, sFilterCheck = AuraFactionConditional.isNot(sFilter)
@@ -429,7 +429,7 @@ function updateAura(tokenSource, nodeEffect, rAuraDetails, rMoved)
 			tonumber(rAuraDetails.aParameters[4])
 		)
 	else
-	-- sphere (nShape = 0 (default); ngParamA = Radius)
+		-- sphere (nShape = 0 (default); ngParamA = Radius)
 		local nCalcFormat = tonumber(OptionsManager.getOption('AURADISTANCE'))
 		if nCalcFormat == 0 or (nCalcFormat > 0 and rAuraDetails.bPoint) then
 			aTokens = AuraToken.getTokensWithinShape(false, 0, tokenSource, rAuraDetails.nRange)
