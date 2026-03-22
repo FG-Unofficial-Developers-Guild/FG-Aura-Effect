@@ -92,8 +92,6 @@ Supported alignments for each ruleset:
 
 - **5E, 4E, PFRPG, PFRPG2, SFRPG**:  lawful, chaotic, good, evil, l, c, g, e, n, lg, ln, le, ng, ne, cg, cn, ce.
 
-> **Note:** Neutral alignment should be represented as `n` when specifying in conditions.
-
 #### Size
 
 Supported sizes for each ruleset:
