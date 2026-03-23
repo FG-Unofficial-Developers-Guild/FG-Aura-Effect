@@ -21,9 +21,9 @@ jobs:
       RELEASE_FILENAME: ${{ github.event.repository.name }}${{ vars.FORGE_EXTENSION }}
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
 
-    - uses: thedoctor0/zip-release@0.7.6
+    - uses: thedoctor0/zip-release@78b32010bd8b7722906817a1f9e2a7190a182d0c
       with:
         filename: ${{ env.RELEASE_FILENAME }}
         exclusions: '*.git* /*node_modules/* .editorconfig body.md *.psd *.xcf forge-thumbnail.png thumbnail.png *.toml'
