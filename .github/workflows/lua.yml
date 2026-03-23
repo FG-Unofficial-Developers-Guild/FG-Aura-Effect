@@ -151,6 +151,6 @@ jobs:
         uses: nebularg/actions-luacheck@d4137dd840545b28521ed21931e06913d93c0bc1
         with:
           files: '.'
-          config: https://raw.githubusercontent.com/FG-Unofficial-Developers-Guild/FG-luacheck/main/.luacheckrc
+          config: https://raw.githubusercontent.com/FG-Unofficial-Developers-Guild/Luacheck-Config/main/.luacheckrc
           args: '--no-color --std +${{ steps.namelowercase.outputs.lowercase }}${{ steps.authorlowercase.outputs.lowercase }} --exclude-files .install/*'
           annotate: 'warning'
