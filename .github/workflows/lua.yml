@@ -2,18 +2,15 @@ on:
   push:
     branches:
       - 'main'
-    paths:
-      - '**.lua' # Run if pushed commits include a change to a Lua (.lua) file.
-      - 'extension.xml' # Run if pushed commits include a change to extension.xml.
-      - '.stylua' # Run if pushed commits include a change to .stylua.
-      - '.github/workflows/lua.yml' # Run if pushed commits change this workflow.
+    paths: &lua_paths
+      - '**.lua'
+      - 'extension.xml'
+      - '.stylua'
+      - '.github/workflows/lua.yml'
   pull_request:
-    paths:
-      - '**.lua' # Run if pull request includes a change to a Lua (.lua) file.
-      - 'extension.xml' # Run if pull request includes a change to extension.xml.
-      - '.stylua' # Run if pushed commits include a change to .stylua.
+    paths: *lua_paths
   schedule:
-      - cron:  '0 9 * * 1'
+    - cron: '0 9 * * 1'
   workflow_dispatch:
 
 name: Check Lua Code
@@ -21,11 +18,11 @@ name: Check Lua Code
 jobs:
   stylua:
     runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
 
-      - uses: JohnnyMorganz/stylua-action@v4
+    steps:
+      - uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98
+
+      - uses: JohnnyMorganz/stylua-action@479972f01e665acfcba96ada452c36608bdbbb5e
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           version: latest
@@ -33,124 +30,46 @@ jobs:
 
   luacheck:
     runs-on: ubuntu-latest
-    steps:
-      - name: Checkout default branch
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
 
-      # Determine extension name
-      - name: Get Extension Name from XML
-        id: getnamefromxml
+    steps:
+      - uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98
+
+      - id: name
         uses: mavrosxristoforos/get-xml-info@cc0a00b30a53c3adf0ea2cbfd8314cea394fbbad
         with:
           xml-file: 'extension.xml'
-          xpath: '//properties//name'
+          xpath: |
+            root/properties/name
 
-      - name: Format Extension Name
-        id: removenameprefix
-        uses: bmos/regex-property-action@v1
-        with:
-          value: ${{ steps.getnamefromxml.outputs.info }}
-          regex: '[A-Za-z]+:\s+'
-          replacement: ''
-
-      - id: removenametabs
-        uses: bmos/regex-property-action@v1
-        with:
-          value: ${{ steps.removenameprefix.outputs.value }}
-          regex: "	"
-          replacement: ''
-
-      - id: removeapostrophes
-        uses: bmos/regex-property-action@v1
-        with:
-          value: ${{ steps.removenametabs.outputs.value }}
-          regex: "'"
-          replacement: ''
-
-      - id: removenamepunctuation
-        uses: bmos/regex-property-action@v1
-        with:
-          value: ${{ steps.removeapostrophes.outputs.value }}
-          regex: '[^\w\s].*'
-          replacement: ''
-
-      - id: removenamespaces
-        uses: bmos/regex-property-action@v1
-        with:
-          value: ${{ steps.removenamepunctuation.outputs.value }}
-          regex: '\s'
-          replacement: ''
-
-      - id: namelowercase
-        uses: ASzc/change-string-case-action@v6
-        with:
-          string: ${{ steps.removenamespaces.outputs.value }}
-
-      # Determine extension author
-      - name: Get Author Name from XML
-        id: getauthorfromxml
-        uses: mavrosxristoforos/get-xml-info@2.0
+      - id: author
+        uses: mavrosxristoforos/get-xml-info@cc0a00b30a53c3adf0ea2cbfd8314cea394fbbad
         with:
           xml-file: 'extension.xml'
-          xpath: '//properties//author'
+          xpath: |
+            root/properties/author
 
-      - name: Format author name
-        id: removeauthorprefix
-        uses: bmos/regex-property-action@v1
-        with:
-          value: ${{ steps.getauthorfromxml.outputs.info }}
-          regex: '[A-Za-z]+:\s'
-          replacement: ''
+      - id: format
+        run: |
+          # Clean function: strip prefix, remove punctuation/spaces, lowercase
+          clean_string() {
+            echo "$1" | sed -e 's/^[A-Za-z]\+: *//' -e "s/'//g" -e 's/[^[:alnum:]]//g' | tr '[:upper:]' '[:lower:]'
+          }
 
-      - id: removeauthortabs
-        uses: bmos/regex-property-action@v1
-        with:
-          value: ${{ steps.removeauthorprefix.outputs.value }}
-          regex: "	"
-          replacement: ''
+          echo "name=$(clean_string "${{ steps.name.outputs.info }}")" >> $GITHUB_OUTPUT
+          echo "author=$(clean_string "${{ steps.author.outputs.info }}")" >> $GITHUB_OUTPUT
 
-      - id: removeauthorapostrophes
-        uses: bmos/regex-property-action@v1
-        with:
-          value: ${{ steps.removeauthortabs.outputs.value }}
-          regex: "'"
-          replacement: ''
-
-      - id: removeauthorpunctuation
-        uses: bmos/regex-property-action@v1
-        with:
-          value: ${{ steps.removeauthorapostrophes.outputs.value }}
-          regex: '[^\w\s].*'
-          replacement: ''
-
-      - id: removeauthorspaces
-        uses: bmos/regex-property-action@v1
-        with:
-          value: ${{ steps.removeauthorpunctuation.outputs.value }}
-          regex: '\s'
-          replacement: ''
-
-      - id: authorlowercase
-        uses: ASzc/change-string-case-action@v6
-        with:
-          string: ${{ steps.removeauthorspaces.outputs.value }}
-
-      - name: Install Lua/LuaJIT
-        uses: leafo/gh-actions-lua@8c9e175e7a3d77e21f809eefbee34a19b858641b
+      - uses: leafo/gh-actions-lua@8c9e175e7a3d77e21f809eefbee34a19b858641b
         with:
           luaVersion: 5.1.5
 
-      - id: cache-luacheck
-        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7
+      - uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7
         with:
           path: ~/.config/luacheck
           key: luacheck
 
-      # Process extension code
-      - name: Running luacheck
-        uses: nebularg/actions-luacheck@d4137dd840545b28521ed21931e06913d93c0bc1
+      - uses: nebularg/actions-luacheck@d4137dd840545b28521ed21931e06913d93c0bc1
         with:
           files: '.'
           config: https://raw.githubusercontent.com/FG-Unofficial-Developers-Guild/Luacheck-Config/main/.luacheckrc
-          args: '--no-color --std +${{ steps.namelowercase.outputs.lowercase }}${{ steps.authorlowercase.outputs.lowercase }} --exclude-files .install/*'
+          args: '--no-color --std +${{ steps.format.outputs.name }}${{ steps.format.outputs.author }} --exclude-files .install/*'
           annotate: 'warning'
