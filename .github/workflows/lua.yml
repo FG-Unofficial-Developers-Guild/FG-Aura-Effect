@@ -35,12 +35,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout default branch
-        uses: actions/checkout@v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
 
       # Determine extension name
       - name: Get Extension Name from XML
         id: getnamefromxml
-        uses: mavrosxristoforos/get-xml-info@2.0
+        uses: mavrosxristoforos/get-xml-info@cc0a00b30a53c3adf0ea2cbfd8314cea394fbbad
         with:
           xml-file: 'extension.xml'
           xpath: '//properties//name'
@@ -136,19 +136,19 @@ jobs:
           string: ${{ steps.removeauthorspaces.outputs.value }}
 
       - name: Install Lua/LuaJIT
-        uses: leafo/gh-actions-lua@v10
+        uses: leafo/gh-actions-lua@8c9e175e7a3d77e21f809eefbee34a19b858641b
         with:
-          luaVersion: 5.1
+          luaVersion: 5.1.5
 
       - id: cache-luacheck
-        uses: actions/cache@v4
+        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7
         with:
           path: ~/.config/luacheck
           key: luacheck
 
       # Process extension code
       - name: Running luacheck
-        uses: nebularg/actions-luacheck@v1
+        uses: nebularg/actions-luacheck@d4137dd840545b28521ed21931e06913d93c0bc1
         with:
           files: '.'
           config: https://raw.githubusercontent.com/FG-Unofficial-Developers-Guild/FG-luacheck/main/.luacheckrc
