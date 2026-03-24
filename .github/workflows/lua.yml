@@ -52,7 +52,11 @@ jobs:
         run: |
           # Clean function: strip prefix, remove punctuation/spaces, lowercase
           clean_string() {
-            echo "$1" | sed -e 's/^[A-Za-z]\+: *//' -e "s/'//g" -e 's/[^[:alnum:]]//g' | tr '[:upper:]' '[:lower:]'
+            echo "$1" | sed -e 's/^[A-Za-z]\+: *//' \
+                            -e 's/([^)]*)//g' \
+                            -e "s/'//g" \
+                            -e 's/[^[:alnum:]]//g' \
+                            | tr '[:upper:]' '[:lower:]'
           }
 
           echo "name=$(clean_string "${{ steps.name.outputs.info }}")" >> $GITHUB_OUTPUT
